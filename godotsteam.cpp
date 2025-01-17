@@ -3733,11 +3733,11 @@ Dictionary Steam::getP2PSessionState(uint64_t remote_steam_id) {
 	return result;
 }
 
-// Calls IsP2PPacketAvailable() under the hood, returns the size of the available packet or zero if there is no such packet.
+// Calls IsP2PPacketAvailable() under the hood, returns the size of the available packet or -1 if there is no such packet.
 uint32_t Steam::getAvailableP2PPacketSize(int channel) {
 	ERR_FAIL_COND_V_MSG(SteamNetworking() == NULL, 0, "[STEAM] Game Server class not found when calling: getAvailableP2PPacketSize");
 	uint32_t message_size = 0;
-	return (SteamNetworking()->IsP2PPacketAvailable(&message_size, channel)) ? message_size : 0;
+	return (SteamNetworking()->IsP2PPacketAvailable(&message_size, channel)) ? message_size : -1;
 }
 
 // Reads in a packet that has been sent from another user via SendP2PPacket.
