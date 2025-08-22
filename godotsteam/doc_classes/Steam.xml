@@ -12,16 +12,21 @@
 		<link title="Auto-Matchmaking">https://godotsteam.com/tutorials/auto_matchmaking/</link>
 		<link title="Avatars">https://godotsteam.com/tutorials/avatars/</link>
 		<link title="C#">https://godotsteam.com/tutorials/c-sharp/</link>
-		<link title="Common Issues">https://godotsteam.com/tutorials/common_issues/</link>
+		<link title="Common Issues">https://godotsteam.com/issues/common/</link>
+		<link title="DLC">https://godotsteam.com/tutorials/dlc/</link>
 		<link title="Exporting and Shipping">https://godotsteam.com/tutorials/exporting_shipping/</link>
 		<link title="Friends&apos; Lobbies">https://godotsteam.com/tutorials/friends_lobbies/</link>
 		<link title="Initializing Steam">https://godotsteam.com/tutorials/initializing/</link>
+		<link title="Inputs">https://godotsteam.com/tutorials/inputs/</link>
 		<link title="Leaderboards">https://godotsteam.com/tutorials/leaderboards/</link>
-		<link title="Linux Caveats">https://godotsteam.com/tutorials/linux_caveats/</link>
+		<link title="Linux Issues">https://godotsteam.com/issues/linux_issues/</link>
 		<link title="Lobbies">https://godotsteam.com/tutorials/lobbies/</link>
-		<link title="Mac Caveats">https://godotsteam.com/tutorials/mac_caveats/</link>
 		<link title="Mac Exporting">https://godotsteam.com/tutorials/mac_export/</link>
-		<link title="P2P Networking">https://godotsteam.com/tutorials/p2p/</link>
+		<link title="Mac Issues">https://godotsteam.com/issues/mac_issues/</link>
+		<link title="MultiplayerPeer">https://godotsteam.com/tutorials/multiplayer_peer/</link>
+		<link title="Networking">https://godotsteam.com/tutorials/networking/</link>
+		<link title="Networking Messages">https://godotsteam.com/tutorials/networking_messages/</link>
+		<link title="Networking Sockets">https://godotsteam.com/tutorials/networking_sockets/</link>
 		<link title="Remove Steam">https://godotsteam.com/tutorials/remove_steam/</link>
 		<link title="Rich Presence">https://godotsteam.com/tutorials/rich_presence/</link>
 		<link title="Stats and Achievements">https://godotsteam.com/tutorials/stats_achievements/</link>
@@ -117,6 +122,7 @@
 		<method name="activateGameOverlayToWebPage">
 			<return type="void" />
 			<param index="0" name="url" type="String" />
+			<param index="1" name="webpage_mode" type="int" enum="OverlayToWebPageMode" />
 			<description>
 				Activates the overlay with specified web address.
 			</description>
@@ -246,7 +252,7 @@
 			<param index="1" name="video_id" type="String" />
 			<description>
 				Adds an additional video preview from YouTube for the item.
-				[b]Note:[/b] This must be set before you submit the UGC update handle using [submitItemUpdate](/functions/ugc/#submititemupdate).
+				[b]Note:[/b] This must be set before you submit the UGC update handle using [method Steam.submitItemUpdate].
 			</description>
 		</method>
 		<method name="addItemToFavorites">
@@ -377,19 +383,6 @@
 				Adds a screenshot to the user's Steam screenshot library from disk.
 			</description>
 		</method>
-		<method name="addTimelineEvent">
-			<return type="void" />
-			<param index="0" name="icon" type="String" />
-			<param index="1" name="title" type="String" />
-			<param index="2" name="description" type="String" />
-			<param index="3" name="priority" type="int" />
-			<param index="4" name="start_offet" type="float" />
-			<param index="5" name="duration" type="float" />
-			<param index="6" name="possible_clip" type="int" enum="TimelineEventClipPriority" />
-			<description>
-				Use this to mark an event on the Timeline. The event can be instantaneous or take some amount of time to complete, depending on the value passed in duration.
-			</description>
-		</method>
 		<method name="addVRScreenshotToLibrary">
 			<return type="int" />
 			<param index="0" name="type" type="int" enum="VRScreenshotType" />
@@ -517,6 +510,13 @@
 			<description>
 				If a user joins your party through other matchmaking (perhaps a direct Steam friend, or your own matchmaking system), your game should reduce the number of open slots that Steam is managing through the party beacon. For example, if you created a beacon with five slots, and Steam sent you two reservation_notification callbacks, and then a third user joined directly, you would want to call [method Steam.changeNumOpenSlots] with a value of 2 for open_slots. That value represents the total number of new users that you would like Steam to send to your party.
 				Triggers a [signal Steam.change_num_open_slots] call result.
+			</description>
+		</method>
+		<method name="checkFileSignature">
+			<return type="void" />
+			<param index="0" name="_unnamed_arg0" type="String" />
+			<description>
+				Asynchronous call to check if an executable file has been signed using the public key set on the signing tab of the partner site, for example to refuse to load modified executable files.
 			</description>
 		</method>
 		<method name="checkPingDataUpToDate">
@@ -980,6 +980,12 @@
 				[b]Note:[/b] If the argument this_inventory_handle is omitted, GodotSteam will use the internally stored ID.
 			</description>
 		</method>
+		<method name="disableRemotePlayTogetherDirectInput">
+			<return type="void" />
+			<description>
+				Merge Remote Play Together mouse and keyboard input with local input.
+			</description>
+		</method>
 		<method name="dismissFloatingGamepadTextInput">
 			<return type="bool" />
 			<description>
@@ -1099,6 +1105,12 @@
 			<param index="0" name="queue" type="bool" />
 			<description>
 				Enable the music queue on the client.
+			</description>
+		</method>
+		<method name="enableRemotePlayTogetherDirectInput">
+			<return type="bool" />
+			<description>
+				Make mouse and keyboard input for Remote Play Together sessions available via [method Steam.getInput] instead of being merged with local input.
 			</description>
 		</method>
 		<method name="enableShuffled">
@@ -1842,6 +1854,12 @@
 				Contains a list of controller handle (int).
 			</description>
 		</method>
+		<method name="getConnectedUniverse">
+			<return type="int" enum="Universe" />
+			<description>
+				The universe this client is connecting to.
+			</description>
+		</method>
 		<method name="getConnectionInfo">
 			<return type="Dictionary" />
 			<param index="0" name="connection_handle" type="int" />
@@ -2519,6 +2537,13 @@
 				This is looked up via an IP-to-location database.
 			</description>
 		</method>
+		<method name="getIPv6ConnectivityState">
+			<return type="int" enum="IPv6ConnectivityState" />
+			<param index="0" name="protocol" type="int" enum="IPv6ConnectivityProtocol" />
+			<description>
+				Return what we believe your current ipv6 connectivity to "the internet" is on the specified protocol. This does not tell you if the Steam client is currently connected to Steam via ipv6.
+			</description>
+		</method>
 		<method name="getImageRGBA">
 			<return type="Dictionary" />
 			<param index="0" name="image" type="int" />
@@ -2545,6 +2570,13 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="getInput">
+			<return type="Array" />
+			<param index="0" name="max_events" type="int" />
+			<description>
+				Get input events from Remote Play Together sessions. This is available after calling [method Steam.enableRemotePlayTogetherDirectInput]. [b]remote_inputs[/b] is an array of input events that will be filled in by this function, up to max_events. This returns the number of events copied to remote_inputs, or the number of events available if remote_inputs is nullptr.
+			</description>
+		</method>
 		<method name="getInputTypeForHandle">
 			<return type="int" enum="InputType" />
 			<param index="0" name="input_handle" type="int" />
@@ -2561,7 +2593,7 @@
 			</description>
 		</method>
 		<method name="getItemDefinitionProperty">
-			<return type="String" />
+			<return type="Dictionary" />
 			<param index="0" name="definition" type="int" />
 			<param index="1" name="name" type="String" />
 			<description>
@@ -2569,6 +2601,12 @@
 				Note that some properties (for example, "name") may be localized and will depend on the current Steam language settings; see [method Steam.getCurrentGameLanguage]. Property names are always ASCII alphanumeric and underscores.
 				Pass in NULL for name to get a comma-separated list of available property names.
 				[b]Note:[/b] Call [method Steam.loadItemDefinitions] first, to ensure that items are ready to be used before calling [method Steam.getItemDefinitionProperty].
+				The returned dictionary contains the following keys:
+				[codeblock]
+				┠╴property (string)
+				┠╴success (bool)
+				[/codeblock]
+				The "success" flag is true on success; false indicating that the item definitions have not been loaded from the server, or no item definitions exist for the current application, or the property name was not found in the item definition.
 			</description>
 		</method>
 		<method name="getItemDownloadInfo">
@@ -2942,6 +2980,7 @@
 		</method>
 		<method name="getNumSubscribedItems">
 			<return type="int" />
+			<param index="0" name="include_locally_disabled" type="bool" default="false" />
 			<description>
 				Gets the total number of items the current user is subscribed to for the game or application.
 			</description>
@@ -3613,6 +3652,7 @@
 		</method>
 		<method name="getSubscribedItems">
 			<return type="Array" />
+			<param index="0" name="include_locally_disabled" type="bool" default="false" />
 			<description>
 				Gets a list of all of the items the current user is subscribed to for the current game.
 			</description>
@@ -3738,23 +3778,6 @@
 				Triggers a [signal Steam.get_item_vote_result]( callback.
 			</description>
 		</method>
-		<method name="getUserRestrictions">
-			<return type="int" />
-			<description>
-				If current user is chat restricted, they can't send or receive any text or voice chat messages. The user can't see custom avatars. But the user can be online and send or receive game invites. A chat restricted user cannot add friends or join any groups. Restricted users can still be online and send/receive game invites.
-				It should be one of the following:
-				[codeblock]
-				• 0 / None
-				• 1 / Unknown
-				• 2 / Any Chat
-				• 4 / Voice Chat
-				• 8 / Group Chat
-				• 16 / Rating
-				• 32 / Game Invites
-				• 64 / Trading
-				[/codeblock]
-			</description>
-		</method>
 		<method name="getUserStatFloat">
 			<return type="float" />
 			<param index="0" name="steam_id" type="int" />
@@ -3818,7 +3841,7 @@
 				Read captured audio data from the microphone buffer.
 				The compressed data can be transmitted by your application and decoded back into raw audio data using DecompressVoice on the other side. The compressed data provided is in an arbitrary format and is not meant to be played directly.
 				This should be called once per frame, and at worst no more than four times a second to keep the microphone input delay as low as possible. Calling this any less may result in gaps in the returned stream.
-				It is recommended that you pass in an 8 kilobytes or larger destination buffer for compressed audio. Static buffers are recommended for performance reasons. However, if you would like to allocate precisely the right amount of space for a buffer before each call you may use [getAvailableVoice](/functions/users/#getavailablevoice) to find out how much data is available to be read.
+				It is recommended that you pass in an 8 kilobytes or larger destination buffer for compressed audio. Static buffers are recommended for performance reasons. However, if you would like to allocate precisely the right amount of space for a buffer before each call you may use [method Steam.getAvailableVoice] to find out how much data is available to be read.
 				The returned dictionary contains the following keys:
 				[codeblock]
 				┠╴result (int)
@@ -3850,6 +3873,12 @@
 			<return type="int" />
 			<description>
 				Returns the current server list request handle.
+			</description>
+		</method>
+		<method name="get_steam_init_result">
+			<return type="Dictionary" />
+			<description>
+				Returns the initialization response when using the auto-initialization options from Project Settings.
 			</description>
 		</method>
 		<method name="goBack">
@@ -4434,6 +4463,7 @@
 			<param index="0" name="native_key_code" type="int" />
 			<param index="1" name="key_modifiers" type="int" enum="HTMLKeyModifiers" is_bitfield="true" />
 			<param index="2" name="this_handle" type="int" default="0" />
+			<param index="3" name="is_system_key" type="bool" default="false" />
 			<description>
 				Keyboard interactions, native keycode is the virtual key code value from your OS.
 			</description>
@@ -4606,6 +4636,13 @@
 				Opens the specified Steam group chat room in the Steam UI.
 			</description>
 		</method>
+		<method name="openDeveloperTools">
+			<return type="void" />
+			<param index="0" name="this_handle" type="int" default="0" />
+			<description>
+				Open HTML/JS developer tools.
+			</description>
+		</method>
 		<method name="openOverlayToGamePhase">
 			<return type="void" />
 			<param index="0" name="phase_id" type="String" />
@@ -4721,7 +4758,7 @@
 				The returned array contains a list of:
 				[codeblock]
 				┖╴messages (dictionary)
-					┠╴payload (string)
+					┠╴payload (PackedByteArray)
 					┠╴size (int)
 					┠╴connection (int)
 					┠╴identity (string)
@@ -4967,15 +5004,6 @@
 				Triggers a [signal Steam.request_clan_officer_list] callback.
 				[b]Note:[/b] You can only ask about Steam groups that a user is a member of.
 				[b]Note:[/b] This won't download avatars for the officers automatically. If no avatar image is available for an officer, then call [method Steam.requestUserInformation] to download the avatar.
-			</description>
-		</method>
-		<method name="requestCurrentStats">
-			<return type="bool" />
-			<description>
-				Asynchronously request the user's current stats and achievements from the server.
-				You must always call this first to get the initial status of stats and achievements. Only after the resulting callback comes back can you start calling the rest of the stats and achievement functions for the current user.
-				The equivalent function for other users is [method Steam.requestUserStats].
-				Triggers a [signal Steam.current_stats_received] callback.
 			</description>
 		</method>
 		<method name="requestEligiblePromoItemDefinitionsIDs">
@@ -5302,28 +5330,6 @@
 				A note for those familiar with TCP/IP ports, or converting an existing codebase that opened multiple sockets: You might notice that there is only one channel, and with TCP/IP each endpoint has a port number. You can think of the channel number as the destination port. If you need each message to also include a source port (so the recipient can route the reply), then just put that in your message. That is essentially how UDP works!
 			</description>
 		</method>
-		<method name="sendMessages">
-			<return type="Array" />
-			<param index="0" name="data" type="PackedByteArray" />
-			<param index="1" name="connection_handle" type="int" />
-			<param index="2" name="flags" type="int" />
-			<description>
-				Send one or more messages without copying the message payload. This is the most efficient way to send messages.
-				The returned array contains the [b]message number[/b] that was assigned to the message if sending was successful.  If sending failed, then a negative [b]Result value[/b] is placed into the array.  For example, the array will hold RESULT_INVALID_STATE / -k_EResultInvalidState if the connection was in an invalid state.
-				Possible failure codes include:
-				[codeblock]
-				- RESULT_INVALID_PARAM / k_EResultInvalidParam
-					- invalid connection handle, or the individual message is too big; more than MAX_STEAM_PACKET_SIZE / k_cbMaxSteamNetworkingSocketsMessageSizeSend or 512 * 1024.
-				- RESULT_INVALID_STATE / k_EResultInvalidState
-					- Connection is in an invalid state
-				- RESULT_NO_CONNECTION / k_EResultNoConnection
-					- Connection has ended
-				- RESULT_IGNORED / k_EResultIgnored
-					- You used k_nSteamNetworkingSend_NoDelay, and the message was dropped because we were not ready to send it.
-				- RESULT_LIMIT_EXCEEDED / k_EResultLimitExceeded
-				[/codeblock]
-			</description>
-		</method>
 		<method name="sendP2PPacket">
 			<return type="bool" />
 			<param index="0" name="remote_steam_id" type="int" />
@@ -5536,6 +5542,14 @@
 			<param index="0" name="app_id" type="int" />
 			<description>
 				Set current DLC app ID being played (or 0 if none). Allows Steam to track usage of major DLC extensions.
+			</description>
+		</method>
+		<method name="setDPIScalingFactor">
+			<return type="void" />
+			<param index="0" name="dpi_scaling" type="float" />
+			<param index="1" name="this_handle" type="int" />
+			<description>
+				Scale the output display space by this factor, this is useful when displaying content on high dpi devices. Specifies the ratio between physical and logical pixels.
 			</description>
 		</method>
 		<method name="setDisplayName">
@@ -5822,6 +5836,14 @@
 				Sets the visibility of an item.
 			</description>
 		</method>
+		<method name="setItemsDisabledLocally">
+			<return type="bool" />
+			<param index="0" name="file_ids" type="PackedInt64Array" />
+			<param index="1" name="disabled_locally" type="bool" />
+			<description>
+				Sets whether the item should be disabled locally or not. This means that it will not be returned in [method Steam.getSubscribedItems] by default.
+			</description>
+		</method>
 		<method name="setKeyFocus">
 			<return type="void" />
 			<param index="0" name="has_key_focus" type="bool" />
@@ -5959,6 +5981,37 @@
 				[b]Note:[/b] This must be set before you submit the UGC query handle using [method Steam.submitItemUpdate].
 			</description>
 		</method>
+		<method name="setMouseCursor">
+			<return type="void" />
+			<param index="0" name="session_id" type="int" />
+			<param index="1" name="cursor_id" type="int" />
+			<description>
+				Create a cursor that can be used with [method Steam.setMouseCursor]. This is available after calling [method Steam.enableRemotePlayTogetherDirectInput].
+				[b]Parameters:[/b]
+				- width - The width of the cursor, in pixels
+				- height - The height of the cursor, in pixels
+				- hot_x - The X coordinate of the cursor hot spot in pixels, offset from the left of the cursor
+				- hot_y - The Y coordinate of the cursor hot spot in pixels, offset from the top of the cursor
+				- pitch - The distance between pixel rows in bytes, defaults to width * 4
+			</description>
+		</method>
+		<method name="setMousePosition">
+			<return type="void" />
+			<param index="0" name="session_id" type="int" />
+			<param index="1" name="normalized_x" type="float" />
+			<param index="2" name="normalized_y" type="float" />
+			<description>
+				Set the mouse cursor position for a remote player. This is available after calling [method Steam.enableRemotePlayTogetherDirectInput]. This is used to warp the cursor to a specific location and isn't needed during normal event processing. The position is normalized relative to the window, where 0,0 is the upper left, and 1,1 is the lower right.
+			</description>
+		</method>
+		<method name="setMouseVisibility">
+			<return type="void" />
+			<param index="0" name="session_id" type="int" />
+			<param index="1" name="visible" type="bool" />
+			<description>
+				Set the mouse cursor visibility for a remote player. This is available after calling [method Steam.enableRemotePlayTogetherDirectInput].
+			</description>
+		</method>
 		<method name="setOverlayNotificationInset">
 			<return type="void" />
 			<param index="0" name="horizontal" type="int" />
@@ -5995,14 +6048,6 @@
 			<param index="3" name="this_handle" type="int" default="0" />
 			<description>
 				Zoom the current page in an HTML surface. The current scale factor is available from HTML_NeedsPaint_t.flPageScale, HTML_HorizontalScroll_t.flPageScale, and HTML_VerticalScroll_t.flPageScale.
-			</description>
-		</method>
-		<method name="setPersonaName">
-			<return type="void" />
-			<param index="0" name="name" type="String" />
-			<description>
-				Sets the current user's persona name, stores it on the server and publishes the changes to all friends who are online. Changes take place locally immediately, and a [signal Steam.persona_state_change] callback is posted, presuming success. If the name change fails to happen on the server, then an additional [signal Steam.persona_state_change] callback will be posted to change the name back, in addition to the final result available in the call result.
-				Triggers a [signal Steam.name_changed] callback.
 			</description>
 		</method>
 		<method name="setPlayedWith">
@@ -6225,6 +6270,13 @@
 				If this is returning false and everything appears correct, then check to ensure that your changes in the App Admin panel of the Steamworks website are published.
 			</description>
 		</method>
+		<method name="setSubscriptionsLoadOrder">
+			<return type="bool" />
+			<param index="0" name="published_file_ids" type="PackedInt64Array" />
+			<description>
+				Set the local load order for these items. If there are any items not in the given list, they will sort by the time subscribed.
+			</description>
+		</method>
 		<method name="setSyncPlatforms">
 			<return type="bool" />
 			<param index="0" name="file" type="String" />
@@ -6279,7 +6331,7 @@
 		</method>
 		<method name="setVRHeadsetStreamingEnabled">
 			<return type="void" />
-			<param index="0" name="enabled" type="bool" />
+			<param index="0" name="enabled" type="bool" default="true" />
 			<description>
 				Set whether the HMD content will be streamed via Steam In-Home Streaming.
 			</description>
@@ -6330,13 +6382,19 @@
 				Activates the Big Picture text input dialog which only supports gamepad input.
 			</description>
 		</method>
+		<method name="showRemotePlayTogetherUI">
+			<return type="bool" />
+			<description>
+				Show the Remote Play Together UI in the game overlay. This returns false if your game is not configured for Remote Play Together.
+			</description>
+		</method>
 		<method name="showWorkshopEULA">
 			<return type="bool" />
 			<description>
 				Show the app's latest Workshop EULA to the user in an overlay window, where they can accept it or not.
 			</description>
 		</method>
-			<method name="startGamePhase">
+		<method name="startGamePhase">
 			<return type="void" />
 			<description>
 				Use this to start a game phase. Game phases allow the user to navigate their background recordings and clips. Exactly what a game phase means will vary game to game, but the game phase should be a section of gameplay that is usually between 10 minutes and a few hours in length, and should be the main way a user would think to divide up the game. These are presented to the user in a UI that shows the date the game was played, with one row per game slice. Game phases should be used to mark sections of gameplay that the user might be interested in watching.
@@ -6384,13 +6442,6 @@
 				Starts a timeline event at a the current time, plus an offset in seconds. This event must be ended with [method Steam.endRangeTimelineEvent]. Any timeline events that have not been ended when the game exits will be discarded.
 			</description>
 		</method>
-		<method name="startRemotePlayTogether">
-			<return type="bool" />
-			<param index="0" name="show_overlay" type="bool" default="true" />
-			<description>
-				Start a Remote Play session.
-			</description>
-		</method>
 		<method name="startUpdateProperties">
 			<return type="void" />
 			<description>
@@ -6411,28 +6462,17 @@
 			</description>
 		</method>
 		<method name="steamInit">
-			<return type="Dictionary" />
-			<param index="0" name="retrieve_stats" type="bool" default="false" />
-			<param index="1" name="app_id" type="int" default="0" />
-			<param index="2" name="embed_callbacks" type="bool" default="false" />
+			<return type="bool" />
+			<param index="0" name="app_id" type="int" default="0" />
+			<param index="1" name="embed_callbacks" type="bool" default="false" />
 			<description>
-				Starts up the Steam API.
-				You will receive one of four results:
-				[codeblock]
-				• 1 / "Steamworks active"
-				• 2 / "Steamworks failed to initialize"
-				• 20 / "Steam not running"
-				• 79 / "Invalid app ID or app not installed"
-				[/codeblock]
-				You can also pass an app ID for GodotSteam to use for your game, which will default to 480 (SpaceWars) if nothing is passed.
-				Finally, you can pass true for embed_callbacks which will internally do the run_callbacks for your Steam callbacks so you don't have to code that separately in your game.
+				Initialize the SDK, without worrying about the cause of failure.
 			</description>
 		</method>
 		<method name="steamInitEx">
 			<return type="Dictionary" />
-			<param index="0" name="retrieve_stats" type="bool" default="false" />
-			<param index="1" name="app_id" type="int" default="0" />
-			<param index="2" name="embed_callbacks" type="bool" default="false" />
+			<param index="0" name="app_id" type="int" default="0" />
+			<param index="1" name="embed_callbacks" type="bool" default="false" />
 			<description>
 				Initialize the Steamworks SDK. On success [enum Steam.STEAM_API_INIT_RESULT_OK] is returned.  Otherwise, if error_message is non-NULL, it will receive a non-localized message that explains the reason for the failure.
 				[codeblock]
@@ -6936,6 +6976,18 @@
 				Emits signal in response to function [method Steam.getLargeFriendAvatar], [method Steam.getMediumFriendAvatar], or [method Steam.getSmallFriendAvatar].
 			</description>
 		</signal>
+		<signal name="broadcast_upload_start">
+			<param index="0" name="is_rtmp" type="bool" />
+			<description>
+				Automatically called whenever the user starts broadcasting.
+			</description>
+		</signal>
+		<signal name="broadcast_upload_stop">
+			<param index="0" name="result" type="int" />
+			<description>
+				Automatically called whenever the user stops broadcasting.
+			</description>
+		</signal>
 		<signal name="change_num_open_slots">
 			<param index="0" name="result" type="int" />
 			<description>
@@ -6950,9 +7002,9 @@
 			</description>
 		</signal>
 		<signal name="check_file_signature">
-			<param index="0" name="signature" type="String" />
+			<param index="0" name="signature" type="int" />
 			<description>
-				Call result for [method Steam.checkFileSignature].
+				Sent after the device returns from sleep/suspend mode. Call result for [method Steam.checkFileSignature].
 			</description>
 		</signal>
 		<signal name="clan_activity_downloaded">
@@ -7368,7 +7420,7 @@
 				Called when a browser surface has a pending paint. This is where you get the actual image data to render to the screen.
 				The returned dictionary contains the following keys:
 				[codeblock]
-				┠╴bgra (string)
+				┠╴rgba (string)
 				┠╴wide (int)
 				┠╴tall (int)
 				┠╴update_x (int)
@@ -7542,7 +7594,7 @@
 		<signal name="input_device_disconnected">
 			<param index="0" name="input_handle" type="int" />
 			<description>
-				Called when a new controller has been connected, will fire once per controller if multiple new controllers connect in the same frame.
+				Called when a new controller has been disconnected, will fire once per controller if multiple new controllers disconnect in the same frame.
 			</description>
 		</signal>
 		<signal name="input_gamepad_slot_change">
@@ -7917,15 +7969,6 @@
 				There are no notes in the Steamworks documentation.
 			</description>
 		</signal>
-		<signal name="name_changed">
-			<param index="0" name="success" type="bool" />
-			<param index="1" name="local_success" type="bool" />
-			<param index="2" name="result" type="int" />
-			<description>
-				Reports the result of an attempt to change the current user's persona name.
-				Emits signal in response to function [method Steam.setPersonaName].
-			</description>
-		</signal>
 		<signal name="network_authentication_status">
 			<param index="0" name="available" type="int" />
 			<param index="1" name="debug_message" type="String" />
@@ -7956,6 +7999,9 @@
 		</signal>
 		<signal name="network_messages_session_failed">
 			<param index="0" name="reason" type="int" />
+			<param index="1" name="remote_steam_id" type="int" />
+			<param index="2" name="connection_state" type="int" />
+			<param index="3" name="debug_message" type="String" />
 			<description>
 				Posted when we fail to establish a connection, or we detect that communications have been disrupted it an unusual way.
 			</description>
@@ -10345,89 +10391,93 @@
 		</constant>
 		<constant name="NO_SERVERS_LISTED_ON_MASTER_SERVER" value="2" enum="MatchMakingServerResponse">
 		</constant>
-		<constant name="DC_USER" value="0" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_USER" value="0" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_NONE" value="1" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_NONE" value="1" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_ARROW" value="2" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_ARROW" value="2" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_IBEAM" value="3" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_IBEAM" value="3" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_HOUR_GLASS" value="4" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_HOURGLASS" value="4" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_WAIT_ARROW" value="5" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_WAIT_ARROW" value="5" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_CROSSHAIR" value="6" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_CROSSHAIR" value="6" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_UP" value="7" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_UP" value="7" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_SIZE_NW" value="8" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_SIZE_NW" value="8" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_SIZE_SE" value="9" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_SIZE_SE" value="9" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_SIZE_NE" value="10" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_SIZE_NE" value="10" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_SIZE_SW" value="11" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_SIZE_SW" value="11" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_SIZE_W" value="12" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_SIZE_W" value="12" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_SIZE_E" value="13" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_SIZE_E" value="13" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_SIZE_N" value="14" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_SIZE_N" value="14" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_SIZE_S" value="15" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_SIZE_S" value="15" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_SIZE_WE" value="16" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_SIZE_WE" value="16" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_SIZE_NS" value="17" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_SIZE_NS" value="17" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_SIZE_ALL" value="18" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_SIZE_ALL" value="18" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_NO" value="19" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_CURSOR_NO" value="19" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_HAND" value="20" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_CURSOR_HAND" value="20" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_BLANK" value="21" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_CURSOR_BLANK" value="21" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_MIDDLE_PAN" value="22" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_MIDDLE_PAN" value="22" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_NORTH_PAN" value="23" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_NORTH_PAN" value="23" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_NORTH_EAST_PAN" value="24" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_NORTH_EAST_PAN" value="24" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_EAST_PAN" value="25" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_EAST_PAN" value="25" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_SOUTH_EAST_PAN" value="26" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_SOUTH_EAST_PAN" value="26" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_SOUTH_PAN" value="27" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_SOUTH_PAN" value="27" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_SOUTH_WEST_PAN" value="28" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_SOUTH_WEST_PAN" value="28" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_WEST_PAN" value="29" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_WEST_PAN" value="29" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_NORTH_WEST_PAN" value="30" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_NORTH_WEST_PAN" value="30" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_ALIAS" value="31" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_ALIAS" value="31" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_CELL" value="32" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_CELL" value="32" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_COL_RESIZE" value="33" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_COL_RESIZE" value="33" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_COPY_CUR" value="34" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_COPY_CUR" value="34" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_VERTICAL_TEXT" value="35" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_VERTICAL_TEXT" value="35" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_ROW_RESIZE" value="36" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_ROW_RESIZE" value="36" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_ZOOM_IN" value="37" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_ZOOM_IN" value="37" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_ZOOM_OUT" value="38" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_ZOOM_OUT" value="38" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_HELP" value="39" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_HELP" value="39" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_CUSTOM" value="40" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_CUSTOM" value="40" enum="HTMLMouseCursor">
 		</constant>
-		<constant name="DC_LAST" value="41" enum="MouseCursor">
+		<constant name="HTML_MOUSE_CURSOR_SIZE_NWSE" value="41" enum="HTMLMouseCursor">
+		</constant>
+		<constant name="HTML_MOUSE_CURSOR_SIZE_NESW" value="42" enum="HTMLMouseCursor">
+		</constant>
+		<constant name="HTML_MOUSE_CURSOR_LAST" value="43" enum="HTMLMouseCursor">
 		</constant>
 		<constant name="NETWORKING_AVAILABILITY_CANNOT_TRY" value="-102" enum="NetworkingAvailability">
 		</constant>
@@ -10905,6 +10955,230 @@
 		</constant>
 		<constant name="PLAYER_RESULT_COMPLETED" value="5" enum="PlayerResult">
 		</constant>
+		<constant name="REMOTE_PLAY_INPUT_UNKNOWN" value="0" enum="RemotePlayInputType">
+		</constant>
+		<constant name="REMOTE_PLAY_INPUT_MOUSE_MOTION" value="1" enum="RemotePlayInputType">
+		</constant>
+		<constant name="REMOTE_PLAY_INPUT_MOUSE_BUTTON_DOWN" value="2" enum="RemotePlayInputType">
+		</constant>
+		<constant name="REMOTE_PLAY_INPUT_MOUSE_BUTTON_UP" value="3" enum="RemotePlayInputType">
+		</constant>
+		<constant name="REMOTE_PLAY_INPUT_MOUSE_WHEEL" value="4" enum="RemotePlayInputType">
+		</constant>
+		<constant name="REMOTE_PLAY_INPUT_KEY_DOWN" value="5" enum="RemotePlayInputType">
+		</constant>
+		<constant name="REMOTE_PLAY_INPUT_KEY_UP" value="6" enum="RemotePlayInputType">
+		</constant>
+		<constant name="REMOTE_PLAY_KEY_MODIFIER_NONE" value="0" enum="RemotePlayKeyModifier" is_bitfield="true">
+		</constant>
+		<constant name="REMOTE_PLAY_KEY_MODIFIER_LEFT_SHIFT" value="1" enum="RemotePlayKeyModifier" is_bitfield="true">
+		</constant>
+		<constant name="REMOTE_PLAY_KEY_MODIFIER_RIGHT_SHIFT" value="2" enum="RemotePlayKeyModifier" is_bitfield="true">
+		</constant>
+		<constant name="REMOTE_PLAY_KEY_MODIFIER_LEFT_CONTROL" value="64" enum="RemotePlayKeyModifier" is_bitfield="true">
+		</constant>
+		<constant name="REMOTE_PLAY_KEY_MODIFIER_RIGHT_CONTROL" value="128" enum="RemotePlayKeyModifier" is_bitfield="true">
+		</constant>
+		<constant name="REMOTE_PLAY_KEY_MODIFIER_LEFT_ALT" value="256" enum="RemotePlayKeyModifier" is_bitfield="true">
+		</constant>
+		<constant name="REMOTE_PLAY_KEY_MODIFIER_RIGHT_ALT" value="512" enum="RemotePlayKeyModifier" is_bitfield="true">
+		</constant>
+		<constant name="REMOTE_PLAY_KEY_MODIFIER_LEFT_GUI" value="1024" enum="RemotePlayKeyModifier" is_bitfield="true">
+		</constant>
+		<constant name="REMOTE_PLAY_KEY_MODIFIER_RIGHT_GUI" value="2048" enum="RemotePlayKeyModifier" is_bitfield="true">
+		</constant>
+		<constant name="REMOTE_PLAY_KEY_MODIFIER_NUM_LOCK" value="4096" enum="RemotePlayKeyModifier" is_bitfield="true">
+		</constant>
+		<constant name="REMOTE_PLAY_KEY_MODIFIER_CAPS_LOCK" value="8192" enum="RemotePlayKeyModifier" is_bitfield="true">
+		</constant>
+		<constant name="REMOTE_PLAY_KEY_MODIFIER_MASK" value="65535" enum="RemotePlayKeyModifier" is_bitfield="true">
+		</constant>
+		<constant name="REMOTE_PLAY_MOUSE_BUTTON_LEFT" value="1" enum="RemotePlayMouseButton" is_bitfield="true">
+		</constant>
+		<constant name="REMOTE_PLAY_MOUSE_BUTTON_RIGHT" value="2" enum="RemotePlayMouseButton" is_bitfield="true">
+		</constant>
+		<constant name="REMOTE_PLAY_MOUSE_BUTTON_MIDDLE" value="16" enum="RemotePlayMouseButton" is_bitfield="true">
+		</constant>
+		<constant name="REMOTE_PLAY_MOUSE_BUTTON_X1" value="32" enum="RemotePlayMouseButton" is_bitfield="true">
+		</constant>
+		<constant name="REMOTE_PLAY_MOUSE_BUTTON_X2" value="64" enum="RemotePlayMouseButton" is_bitfield="true">
+		</constant>
+		<constant name="REMOTE_PLAY_MOUSE_WHEEL_UP" value="1" enum="RemotePlayMouseWheelDirection">
+		</constant>
+		<constant name="REMOTE_PLAY_MOUSE_WHEEL_DOWN" value="2" enum="RemotePlayMouseWheelDirection">
+		</constant>
+		<constant name="REMOTE_PLAY_MOUSE_WHEEL_LEFT" value="3" enum="RemotePlayMouseWheelDirection">
+		</constant>
+		<constant name="REMOTE_PLAY_MOUSE_WHEEL_RIGHT" value="4" enum="RemotePlayMouseWheelDirection">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_UNKNOWN" value="0" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_A" value="4" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_B" value="5" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_C" value="6" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_D" value="7" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_E" value="8" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_F" value="9" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_G" value="10" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_H" value="11" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_I" value="12" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_J" value="13" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_K" value="14" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_L" value="15" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_M" value="16" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_N" value="17" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_O" value="18" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_P" value="19" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_Q" value="20" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_R" value="21" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_S" value="22" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_T" value="23" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_U" value="24" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_V" value="25" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_W" value="26" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_X" value="27" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_Y" value="28" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_Z" value="29" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_1" value="30" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_2" value="31" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_3" value="32" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_4" value="33" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_5" value="34" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_6" value="35" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_7" value="36" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_8" value="37" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_9" value="38" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_0" value="39" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_RETURN" value="40" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_ESCAPE" value="41" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_BACKSPACE" value="42" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_TAB" value="43" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_SPACE" value="44" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_MINUS" value="45" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_EQUALS" value="46" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_LEFT_BRACKET" value="47" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_RIGHT_BRACKET" value="48" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_BACKSLASH" value="49" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_SEMICOLON" value="51" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_APOSTROPHE" value="52" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_GRAVE" value="53" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_COMMA" value="54" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_PERIOD" value="55" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_SLASH" value="56" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_CAPSLOCK" value="57" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_F1" value="58" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_F2" value="59" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_F3" value="60" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_F4" value="61" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_F5" value="62" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_F6" value="63" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_F7" value="64" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_F8" value="65" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_F9" value="66" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_F10" value="67" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_F11" value="68" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_F12" value="69" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_INSERT" value="73" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_HOME" value="74" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_PAGE_UP" value="75" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_DELETE" value="76" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_END" value="77" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_PAGE_DOWN" value="78" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_RIGHT" value="79" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_LEFT" value="80" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_DOWN" value="81" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_UP" value="82" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_LEFT_CONTROL" value="224" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_LEFT_SHIFT" value="225" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_LEFT_ALT" value="226" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_LEFT_GUI" value="227" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_RIGHT_CONTROL" value="228" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_RIGHT_SHIFT" value="229" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_RIGHT_ALT" value="230" enum="RemotePlayScancode">
+		</constant>
+		<constant name="REMOTE_PLAYER_SCANCODE_RIGHT_GUI" value="231" enum="RemotePlayScancode">
+		</constant>
 		<constant name="REMOTE_STORAGE_PLATFORM_NONE" value="0" enum="RemoteStoragePlatform" is_bitfield="true">
 		</constant>
 		<constant name="REMOTE_STORAGE_PLATFORM_WINDOWS" value="1" enum="RemoteStoragePlatform" is_bitfield="true">
@@ -11370,22 +11644,6 @@
 		<constant name="USER_HAS_LICENSE_RESULT_DOES_NOT_HAVE_LICENSE" value="1" enum="UserHasLicenseForAppResult">
 		</constant>
 		<constant name="USER_HAS_LICENSE_RESULT_NO_AUTH" value="2" enum="UserHasLicenseForAppResult">
-		</constant>
-		<constant name="USER_RESTRICTION_NONE" value="0" enum="UserRestriction" is_bitfield="true">
-		</constant>
-		<constant name="USER_RESTRICTION_UNKNOWN" value="1" enum="UserRestriction" is_bitfield="true">
-		</constant>
-		<constant name="USER_RESTRICTION_ANY_CHAT" value="2" enum="UserRestriction" is_bitfield="true">
-		</constant>
-		<constant name="USER_RESTRICTION_VOICE_CHAT" value="4" enum="UserRestriction" is_bitfield="true">
-		</constant>
-		<constant name="USER_RESTRICTION_GROUP_CHAT" value="8" enum="UserRestriction" is_bitfield="true">
-		</constant>
-		<constant name="USER_RESTRICTION_RATING" value="16" enum="UserRestriction" is_bitfield="true">
-		</constant>
-		<constant name="USER_RESTRICTION_GAME_INVITES" value="32" enum="UserRestriction" is_bitfield="true">
-		</constant>
-		<constant name="USER_RESTRICTION_TRADING" value="64" enum="UserRestriction" is_bitfield="true">
 		</constant>
 		<constant name="USER_UGC_LIST_PUBLISHED" value="0" enum="UserUGCList">
 		</constant>

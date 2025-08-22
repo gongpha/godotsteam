@@ -1,3 +1,29 @@
+//===========================================================================//
+// GodotSteam - godotsteam_enums.h
+//===========================================================================//
+//
+// Copyright (c) 2015-Current | GP Garcia and Contributors (view contributors.md)
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
+//===========================================================================//
+
 #ifndef GODOTSTEAM_ENUMS_H
 #define GODOTSTEAM_ENUMS_H
 
@@ -472,18 +498,6 @@ enum PersonaState {
 	PERSONA_STATE_MAX = k_EPersonaStateMax
 };
 
-enum UserRestriction {
-	USER_RESTRICTION_NONE = k_nUserRestrictionNone,
-	USER_RESTRICTION_UNKNOWN = k_nUserRestrictionUnknown,
-	USER_RESTRICTION_ANY_CHAT = k_nUserRestrictionAnyChat,
-	USER_RESTRICTION_VOICE_CHAT = k_nUserRestrictionVoiceChat,
-	USER_RESTRICTION_GROUP_CHAT = k_nUserRestrictionGroupChat,
-	USER_RESTRICTION_RATING = k_nUserRestrictionRating,
-	USER_RESTRICTION_GAME_INVITES = k_nUserRestrictionGameInvites,
-	USER_RESTRICTION_TRADING = k_nUserRestrictionTrading
-};
-
-
 // Game Search enums
 enum GameSearchErrorCode {
 	// Found in steamclientpublic.h
@@ -522,49 +536,51 @@ enum HTMLMouseButton {
 	HTML_MOUSE_BUTTON_MIDDLE = ISteamHTMLSurface::eHTMLMouseButton_Middle
 };
 
-enum MouseCursor {
-	DC_USER = ISteamHTMLSurface::dc_user,
-	DC_NONE = ISteamHTMLSurface::dc_none,
-	DC_ARROW = ISteamHTMLSurface::dc_arrow,
-	DC_IBEAM = ISteamHTMLSurface::dc_ibeam,
-	DC_HOUR_GLASS = ISteamHTMLSurface::dc_hourglass,
-	DC_WAIT_ARROW = ISteamHTMLSurface::dc_waitarrow,
-	DC_CROSSHAIR = ISteamHTMLSurface::dc_crosshair,
-	DC_UP = ISteamHTMLSurface::dc_up,
-	DC_SIZE_NW = ISteamHTMLSurface::dc_sizenw,
-	DC_SIZE_SE = ISteamHTMLSurface::dc_sizese,
-	DC_SIZE_NE = ISteamHTMLSurface::dc_sizene,
-	DC_SIZE_SW = ISteamHTMLSurface::dc_sizesw,
-	DC_SIZE_W = ISteamHTMLSurface::dc_sizew,
-	DC_SIZE_E = ISteamHTMLSurface::dc_sizee,
-	DC_SIZE_N = ISteamHTMLSurface::dc_sizen,
-	DC_SIZE_S = ISteamHTMLSurface::dc_sizes,
-	DC_SIZE_WE = ISteamHTMLSurface::dc_sizewe,
-	DC_SIZE_NS = ISteamHTMLSurface::dc_sizens,
-	DC_SIZE_ALL = ISteamHTMLSurface::dc_sizeall,
-	DC_NO = ISteamHTMLSurface::dc_no,
-	DC_HAND = ISteamHTMLSurface::dc_hand,
-	DC_BLANK = ISteamHTMLSurface::dc_blank,
-	DC_MIDDLE_PAN = ISteamHTMLSurface::dc_middle_pan,
-	DC_NORTH_PAN = ISteamHTMLSurface::dc_north_pan,
-	DC_NORTH_EAST_PAN = ISteamHTMLSurface::dc_north_east_pan,
-	DC_EAST_PAN = ISteamHTMLSurface::dc_east_pan,
-	DC_SOUTH_EAST_PAN = ISteamHTMLSurface::dc_south_east_pan,
-	DC_SOUTH_PAN = ISteamHTMLSurface::dc_south_pan,
-	DC_SOUTH_WEST_PAN = ISteamHTMLSurface::dc_south_west_pan,
-	DC_WEST_PAN = ISteamHTMLSurface::dc_west_pan,
-	DC_NORTH_WEST_PAN = ISteamHTMLSurface::dc_north_west_pan,
-	DC_ALIAS = ISteamHTMLSurface::dc_alias,
-	DC_CELL = ISteamHTMLSurface::dc_cell,
-	DC_COL_RESIZE = ISteamHTMLSurface::dc_colresize,
-	DC_COPY_CUR = ISteamHTMLSurface::dc_copycur,
-	DC_VERTICAL_TEXT = ISteamHTMLSurface::dc_verticaltext,
-	DC_ROW_RESIZE = ISteamHTMLSurface::dc_rowresize,
-	DC_ZOOM_IN = ISteamHTMLSurface::dc_zoomin,
-	DC_ZOOM_OUT = ISteamHTMLSurface::dc_zoomout,
-	DC_HELP = ISteamHTMLSurface::dc_help,
-	DC_CUSTOM = ISteamHTMLSurface::dc_custom,
-	DC_LAST = ISteamHTMLSurface::dc_last
+enum HTMLMouseCursor {
+	HTML_MOUSE_CURSOR_USER = ISteamHTMLSurface::k_EHTMLMouseCursor_User,
+	HTML_MOUSE_CURSOR_NONE = ISteamHTMLSurface::k_EHTMLMouseCursor_None,
+	HTML_MOUSE_CURSOR_ARROW = ISteamHTMLSurface::k_EHTMLMouseCursor_Arrow,
+	HTML_MOUSE_CURSOR_IBEAM = ISteamHTMLSurface::k_EHTMLMouseCursor_IBeam,
+	HTML_MOUSE_CURSOR_HOURGLASS = ISteamHTMLSurface::k_EHTMLMouseCursor_Hourglass,
+	HTML_MOUSE_CURSOR_WAIT_ARROW = ISteamHTMLSurface::k_EHTMLMouseCursor_WaitArrow,
+	HTML_MOUSE_CURSOR_CROSSHAIR = ISteamHTMLSurface::k_EHTMLMouseCursor_Crosshair,
+	HTML_MOUSE_CURSOR_UP = ISteamHTMLSurface::k_EHTMLMouseCursor_Up,
+	HTML_MOUSE_CURSOR_SIZE_NW = ISteamHTMLSurface::k_EHTMLMouseCursor_SizeNW,
+	HTML_MOUSE_CURSOR_SIZE_SE = ISteamHTMLSurface::k_EHTMLMouseCursor_SizeSE,
+	HTML_MOUSE_CURSOR_SIZE_NE = ISteamHTMLSurface::k_EHTMLMouseCursor_SizeNE,
+	HTML_MOUSE_CURSOR_SIZE_SW = ISteamHTMLSurface::k_EHTMLMouseCursor_SizeSW,
+	HTML_MOUSE_CURSOR_SIZE_W = ISteamHTMLSurface::k_EHTMLMouseCursor_SizeW,
+	HTML_MOUSE_CURSOR_SIZE_E = ISteamHTMLSurface::k_EHTMLMouseCursor_SizeE,
+	HTML_MOUSE_CURSOR_SIZE_N = ISteamHTMLSurface::k_EHTMLMouseCursor_SizeN,
+	HTML_MOUSE_CURSOR_SIZE_S = ISteamHTMLSurface::k_EHTMLMouseCursor_SizeS,
+	HTML_MOUSE_CURSOR_SIZE_WE = ISteamHTMLSurface::k_EHTMLMouseCursor_SizeWE,
+	HTML_MOUSE_CURSOR_SIZE_NS = ISteamHTMLSurface::k_EHTMLMouseCursor_SizeNS,
+	HTML_MOUSE_CURSOR_SIZE_ALL = ISteamHTMLSurface::k_EHTMLMouseCursor_SizeAll,
+	HTML_MOUSE_CURSOR_CURSOR_NO = ISteamHTMLSurface::k_EHTMLMouseCursor_No,
+	HTML_MOUSE_CURSOR_CURSOR_HAND = ISteamHTMLSurface::k_EHTMLMouseCursor_Hand,
+	HTML_MOUSE_CURSOR_CURSOR_BLANK = ISteamHTMLSurface::k_EHTMLMouseCursor_Blank,
+	HTML_MOUSE_CURSOR_MIDDLE_PAN = ISteamHTMLSurface::k_EHTMLMouseCursor_MiddlePan,
+	HTML_MOUSE_CURSOR_NORTH_PAN = ISteamHTMLSurface::k_EHTMLMouseCursor_NorthPan,
+	HTML_MOUSE_CURSOR_NORTH_EAST_PAN = ISteamHTMLSurface::k_EHTMLMouseCursor_NorthEastPan,
+	HTML_MOUSE_CURSOR_EAST_PAN = ISteamHTMLSurface::k_EHTMLMouseCursor_EastPan,
+	HTML_MOUSE_CURSOR_SOUTH_EAST_PAN = ISteamHTMLSurface::k_EHTMLMouseCursor_SouthEastPan,
+	HTML_MOUSE_CURSOR_SOUTH_PAN = ISteamHTMLSurface::k_EHTMLMouseCursor_SouthPan,
+	HTML_MOUSE_CURSOR_SOUTH_WEST_PAN = ISteamHTMLSurface::k_EHTMLMouseCursor_SouthWestPan,
+	HTML_MOUSE_CURSOR_WEST_PAN = ISteamHTMLSurface::k_EHTMLMouseCursor_WestPan,
+	HTML_MOUSE_CURSOR_NORTH_WEST_PAN = ISteamHTMLSurface::k_EHTMLMouseCursor_NorthWestPan,
+	HTML_MOUSE_CURSOR_ALIAS = ISteamHTMLSurface::k_EHTMLMouseCursor_Alias,
+	HTML_MOUSE_CURSOR_CELL = ISteamHTMLSurface::k_EHTMLMouseCursor_Cell,
+	HTML_MOUSE_CURSOR_COL_RESIZE = ISteamHTMLSurface::k_EHTMLMouseCursor_ColResize,
+	HTML_MOUSE_CURSOR_COPY_CUR = ISteamHTMLSurface::k_EHTMLMouseCursor_CopyCur,
+	HTML_MOUSE_CURSOR_VERTICAL_TEXT = ISteamHTMLSurface::k_EHTMLMouseCursor_VerticalText,
+	HTML_MOUSE_CURSOR_ROW_RESIZE = ISteamHTMLSurface::k_EHTMLMouseCursor_RowResize,
+	HTML_MOUSE_CURSOR_ZOOM_IN = ISteamHTMLSurface::k_EHTMLMouseCursor_ZoomIn,
+	HTML_MOUSE_CURSOR_ZOOM_OUT = ISteamHTMLSurface::k_EHTMLMouseCursor_ZoomOut,
+	HTML_MOUSE_CURSOR_HELP = ISteamHTMLSurface::k_EHTMLMouseCursor_Help,
+	HTML_MOUSE_CURSOR_CUSTOM = ISteamHTMLSurface::k_EHTMLMouseCursor_Custom,
+	HTML_MOUSE_CURSOR_SIZE_NWSE = ISteamHTMLSurface::k_EHTMLMouseCursor_SizeNWSE,
+	HTML_MOUSE_CURSOR_SIZE_NESW = ISteamHTMLSurface::k_EHTMLMouseCursor_SizeNESW,
+	HTML_MOUSE_CURSOR_LAST = ISteamHTMLSurface::k_EHTMLMouseCursor_last
 };
 
 
@@ -1527,6 +1543,133 @@ enum DeviceFormFactor {
 	FORM_FACTOR_COMPUTER = k_ESteamDeviceFormFactorComputer,
 	FORM_FACTOR_TV = k_ESteamDeviceFormFactorTV,
 	FORM_FACTOR_VR_HEADSET = k_ESteamDeviceFormFactorVRHeadset
+};
+
+enum RemotePlayInputType {
+	REMOTE_PLAY_INPUT_UNKNOWN = k_ERemotePlayInputUnknown,
+	REMOTE_PLAY_INPUT_MOUSE_MOTION = k_ERemotePlayInputMouseMotion,
+	REMOTE_PLAY_INPUT_MOUSE_BUTTON_DOWN = k_ERemotePlayInputMouseButtonDown,
+	REMOTE_PLAY_INPUT_MOUSE_BUTTON_UP = k_ERemotePlayInputMouseButtonUp,
+	REMOTE_PLAY_INPUT_MOUSE_WHEEL = k_ERemotePlayInputMouseWheel,
+	REMOTE_PLAY_INPUT_KEY_DOWN = k_ERemotePlayInputKeyDown,
+	REMOTE_PLAY_INPUT_KEY_UP = k_ERemotePlayInputKeyUp
+};
+
+enum RemotePlayKeyModifier {
+	REMOTE_PLAY_KEY_MODIFIER_NONE = k_ERemotePlayKeyModifierNone,
+	REMOTE_PLAY_KEY_MODIFIER_LEFT_SHIFT = k_ERemotePlayKeyModifierLeftShift,
+	REMOTE_PLAY_KEY_MODIFIER_RIGHT_SHIFT = k_ERemotePlayKeyModifierRightShift,
+	REMOTE_PLAY_KEY_MODIFIER_LEFT_CONTROL = k_ERemotePlayKeyModifierLeftControl,
+	REMOTE_PLAY_KEY_MODIFIER_RIGHT_CONTROL = k_ERemotePlayKeyModifierRightControl,
+	REMOTE_PLAY_KEY_MODIFIER_LEFT_ALT = k_ERemotePlayKeyModifierLeftAlt,
+	REMOTE_PLAY_KEY_MODIFIER_RIGHT_ALT = k_ERemotePlayKeyModifierRightAlt,
+	REMOTE_PLAY_KEY_MODIFIER_LEFT_GUI = k_ERemotePlayKeyModifierLeftGUI,
+	REMOTE_PLAY_KEY_MODIFIER_RIGHT_GUI = k_ERemotePlayKeyModifierRightGUI,
+	REMOTE_PLAY_KEY_MODIFIER_NUM_LOCK = k_ERemotePlayKeyModifierNumLock,
+	REMOTE_PLAY_KEY_MODIFIER_CAPS_LOCK = k_ERemotePlayKeyModifierCapsLock,
+	REMOTE_PLAY_KEY_MODIFIER_MASK = k_ERemotePlayKeyModifierMask
+};
+
+enum RemotePlayMouseButton {
+	REMOTE_PLAY_MOUSE_BUTTON_LEFT = k_ERemotePlayMouseButtonLeft,
+	REMOTE_PLAY_MOUSE_BUTTON_RIGHT = k_ERemotePlayMouseButtonRight,
+	REMOTE_PLAY_MOUSE_BUTTON_MIDDLE = k_ERemotePlayMouseButtonMiddle,
+	REMOTE_PLAY_MOUSE_BUTTON_X1 = k_ERemotePlayMouseButtonX1,
+	REMOTE_PLAY_MOUSE_BUTTON_X2 = k_ERemotePlayMouseButtonX2
+};
+
+enum RemotePlayMouseWheelDirection {
+	REMOTE_PLAY_MOUSE_WHEEL_UP = k_ERemotePlayMouseWheelUp,
+	REMOTE_PLAY_MOUSE_WHEEL_DOWN = k_ERemotePlayMouseWheelDown,
+	REMOTE_PLAY_MOUSE_WHEEL_LEFT = k_ERemotePlayMouseWheelLeft,
+	REMOTE_PLAY_MOUSE_WHEEL_RIGHT = k_ERemotePlayMouseWheelRight
+};
+
+enum RemotePlayScancode {
+	REMOTE_PLAYER_SCANCODE_UNKNOWN = k_ERemotePlayScancodeUnknown,
+	REMOTE_PLAYER_SCANCODE_A = k_ERemotePlayScancodeA,
+	REMOTE_PLAYER_SCANCODE_B = k_ERemotePlayScancodeB,
+	REMOTE_PLAYER_SCANCODE_C = k_ERemotePlayScancodeC,
+	REMOTE_PLAYER_SCANCODE_D = k_ERemotePlayScancodeD,
+	REMOTE_PLAYER_SCANCODE_E = k_ERemotePlayScancodeE,
+	REMOTE_PLAYER_SCANCODE_F = k_ERemotePlayScancodeF,
+	REMOTE_PLAYER_SCANCODE_G = k_ERemotePlayScancodeG,
+	REMOTE_PLAYER_SCANCODE_H = k_ERemotePlayScancodeH,
+	REMOTE_PLAYER_SCANCODE_I = k_ERemotePlayScancodeI,
+	REMOTE_PLAYER_SCANCODE_J = k_ERemotePlayScancodeJ,
+	REMOTE_PLAYER_SCANCODE_K = k_ERemotePlayScancodeK,
+	REMOTE_PLAYER_SCANCODE_L = k_ERemotePlayScancodeL,
+	REMOTE_PLAYER_SCANCODE_M = k_ERemotePlayScancodeM,
+	REMOTE_PLAYER_SCANCODE_N = k_ERemotePlayScancodeN,
+	REMOTE_PLAYER_SCANCODE_O = k_ERemotePlayScancodeO,
+	REMOTE_PLAYER_SCANCODE_P = k_ERemotePlayScancodeP,
+	REMOTE_PLAYER_SCANCODE_Q = k_ERemotePlayScancodeQ,
+	REMOTE_PLAYER_SCANCODE_R = k_ERemotePlayScancodeR,
+	REMOTE_PLAYER_SCANCODE_S = k_ERemotePlayScancodeS,
+	REMOTE_PLAYER_SCANCODE_T = k_ERemotePlayScancodeT,
+	REMOTE_PLAYER_SCANCODE_U = k_ERemotePlayScancodeU,
+	REMOTE_PLAYER_SCANCODE_V = k_ERemotePlayScancodeV,
+	REMOTE_PLAYER_SCANCODE_W = k_ERemotePlayScancodeW,
+	REMOTE_PLAYER_SCANCODE_X = k_ERemotePlayScancodeX,
+	REMOTE_PLAYER_SCANCODE_Y = k_ERemotePlayScancodeY,
+	REMOTE_PLAYER_SCANCODE_Z = k_ERemotePlayScancodeZ,
+	REMOTE_PLAYER_SCANCODE_1 = k_ERemotePlayScancode1,
+	REMOTE_PLAYER_SCANCODE_2 = k_ERemotePlayScancode2,
+	REMOTE_PLAYER_SCANCODE_3 = k_ERemotePlayScancode3,
+	REMOTE_PLAYER_SCANCODE_4 = k_ERemotePlayScancode4,
+	REMOTE_PLAYER_SCANCODE_5 = k_ERemotePlayScancode5,
+	REMOTE_PLAYER_SCANCODE_6 = k_ERemotePlayScancode6,
+	REMOTE_PLAYER_SCANCODE_7 = k_ERemotePlayScancode7,
+	REMOTE_PLAYER_SCANCODE_8 = k_ERemotePlayScancode8,
+	REMOTE_PLAYER_SCANCODE_9 = k_ERemotePlayScancode9,
+	REMOTE_PLAYER_SCANCODE_0 = k_ERemotePlayScancode0,
+	REMOTE_PLAYER_SCANCODE_RETURN = k_ERemotePlayScancodeReturn,
+	REMOTE_PLAYER_SCANCODE_ESCAPE = k_ERemotePlayScancodeEscape,
+	REMOTE_PLAYER_SCANCODE_BACKSPACE = k_ERemotePlayScancodeBackspace,
+	REMOTE_PLAYER_SCANCODE_TAB = k_ERemotePlayScancodeTab,
+	REMOTE_PLAYER_SCANCODE_SPACE = k_ERemotePlayScancodeSpace,
+	REMOTE_PLAYER_SCANCODE_MINUS = k_ERemotePlayScancodeMinus,
+	REMOTE_PLAYER_SCANCODE_EQUALS = k_ERemotePlayScancodeEquals,
+	REMOTE_PLAYER_SCANCODE_LEFT_BRACKET = k_ERemotePlayScancodeLeftBracket,
+	REMOTE_PLAYER_SCANCODE_RIGHT_BRACKET = k_ERemotePlayScancodeRightBracket,
+	REMOTE_PLAYER_SCANCODE_BACKSLASH = k_ERemotePlayScancodeBackslash,
+	REMOTE_PLAYER_SCANCODE_SEMICOLON = k_ERemotePlayScancodeSemicolon,
+	REMOTE_PLAYER_SCANCODE_APOSTROPHE = k_ERemotePlayScancodeApostrophe,
+	REMOTE_PLAYER_SCANCODE_GRAVE = k_ERemotePlayScancodeGrave,
+	REMOTE_PLAYER_SCANCODE_COMMA = k_ERemotePlayScancodeComma,
+	REMOTE_PLAYER_SCANCODE_PERIOD = k_ERemotePlayScancodePeriod,
+	REMOTE_PLAYER_SCANCODE_SLASH = k_ERemotePlayScancodeSlash,
+	REMOTE_PLAYER_SCANCODE_CAPSLOCK = k_ERemotePlayScancodeCapsLock,
+	REMOTE_PLAYER_SCANCODE_F1 = k_ERemotePlayScancodeF1,
+	REMOTE_PLAYER_SCANCODE_F2 = k_ERemotePlayScancodeF2,
+	REMOTE_PLAYER_SCANCODE_F3 = k_ERemotePlayScancodeF3,
+	REMOTE_PLAYER_SCANCODE_F4 = k_ERemotePlayScancodeF4,
+	REMOTE_PLAYER_SCANCODE_F5 = k_ERemotePlayScancodeF5,
+	REMOTE_PLAYER_SCANCODE_F6 = k_ERemotePlayScancodeF6,
+	REMOTE_PLAYER_SCANCODE_F7 = k_ERemotePlayScancodeF7,
+	REMOTE_PLAYER_SCANCODE_F8 = k_ERemotePlayScancodeF8,
+	REMOTE_PLAYER_SCANCODE_F9 = k_ERemotePlayScancodeF9,
+	REMOTE_PLAYER_SCANCODE_F10 = k_ERemotePlayScancodeF10,
+	REMOTE_PLAYER_SCANCODE_F11 = k_ERemotePlayScancodeF11,
+	REMOTE_PLAYER_SCANCODE_F12 = k_ERemotePlayScancodeF12,
+	REMOTE_PLAYER_SCANCODE_INSERT = k_ERemotePlayScancodeInsert,
+	REMOTE_PLAYER_SCANCODE_HOME = k_ERemotePlayScancodeHome,
+	REMOTE_PLAYER_SCANCODE_PAGE_UP = k_ERemotePlayScancodePageUp,
+	REMOTE_PLAYER_SCANCODE_DELETE = k_ERemotePlayScancodeDelete,
+	REMOTE_PLAYER_SCANCODE_END = k_ERemotePlayScancodeEnd,
+	REMOTE_PLAYER_SCANCODE_PAGE_DOWN = k_ERemotePlayScancodePageDown,
+	REMOTE_PLAYER_SCANCODE_RIGHT = k_ERemotePlayScancodeRight,
+	REMOTE_PLAYER_SCANCODE_LEFT = k_ERemotePlayScancodeLeft,
+	REMOTE_PLAYER_SCANCODE_DOWN = k_ERemotePlayScancodeDown,
+	REMOTE_PLAYER_SCANCODE_UP = k_ERemotePlayScancodeUp,
+	REMOTE_PLAYER_SCANCODE_LEFT_CONTROL = k_ERemotePlayScancodeLeftControl,
+	REMOTE_PLAYER_SCANCODE_LEFT_SHIFT = k_ERemotePlayScancodeLeftShift,
+	REMOTE_PLAYER_SCANCODE_LEFT_ALT = k_ERemotePlayScancodeLeftAlt,
+	REMOTE_PLAYER_SCANCODE_LEFT_GUI = k_ERemotePlayScancodeLeftGUI,
+	REMOTE_PLAYER_SCANCODE_RIGHT_CONTROL = k_ERemotePlayScancodeRightControl,
+	REMOTE_PLAYER_SCANCODE_RIGHT_SHIFT = k_ERemotePlayScancodeRightShift,
+	REMOTE_PLAYER_SCANCODE_RIGHT_ALT = k_ERemotePlayScancodeRightALT,
+	REMOTE_PLAYER_SCANCODE_RIGHT_GUI = k_ERemotePlayScancodeRightGUI
 };
 
 
