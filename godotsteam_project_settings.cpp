@@ -1,5 +1,5 @@
 //===========================================================================//
-// GodotSteam - register_types.h
+// GodotSteam - godotsteam.h
 //===========================================================================//
 //
 // Copyright (c) 2015-Current | GP Garcia and Contributors
@@ -26,12 +26,26 @@
 //
 //===========================================================================//
 
-#ifndef GODOTSTEAM_REGISTER_TYPES_H
-#define GODOTSTEAM_REGISTER_TYPES_H
+#include "godotsteam_project_settings.h"
 
-#include "modules/register_module_types.h"
 
-void initialize_godotsteam_module(ModuleInitializationLevel level);
-void uninitialize_godotsteam_module(ModuleInitializationLevel level);
+void SteamProjectSettings::register_settings() {
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "steam/initialization/app_id"), 0);
+	GLOBAL_DEF(PropertyInfo(Variant::BOOL, "steam/initialization/initialize_on_startup"), false);
+	GLOBAL_DEF(PropertyInfo(Variant::BOOL, "steam/initialization/embed_callbacks"), false);
+}
 
-#endif
+
+int SteamProjectSettings::get_app_id() {
+	return GLOBAL_GET("steam/initialization/app_id");
+}
+
+
+bool SteamProjectSettings::get_auto_init() {
+	return GLOBAL_GET("steam/initialization/initialize_on_startup");
+}
+
+
+bool SteamProjectSettings::get_embed_callbacks() {
+	return GLOBAL_GET("steam/initialization/embed_callbacks");
+}
