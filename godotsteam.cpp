@@ -5221,7 +5221,7 @@ Dictionary Steam::getQuota() {
 // Obtains the platforms that the specified file will syncronize to.
 BitField<RemoteStoragePlatform> Steam::getSyncPlatforms(const String &file) {
 	ERR_FAIL_COND_V_MSG(SteamRemoteStorage() == NULL, REMOTE_STORAGE_PLATFORM_NONE, "[STEAM] Remote Storage class not found when calling: getSyncPlatforms");
-	return SteamRemoteStorage()->GetSyncPlatforms(file.utf8().get_data());
+	return (BitField<RemoteStoragePlatform>)(RemoteStoragePlatform)SteamRemoteStorage()->GetSyncPlatforms(file.utf8().get_data());
 }
 
 // Gets metadata for a file after it has been downloaded. This is the same metadata given in the RemoteStorageDownloadUGCResult_t

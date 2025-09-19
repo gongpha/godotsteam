@@ -5,10 +5,10 @@ Additional Flavors
 ---
 Pre-Compiles | Plug-ins | Server | Examples
 --- | --- | --- | ---
-[Godot 2.x](https://codeberg.org/godotsteam/godotsteam/tree/godot2) | [GDNative](https://codeberg.org/godotsteam/godotsteam/tree/gdnative) | [Server 3.x](https://codeberg.org/godotsteam/godotsteam-server/tree/godot3) | [Skillet](https://codeberg.org/godotsteam/skillet)
-[Godot 3.x](https://codeberg.org/godotsteam/godotsteam/tree/godot3) | [GDExtension](https://codeberg.org/godotsteam/godotsteam/tree/gdextension) | [Server 4.x](https://codeberg.org/godotsteam/godotsteam-server/tree/godot4) | ---
-[Godot 4.x](https://codeberg.org/godotsteam/godotsteam/tree/godot4) | --- | [GDNative](https://codeberg.org/godotsteam/godotsteam-server/tree/gdnative) | ---
-[MultiplayerPeer](https://codeberg.org/godotsteam/multiplayerpeer)| --- | [GDExtension](https://codeberg.org/godotsteam/godotsteam-server/tree/gdextension) | ---
+[Godot 2.x](https://codeberg.org/godotsteam/godotsteam/src/branch/godot2) | [GDNative](https://codeberg.org/godotsteam/godotsteam/src/branch/gdnative) | [Server 3.x](https://codeberg.org/godotsteam/godotsteam-server/src/branch/godot3) | [Skillet](https://codeberg.org/godotsteam/skillet)
+[Godot 3.x](https://codeberg.org/godotsteam/godotsteam/src/branch/godot3) | [GDExtension](https://codeberg.org/godotsteam/godotsteam/src/branch/gdextension) | [Server 4.x](https://codeberg.org/godotsteam/godotsteam-server/src/branch/godot4) | ---
+[Godot 4.x](https://codeberg.org/godotsteam/godotsteam/src/branch/godot4) | --- | [GDNative](https://codeberg.org/godotsteam/godotsteam-server/src/branch/gdnative) | ---
+[MultiplayerPeer](https://codeberg.org/godotsteam/multiplayerpeer)| --- | [GDExtension](https://codeberg.org/godotsteam/godotsteam-server/src/branch/gdextension) | ---
 
 Documentation
 ---
@@ -36,6 +36,7 @@ You can [download pre-compiled versions of this repo here](https://codeberg.org/
 - Added: some missing constants
 - Added: default values to `getQueryUGCContentDdescriptors()` and `getUserContentDescriptorPreferences()` for **max_entries** as there are only five values currently
 - Added: missing `releaseCurrentThreadMemory()` function
+- Added: patch file for MinGW compatibility
 - Changed: included file ID in returned callback `item_updated`
 - Changed: included next cursor in returned callback `ugc_query_completed`
 - Changed: `MarketNotAllowedReasonFlags` enums corrected to bitwise
@@ -102,11 +103,12 @@ GodotSteam Version | Broken Compatibility
 4.11 | setLeaderboardDetailsMax removed
 4.13 | getItemDefinitionProperty return a dictionary, html_needs_paint key 'bgra' changed to 'rbga'
 4.14 | Removed first argument for stat request in steamInit and steamInitEx, steamInit returns intended bool value
+4.16 | Variety of small break points, refer to [4.16 changelog for details](https://godotsteam.com/changelog/godot4/)
 
 Known Issues
 ---
 - Steam overlay may not work when running your game from the editor if you are using Forward+ as the renderer unless you use auto-initialization from the Project Settings menu.  Your exported project should work perfectly fine in the Steam client, however.
-- When self-compiling, **do not** use MinGW as it will cause crashes.
+- When self-compiling, **do not** use MinGW without running the extras/mingw_comp.patch first or you will experience crashing.
 
 Quick How-To
 ---
