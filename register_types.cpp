@@ -38,7 +38,7 @@
 static Steam *SteamPtr = nullptr;
 
 
-void initialize_godotsteam_module(ModuleInitializationLevel level){
+void initialize_godotsteam_module(ModuleInitializationLevel level) {
 	if(level == MODULE_INITIALIZATION_LEVEL_CORE){
 		GDREGISTER_CLASS(Steam);
 		SteamPtr = memnew(Steam);
@@ -57,7 +57,7 @@ void initialize_godotsteam_module(ModuleInitializationLevel level){
 
 		Steam::get_singleton()->run_internal_initialization();
 	}
-	if(level == MODULE_INITIALIZATION_LEVEL_SCENE) {
+	if (level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 		if (SteamProjectSettings::get_auto_init() && SteamProjectSettings::get_embed_callbacks()) {
 			WARN_PRINT_ONCE("[STEAM] Cannot use auto-initialization and embed callbacks together currently. Embed callbacks ignored; call run_callbacks() manually.");
 			// This just warns until we can fix the inability to link to SceneTree this early.
@@ -67,7 +67,7 @@ void initialize_godotsteam_module(ModuleInitializationLevel level){
 }
 
 
-void uninitialize_godotsteam_module(ModuleInitializationLevel level){
+void uninitialize_godotsteam_module(ModuleInitializationLevel level) {
 	if(level == MODULE_INITIALIZATION_LEVEL_CORE){
 		Engine::get_singleton()->remove_singleton("Steam");
 		memdelete(SteamPtr);

@@ -6172,10 +6172,7 @@ bool Steam::setMatchAnyTag(uint64_t query_handle, bool match_any_tag) {
 // Sets whether the order of the results will be updated based on the rank of items over a number of days on a pending UGC Query.
 bool Steam::setRankedByTrendDays(uint64_t query_handle, uint32_t days) {
 	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setRankedByTrendDays");
-	if (days > 365) {
-		days = 365;
-	}
-	return SteamUGC()->SetRankedByTrendDays((UGCQueryHandle_t)query_handle, days);
+	return SteamUGC()->SetRankedByTrendDays((UGCQueryHandle_t)query_handle, CLAMP(days, 0, 360));
 }
 
 // An empty string for either parameter means that it will match any version on that end of the range. This will only be applied
