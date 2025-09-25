@@ -24,25 +24,62 @@ Current Build
 ---
 You can [download pre-compiled versions of this repo here](https://codeberg.org/godotsteam/godotsteam/releases).
 
-**Version 3.29**
-- Added: new functions and enums to SteamRemotePlay
-- Added: Steam icon to the class
-- Added: Project Settings for Steam, optional app ID, can set embedded callbacks, thanks to ***TriMay***
-- Added: missing HTML Surface functions `openDeveloperTools` and `setDPIScalingFactor`
-- Added: missing Video class callbacks `broadcast_upload_start` and`broadcast_upload_stop`
-- Changed: replaced previous `MouseCursor` enum with new `HTMLMouseCursor` enum
-- Changed: updated docs
-- Changed: updated to Steamworks SDK 1.62
-- Changed: `getNumSubscribedItems` and `getSubscribedItems` now take include_locally_disabled argument
-- Changed: `steamInit` now return intended boolean and first argument removed since client syncs stats/achieves at boot
-- Changed: added missing is_system_key argument to `key_down` function
-- Fixed: various bits in the in-editor docs
-- Fixed: `network_messages_session_failed` missing returned properties in bind
-- Fixed: `connected_friend_chat_message` having the wrong signal name
-- Fixed: wrong signal name for `get_opf_settings_result`
-- Removed: `UserRestrictions` enum
-- Removed: `SetPersonaName` function and related callback `name_changed`
-- Removed: `GetUserRestrictions` function
+**Version 3.30**
+- Added: missing Friends function `activateGameOverlayRemotePlayTogetherInviteDialog()` and `getNumChatsWithUnreadPriorityMessages()`
+- Added: missing User function `getMarketEligibility()` and related call result `market_eligibility_response`
+- Added: missing UGC functions `setAllowLegacyUpload()`, `removeAllItemKeyValueTags()`
+- Added: missing Networking Sockets function `setConnectionUserData()`
+- Added: missing Networking Utils functions `setDebugOutputFunction()`, `getIPv4FakeIPType()`, `getRealIdentityForFakeIP()`, `setGlobalCallbackSteamNetConnectionStatusChanged()`, `setGlobalCallbackSteamNetAuthenticationStatusChanged()`, `setGlobalCallbackSteamRelayNetworkStatusChanged()`, `setGlobalCallbackFakeIPResult()`, `setGlobalCallbackMessagesSessionRequest()`, `setGlobalCallbackMessagesSessionFailed()`, `iterateGenericEditableConfigValues()`
+- Added: missing Remote Storage call results `published_file_subscribed`, `published_file_unsubscribed`
+- Added: missing Remote Play callback `remote_play_guest_invite`
+- Added: Steam ID constants for game servers
+- Added: some missing constants
+- Added: default values to `getQueryUGCContentDdescriptors()` and `getUserContentDescriptorPreferences()` for **max_entries** as there are only five values currently
+- Added: missing `releaseCurrentThreadMemory()` function
+- Added: patch file for MinGW compatibility
+- Changed: included file ID in returned callback `item_updated`
+- Changed: included next cursor in returned callback `ugc_query_completed`
+- Changed: `MarketNotAllowedReasonFlags` enums corrected to bitwise
+- Changed: added missing result response to `steam_server_disconnected` callback
+- Changed: minor swaps from integers to enums where needed
+- Changed: corrected STEAM_PARTY_BEACON_LOCATION_DATA to STEAM_PARTY_BEACON_LOCATION_DATA_INVALID
+- Changed: some argument or variable names for clarity
+- Changed: `advertiseGame()` now has defaults to clear game advertisement is nothing is passed
+- Changed: `connected_clan_chat_message` and `connected_friend_chat_message` to no longer send dictionaries
+- Changed: `getLeaderboardDisplayType()` now returns the direct enum value instead of a dictionary
+- Changed: `getLeaderboardSortMethod()` now returns the direct enum value instead of a dictionary
+- Changed: `getMostAchievedAchievementInfo()` and `getNextMostAchievedAchievementInfo()` first key to iterator from rank to be more clear
+- Changed: `global_achievement_percentages_ready` now returns the enum / int instead of string for result
+- Changed: `global_stats_received` now returns the enum / int instead of string for result
+- Changed: `leaderboard_ugc_set` now returns the enum /int instead of string for result
+- Changed: `getAppInstallDir()` now just returns the string location of the app
+- Changed: `getSyncPlatforms()` now returns the direct enum value instead of a dictionary
+- Changed: `enumerate_following_list` callback to better fit the actual Steam callback
+- Changed: `request_clan_officer_list` callback now returns bool instead of message for success
+- Changed: `retrieveConnectionDetails()` now returns a dictionary instead of the connection details string
+- Changed: **base_prices** to **base_price** in `getItemsWithPrices()`
+- Changed: internal callbacks system
+- Fixed: added missing "app_ids" hint to `get_app_dependencies_result` callback
+- Fixed: published file ID not being uint64_t in some Remote Storage signals
+- Fixed: various types
+- Fixed: using direct values instead of constants when the names could not be found
+- Fixed: missing store_flag argument for `activateGameOverlayToStore()`
+- Fixed: `downloadClanActivity()` now takes multiple clans are intended
+- Fixed: constant name from LEADERBOARD_DETAIL_MAX to LEADERBOARD_DETAILS_MAX
+- Fixed: `setOverlayNotificationPosition()` not using given argument
+- Fixed: set limit to `requestGlobalStats()`, values over 60 defaults to 60 now
+- Fixed: some incorrect variable names
+- Fixed: `getAchievementProgressLimitsInt()` and `getAchievementProgressLimitsFloat()` using wrong variable name and removing unncessary name key from returned dictionary
+- Fixed: incorrect spelling in enum name
+- Removed: `getClanChatMessage()` as it can only be used in response to `connected_clan_chat_message` which it is called in anyway
+- Removed: `getFriendMessage()` as it can only be used in response to `connected_friend_chat_message` which it is called in anyway
+- Removed: `getAvailableVoice()` as it did nothing useful; was already incorporated into related functions
+- Removed: **branch_size** key from returned dictionary in **getSupportedGameVersionData()** as it was misleading and useless
+- Removed: **sender_user_data** key from returned dictionaries in `receiveMessageOnChannel()`
+- Removed: temporarily removed `setDualSenseTriggerEffect()` until it can be overhauled
+- Removed: **buffer** from returned dictionary in `getConfigValue()` as it was just the size
+- Removed: unnecessary keys in certain Networking Socket functions where messages are received or sent
+- Removed: `createHostedDedicatedServerListenSocket()` as it should only be in the GodotSteam Server version
 
 [You can read more change-logs here](https://godotsteam.com/changelog/godot3/).
 
@@ -66,15 +103,16 @@ GodotSteam Version | Broken Compatibility
 3.26 | sendMessages returns an Array
 3.27 | setLeaderboardDetailsMax removed
 3.29 | getItemDefinitionProperty return a dictionary, html_needs_paint key 'bgra' changed to 'rbga', removed first argument for stat request in steamInit and steamInitEx, steamInit returns intended bool value
+3.30 | Variety of small break points, refer to [3.30 changelog for details](https://godotsteam.com/changelog/godot3/)
 
 
 Known Issues
 ---
-- When self-compiling, **do not** use MinGW as it will cause crashes.
+- When self-compiling, **do not** use MinGW without running the extras/mingw_comp.patch first or you will experience crashing.
 
 Quick How-To
 ---
-For complete instructions on how to build the Godot 4.x version of GodotSteam from scratch, [please refer to our documentation's 'How-To Modules' section.](https://godotsteam.com/howto/modules/) It will have the most up-to-date information.
+For complete instructions on how to build the Godot 3.x version of GodotSteam from scratch, [please refer to our documentation's 'How-To Modules' section.](https://godotsteam.com/howto/modules/) It will have the most up-to-date information.
 
 Alternatively, you can just [download the pre-compiled versions in our Releases section](https://codeberg.org/godotsteam/godotsteam/releases) and skip compiling it yourself!
 
