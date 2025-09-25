@@ -5,10 +5,10 @@ Additional Flavors
 ---
 Pre-Compiles | Plug-ins | Server | Examples
 --- | --- | --- | ---
-[Godot 2.x](https://codeberg.org/godotsteam/godotsteam/tree/godot2) | [GDNative](https://codeberg.org/godotsteam/godotsteam/tree/gdnative) | [Server 3.x](https://codeberg.org/godotsteam/godotsteam-server/tree/godot3) | [Skillet](https://codeberg.org/godotsteam/skillet)
-[Godot 3.x](https://codeberg.org/godotsteam/godotsteam/tree/godot3) | [GDExtension](https://codeberg.org/godotsteam/godotsteam/tree/gdextension) | [Server 4.x](https://codeberg.org/godotsteam/godotsteam-server/tree/godot4) | ---
-[Godot 4.x](https://codeberg.org/godotsteam/godotsteam/tree/godot4) | --- | [GDNative](https://codeberg.org/godotsteam/godotsteam-server/tree/gdnative) | ---
-[MultiplayerPeer](https://codeberg.org/godotsteam/multiplayerpeer)| --- | [GDExtension](https://codeberg.org/godotsteam/godotsteam-server/tree/gdextension) | ---
+[Godot 2.x](https://codeberg.org/godotsteam/godotsteam/src/branch/godot2) | [GDNative](https://codeberg.org/godotsteam/godotsteam/src/branch/gdnative) | [Server 3.x](https://codeberg.org/godotsteam/godotsteam-server/src/branch/godot3) | [Skillet](https://codeberg.org/godotsteam/skillet)
+[Godot 3.x](https://codeberg.org/godotsteam/godotsteam/src/branch/godot3) | [GDExtension](https://codeberg.org/godotsteam/godotsteam/src/branch/gdextension) | [Server 4.x](https://codeberg.org/godotsteam/godotsteam-server/src/branch/godot4) | ---
+[Godot 4.x](https://codeberg.org/godotsteam/godotsteam/src/branch/godot4) | --- | [GDNative](https://codeberg.org/godotsteam/godotsteam-server/src/branch/gdnative) | ---
+[MultiplayerPeer](https://codeberg.org/godotsteam/multiplayerpeer)| --- | [GDExtension](https://codeberg.org/godotsteam/godotsteam-server/src/branch/gdextension) | ---
 
 Documentation
 ---
