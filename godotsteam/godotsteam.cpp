@@ -3077,8 +3077,8 @@ Dictionary Steam::getAllLobbyData(uint64_t steam_lobby_id) {
 		if (success) {
 			Dictionary data;
 			data["index"] = i;
-			data["key"] = key;
-			data["value"] = value;
+			data["key"] = String::utf8(key);
+			data["value"] = String::utf8(value);
 			all_data[i] = data;
 		}
 	}
