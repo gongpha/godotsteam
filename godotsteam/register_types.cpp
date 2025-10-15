@@ -31,13 +31,13 @@
 #include <gdextension_interface.h>
 
 #include <godot_cpp/core/defs.hpp>
-//#include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/godot.hpp>
 
 #include "godotsteam.h"
 #include "godotsteam_project_settings.h"
+
 
 using namespace godot;
 

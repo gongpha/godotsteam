@@ -50,16 +50,24 @@ elif env['platform'] == "windows":
     else:
         env.Append( CCFLAGS=['-Wa,-mbig-obj'] )
 
-# make sure our binding library is properly includes
+# Make sure our binding library is properly includes
 env.Append(LIBPATH=[steam_lib_path])
 env.Append(CPPPATH=['godotsteam/sdk/public'])
 env.Append(LIBS=[
     steamworks_library.replace(".dll", "")
 ])
 
-# tweak this if you want to use different folders, or more folders, to store your source code in.
+# Tweak this if you want to use different folders, or more folders, to store your source code in.
 env.Append(CPPPATH=['godotsteam/'])
 sources = Glob('godotsteam/*.cpp')
+
+# To get the in-editor docs functioning properly
+if env["target"] in ["editor", "template_debug"]:
+    try:
+        doc_data = env.GodotCPPDocData("src/gen/doc_data.gen.cpp", source=Glob("godotsteam/doc_classes/*.xml"))
+        sources.append(doc_data)
+    except AttributeError:
+        print("Not including class reference as we're targeting a pre-4.3 baseline.")
 
 if env["platform"] == "macos":
     library = env.SharedLibrary(
