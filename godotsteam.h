@@ -49,6 +49,7 @@
 // Include Godot headers
 #include "core/config/project_settings.h"
 #include "core/object/object.h"
+#include "core/os/os.h"
 #include "core/variant/dictionary.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/texture.h"
