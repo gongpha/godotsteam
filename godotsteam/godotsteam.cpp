@@ -465,6 +465,13 @@ void Steam::run_callbacks() {
 	SteamAPI_RunCallbacks();
 	if (SteamProjectSettings::get_embed_callbacks() && !SteamProjectSettings::get_auto_init()) {
 		WARN_PRINT_ONCE("[STEAM] Embedded callbacks is enabled, ignoring manual call to run_callbacks.");
+		if (were_callbacks_embedded) {
+			RenderingServer *rendering_server = RenderingServer::get_singleton();
+			ERR_FAIL_COND_MSG(rendering_server == nullptr, "[STEAM] SceneTree is not present, cannot disconnect Steam callbacks internally.");
+			rendering_server->disconnect("frame_post_draw", callable_mp(this, &Steam::run_internal_callbacks));
+
+			were_callbacks_embedded = true;
+		}
 	}
 }
 
@@ -481,9 +488,9 @@ void Steam::set_internal_callbacks(bool embed_callbacks) {
 		if (embed_callbacks || SteamProjectSettings::get_embed_callbacks()) {
 			RenderingServer *rendering_server = RenderingServer::get_singleton();
 			ERR_FAIL_COND_MSG(rendering_server == nullptr, "[STEAM] SceneTree is not present, cannot connect Steam callbacks internally.");
+			rendering_server->connect("frame_post_draw", callable_mp(this, &Steam::run_internal_callbacks));
 
 			were_callbacks_embedded = true;
-			rendering_server->connect("frame_post_draw", callable_mp(this, &Steam::run_internal_callbacks));
 		}
 	}
 }
@@ -551,9 +558,11 @@ void Steam::start_initialization_verbose(uint32_t app_id, bool embed_callbacks) 
 void Steam::steamShutdown() {
 	// If callbacks were connected internally
 	if (were_callbacks_embedded) {
-		were_callbacks_embedded = false;
+		RenderingServer *rendering_server = RenderingServer::get_singleton();
+		ERR_FAIL_COND_MSG(rendering_server == nullptr, "[STEAM] SceneTree is not present, cannot disconnect Steam callbacks internally.");
+		rendering_server->disconnect("frame_post_draw", callable_mp(this, &Steam::run_internal_callbacks));
 
-		RenderingServer::get_singleton()->disconnect("frame_post_draw", callable_mp(this, &Steam::run_internal_callbacks));
+		were_callbacks_embedded = false;
 	}
 	SteamAPI_Shutdown();
 }
@@ -7530,7 +7539,7 @@ void Steam::clan_activity_downloaded(DownloadClanActivityCountsResult_t *call_da
 void Steam::friend_rich_presence_update(FriendRichPresenceUpdate_t *call_data) {
 	uint64_t steam_id = call_data->m_steamIDFriend.ConvertToUint64();
 	AppId_t app_id = call_data->m_nAppID;
-	emit_signal("friend_rich_presence_updated", steam_id, app_id);
+	emit_signal("friend_rich_presence_update", steam_id, app_id);
 }
 
 // Called when a user has joined a Steam group chat that the we are in.

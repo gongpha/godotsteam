@@ -26,7 +26,11 @@ You can [download pre-compiled versions of this repo here](https://codeberg.org/
 
 **Version 4.16.1 Changes**
 - Fixed: duplicate signal binds
-- Fixed: `getAllLobbyData` not returning localized characters correctly
+- Fixed: character support in `getAllLobbyData()`
+- Fixed: code related to checking for manual `run_callbacks()` and embedded callbacks
+- Fixed: misspelled signal call in `friend_rich_presence_update`
+- Fixed: compiling flag set outside of compiler check
+
 
 [You can read more change-logs here](https://godotsteam.com/changelog/gdextension/).
 
