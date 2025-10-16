@@ -1,5 +1,5 @@
 //===========================================================================//
-// GodotSteam - godotsteam.h
+// GodotSteam - godotsteam_project_settings.h
 //===========================================================================//
 //
 // Copyright (c) 2015-Current | GP Garcia and Contributors

@@ -26,6 +26,7 @@
 //
 //===========================================================================//
 
+
 // Turn off MSVC-only warning about strcpy
 #ifdef _MSC_VER
 #define _CRT_SECURE_NO_WARNINGS 1
@@ -210,7 +211,7 @@ Steam::Steam() :
 	callbackUserStatsStored(this, &Steam::user_stats_stored),
 	callbackUserStatsUnloaded(this, &Steam::user_stats_unloaded),
 
-	// Utility
+	// Utils
 	callbackGamepadTextInputDismissed(this, &Steam::gamepad_text_input_dismissed),
 	callbackIPCountry(this, &Steam::ip_country),
 	callbackLowPower(this, &Steam::low_power),
@@ -461,7 +462,14 @@ bool Steam::restartAppIfNecessary(uint32_t app_id) {
 void Steam::run_callbacks() {
 	SteamAPI_RunCallbacks();
 	if (SteamProjectSettings::get_embed_callbacks() && !SteamProjectSettings::get_auto_init()) {
-		WARN_PRINT_ONCE("[STEAM] Embedded callbacks is enabled, ignoring manual call to run_callbacks.");
+		WARN_PRINT_ONCE("[STEAM] Embedded callbacks are enabled, disabling them due to manual call.");
+		if (were_callbacks_embedded) {
+			SceneTree *scene_tree = SceneTree::get_singleton();
+			ERR_FAIL_COND_MSG(scene_tree == nullptr, "[STEAM] SceneTree is not present, cannot disconnect Steam callbacks internally.");
+			scene_tree->disconnect("process_frame", callable_mp(this, &Steam::run_internal_callbacks));
+
+			were_callbacks_embedded = false;
+		}
 	}
 }
 
@@ -478,9 +486,9 @@ void Steam::set_internal_callbacks(bool embed_callbacks) {
 		if (embed_callbacks || SteamProjectSettings::get_embed_callbacks()) {
 			SceneTree *scene_tree = SceneTree::get_singleton();
 			ERR_FAIL_COND_MSG(scene_tree == nullptr, "[STEAM] SceneTree is not present, cannot connect Steam callbacks internally.");
+			scene_tree->connect("process_frame", callable_mp(this, &Steam::run_internal_callbacks));
 
 			were_callbacks_embedded = true;
-			scene_tree->connect("process_frame", callable_mp(this, &Steam::run_internal_callbacks));
 		}
 	}
 }
@@ -548,9 +556,11 @@ void Steam::start_initialization_verbose(uint32_t app_id, bool embed_callbacks) 
 void Steam::steamShutdown() {
 	// If callbacks were connected internally
 	if (were_callbacks_embedded) {
-		were_callbacks_embedded = false;
+		SceneTree *scene_tree = SceneTree::get_singleton();
+		ERR_FAIL_COND_MSG(scene_tree == nullptr, "[STEAM] SceneTree is not present, cannot disconnect Steam callbacks internally.");
+		scene_tree->disconnect("process_frame", callable_mp(this, &Steam::run_internal_callbacks));
 
-		SceneTree::get_singleton()->disconnect("process_frame", callable_mp(this, &Steam::run_internal_callbacks));
+		were_callbacks_embedded = false;
 	}
 	SteamAPI_Shutdown();
 }
@@ -2648,7 +2658,7 @@ int32 Steam::exchangeItems(const PackedInt64Array output_items, const PackedInt3
 
 	uint32_t *quantity_out = (uint32_t*) output_quantity.ptr();
 	uint32_t *quantity_in = (uint32_t*) input_quantity.ptr();
-	
+
 	uint32_t array_size = input_items.size();
 	SteamItemInstanceID_t *input_item_ids = new SteamItemInstanceID_t[array_size];
 	for (uint32_t i = 0; i < array_size; i++) {
@@ -2657,7 +2667,6 @@ int32 Steam::exchangeItems(const PackedInt64Array output_items, const PackedInt3
 	const SteamItemInstanceID_t *these_item_ids = input_item_ids;
 
 	if (SteamInventory()->ExchangeItems(&new_inventory_handle, generated_items, quantity_out, total_output, these_item_ids, quantity_in, array_size)) {
-		// Update the internally stored handle
 		inventory_handle = new_inventory_handle;
 	}
 	delete[] generated_items;
@@ -2855,7 +2864,6 @@ bool Steam::loadItemDefinitions() {
 // Removes a dynamic property for the given item.
 bool Steam::removeProperty(uint64_t item_id, const String &name, uint64_t this_inventory_update_handle) {
 	ERR_FAIL_COND_V_MSG(SteamInventory() == NULL, false, "[STEAM] Inventory class not found when calling: removeProperty");
-	// If no inventory update handle is passed, use internal one
 	if (this_inventory_update_handle == 0) {
 		this_inventory_update_handle = inventory_update_handle;
 	}
@@ -3074,8 +3082,8 @@ Dictionary Steam::getAllLobbyData(uint64_t steam_lobby_id) {
 		if (success) {
 			Dictionary data;
 			data["index"] = i;
-			data["key"] = key;
-			data["value"] = value;
+			data["key"] = String::utf8(key);
+			data["value"] = String::utf8(value);
 			all_data[i] = data;
 		}
 	}
@@ -3706,7 +3714,7 @@ bool Steam::updateVolume(float volume) {
 
 // This allows the game to specify accept an incoming packet.
 bool Steam::acceptP2PSessionWithUser(uint64_t remote_steam_id) {
-	ERR_FAIL_COND_V_MSG(SteamNetworking() == NULL, false, "[STEAM] Game Server class not found when calling: acceptP2PSessionWithUser");
+	ERR_FAIL_COND_V_MSG(SteamNetworking() == NULL, false, "[STEAM] Networking class not found when calling: acceptP2PSessionWithUser");
 	CSteamID steam_id = createSteamID(remote_steam_id);
 	return SteamNetworking()->AcceptP2PSessionWithUser(steam_id);
 }
@@ -3714,13 +3722,13 @@ bool Steam::acceptP2PSessionWithUser(uint64_t remote_steam_id) {
 // Allow or disallow P2P connections to fall back to being relayed through the Steam servers if a direct connection or
 // NAT-traversal cannot be established.
 bool Steam::allowP2PPacketRelay(bool allow) {
-	ERR_FAIL_COND_V_MSG(SteamNetworking() == NULL, false, "[STEAM] Game Server class not found when calling: allowP2PPacketRelay");
+	ERR_FAIL_COND_V_MSG(SteamNetworking() == NULL, false, "[STEAM] Networking class not found when calling: allowP2PPacketRelay");
 	return SteamNetworking()->AllowP2PPacketRelay(allow);
 }
 
 // Closes a P2P channel when you're done talking to a user on the specific channel.
 bool Steam::closeP2PChannelWithUser(uint64_t remote_steam_id, int channel) {
-	ERR_FAIL_COND_V_MSG(SteamNetworking() == NULL, false, "[STEAM] Game Server class not found when calling: closeP2PChannelWithUser");
+	ERR_FAIL_COND_V_MSG(SteamNetworking() == NULL, false, "[STEAM] Networking class not found when calling: closeP2PChannelWithUser");
 	CSteamID steam_id = createSteamID(remote_steam_id);
 	return SteamNetworking()->CloseP2PChannelWithUser(steam_id, channel);
 }
@@ -3728,7 +3736,7 @@ bool Steam::closeP2PChannelWithUser(uint64_t remote_steam_id, int channel) {
 // This should be called when you're done communicating with a user, as this will free up all of the resources allocated for the
 // connection under-the-hood.
 bool Steam::closeP2PSessionWithUser(uint64_t remote_steam_id) {
-	ERR_FAIL_COND_V_MSG(SteamNetworking() == NULL, false, "[STEAM] Game Server class not found when calling: closeP2PSessionWithUser");
+	ERR_FAIL_COND_V_MSG(SteamNetworking() == NULL, false, "[STEAM] Networking class not found when calling: closeP2PSessionWithUser");
 	CSteamID steam_id = createSteamID(remote_steam_id);
 	return SteamNetworking()->CloseP2PSessionWithUser(steam_id);
 }
@@ -3736,7 +3744,7 @@ bool Steam::closeP2PSessionWithUser(uint64_t remote_steam_id) {
 // Fills out a P2PSessionState_t structure with details about the connection like whether or not there is an active connection.
 Dictionary Steam::getP2PSessionState(uint64_t remote_steam_id) {
 	Dictionary result;
-	ERR_FAIL_COND_V_MSG(SteamNetworking() == NULL, result, "[STEAM] Game Server class not found when calling: getP2PSessionState");
+	ERR_FAIL_COND_V_MSG(SteamNetworking() == NULL, result, "[STEAM] Networking class not found when calling: getP2PSessionState");
 	CSteamID steam_id = createSteamID(remote_steam_id);
 	P2PSessionState_t p2pSessionState;
 	if (SteamNetworking()->GetP2PSessionState(steam_id, &p2pSessionState)) {
@@ -3754,7 +3762,7 @@ Dictionary Steam::getP2PSessionState(uint64_t remote_steam_id) {
 
 // Calls IsP2PPacketAvailable() under the hood, returns the size of the available packet or zero if there is no such packet.
 uint32_t Steam::getAvailableP2PPacketSize(int channel) {
-	ERR_FAIL_COND_V_MSG(SteamNetworking() == NULL, 0, "[STEAM] Game Server class not found when calling: getAvailableP2PPacketSize");
+	ERR_FAIL_COND_V_MSG(SteamNetworking() == NULL, 0, "[STEAM] Networking class not found when calling: getAvailableP2PPacketSize");
 	uint32_t message_size = 0;
 	return (SteamNetworking()->IsP2PPacketAvailable(&message_size, channel)) ? message_size : 0;
 }
@@ -3762,7 +3770,7 @@ uint32_t Steam::getAvailableP2PPacketSize(int channel) {
 // Reads in a packet that has been sent from another user via SendP2PPacket.
 Dictionary Steam::readP2PPacket(uint32_t packet_size, int channel) {
 	Dictionary result;
-	ERR_FAIL_COND_V_MSG(SteamNetworking() == NULL, result, "[STEAM] Game Server class not found when calling: readP2PPacket");
+	ERR_FAIL_COND_V_MSG(SteamNetworking() == NULL, result, "[STEAM] Networking class not found when calling: readP2PPacket");
 	PackedByteArray data;
 	data.resize(packet_size);
 	CSteamID steam_id;
@@ -3779,7 +3787,7 @@ Dictionary Steam::readP2PPacket(uint32_t packet_size, int channel) {
 
 // Sends a P2P packet to the specified user.
 bool Steam::sendP2PPacket(uint64_t remote_steam_id, PackedByteArray data, P2PSend send_type, int channel) {
-	ERR_FAIL_COND_V_MSG(SteamNetworking() == NULL, false, "[STEAM] Game Server class not found when calling: sendP2PPacket");
+	ERR_FAIL_COND_V_MSG(SteamNetworking() == NULL, false, "[STEAM] Networking class not found when calling: sendP2PPacket");
 	CSteamID steam_id = createSteamID(remote_steam_id);
 	return SteamNetworking()->SendP2PPacket(steam_id, data.ptr(), data.size(), EP2PSend(send_type), channel);
 }
@@ -4053,7 +4061,7 @@ Array Steam::receiveMessagesOnPollGroup(uint32_t poll_group, int max_messages) {
 	ERR_FAIL_COND_V_MSG(SteamNetworkingSockets() == NULL, messages, "[STEAM] Networking Sockets class not found when calling: receiveMessagesOnPollGroup");
 	SteamNetworkingMessage_t** poll_messages = new SteamNetworkingMessage_t *[max_messages];
 	int available_messages = SteamNetworkingSockets()->ReceiveMessagesOnPollGroup((HSteamNetPollGroup)poll_group, poll_messages, max_messages);
-		
+
 	for(int i = 0; i < available_messages; i++) {
 		Dictionary message;
 
@@ -4113,7 +4121,7 @@ Dictionary Steam::getDetailedConnectionStatus(uint32_t connection) {
 
 	connection_status["success"] = success;
 	connection_status["status"] = buffer;
-	return connection_status; 
+	return connection_status;
 }
 
 // Fetch connection user data. Returns -1 if handle is invalid or if you haven't set any userdata on the connection.
@@ -4254,7 +4262,6 @@ Dictionary Steam::getConnectionRealTimeStatus(uint32_t connection, int lanes, bo
 	
 	real_time_status["response"] = result;
 	if (result == RESULT_OK) {
-
 		Dictionary connection_status;
 		if (get_status) {
 			connection_status["state"] = this_status.m_eState;
@@ -6172,7 +6179,7 @@ bool Steam::setMatchAnyTag(uint64_t query_handle, bool match_any_tag) {
 // Sets whether the order of the results will be updated based on the rank of items over a number of days on a pending UGC Query.
 bool Steam::setRankedByTrendDays(uint64_t query_handle, uint32_t days) {
 	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setRankedByTrendDays");
-	return SteamUGC()->SetRankedByTrendDays((UGCQueryHandle_t)query_handle, CLAMP(days, 0, 360));
+	return SteamUGC()->SetRankedByTrendDays((UGCQueryHandle_t)query_handle, CLAMP(days, uint32_t(0), uint32_t(360)));
 }
 
 // An empty string for either parameter means that it will match any version on that end of the range. This will only be applied
@@ -7527,7 +7534,7 @@ void Steam::clan_activity_downloaded(DownloadClanActivityCountsResult_t *call_da
 void Steam::friend_rich_presence_update(FriendRichPresenceUpdate_t *call_data) {
 	uint64_t steam_id = call_data->m_steamIDFriend.ConvertToUint64();
 	AppId_t app_id = call_data->m_nAppID;
-	emit_signal("friend_rich_presence_updated", steam_id, app_id);
+	emit_signal("friend_rich_presence_update", steam_id, app_id);
 }
 
 // Called when a user has joined a Steam group chat that the we are in.

@@ -47,7 +47,7 @@ enum AccountType {
 };
 
 enum AuthSessionResponse {
-	// Found in steamclientpublic.hg
+	// Found in steamclientpublic.h
 	AUTH_SESSION_RESPONSE_OK = k_EAuthSessionResponseOK,
 	AUTH_SESSION_RESPONSE_USER_NOT_CONNECTED_TO_STEAM = k_EAuthSessionResponseUserNotConnectedToSteam,
 	AUTH_SESSION_RESPONSE_NO_LICENSE_OR_EXPIRED = k_EAuthSessionResponseNoLicenseOrExpired,

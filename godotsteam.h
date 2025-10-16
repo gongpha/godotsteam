@@ -80,7 +80,6 @@ public:
 
 	// STEAMWORKS FUNCTIONS
 	// Main
-	String get_godotsteam_version() const { return godotsteam_version; }
 	uint32_t getSteamID32(uint64_t steam_id);
 	bool isAnonAccount(uint64_t steam_id);
 	bool isAnonUserAccount(uint64_t steam_id);
@@ -101,6 +100,7 @@ public:
 	uint32_t get_current_app_id() const { return current_app_id; }
 	uint64_t get_current_clan_id() const { return current_clan_id; }
 	uint64_t get_current_steam_id() const { return current_steam_id; }
+	String get_godotsteam_version() const { return godotsteam_version; }
 	int32 get_inventory_handle() const { return inventory_handle; }
 	uint64_t get_inventory_update_handle() const { return inventory_update_handle; }
 	uint64_t get_leaderboard_handle() const { return leaderboard_handle; }
@@ -1443,11 +1443,11 @@ VARIANT_ENUM_CAST(TextFilteringContext);
 VARIANT_ENUM_CAST(TimelineGameMode);
 VARIANT_ENUM_CAST(TimelineEventClipPriority);
 
-VARIANT_ENUM_CAST(Universe);
 VARIANT_ENUM_CAST(UGCContentDescriptorID);
 VARIANT_ENUM_CAST(UGCMatchingUGCType);
 VARIANT_ENUM_CAST(UGCQuery);
 VARIANT_ENUM_CAST(UGCReadAction);
+VARIANT_ENUM_CAST(Universe);
 VARIANT_ENUM_CAST(UserHasLicenseForAppResult);
 VARIANT_ENUM_CAST(UserUGCList);
 VARIANT_ENUM_CAST(UserUGCListSortOrder);
