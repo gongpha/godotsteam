@@ -991,6 +991,7 @@ private:
 
 	// Run the Steamworks API callbacks /////
 	void run_callbacks();
+	void run_internal_callbacks();
 
 
 	// STEAM CALLBACKS

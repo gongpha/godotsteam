@@ -26,8 +26,8 @@
 //
 //===========================================================================//
 
-#ifndef GODOTSTEAM_REGISTER_TYPES_H
-#define GODOTSTEAM_REGISTER_TYPES_H
+#ifndef REGISTER_TYPES_H
+#define REGISTER_TYPES_H
 
 void register_godotsteam_types();
 void unregister_godotsteam_types();

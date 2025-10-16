@@ -464,16 +464,26 @@ void Steam::run_callbacks() {
 	if (SteamProjectSettings::get_embed_callbacks()) {
 		WARN_PRINT_ONCE("[STEAM] Embedded callbacks are enabled, disabling them due to manual call.");
 		if (were_callbacks_embedded) {
+			SceneTree *scene_tree = SceneTree::get_singleton();
+			ERR_FAIL_COND_MSG(scene_tree == nullptr, "[STEAM] SceneTree is not present, cannot disconnect Steam callbacks internally.");
+			SceneTree::get_singleton()->disconnect("idle_frame", Steam::singleton, "run_internal_callbacks");
+
 			were_callbacks_embedded = false;
-			SceneTree::get_singleton()->disconnect("idle_frame", Steam::singleton, "run_callbacks");
 		}
 	}
 }
 
+void Steam::run_internal_callbacks() {
+	SteamAPI_RunCallbacks();
+}
+
 void Steam::set_internal_callbacks(bool embed_callbacks) {
 	if (embed_callbacks || SteamProjectSettings::get_embed_callbacks()) {
+		SceneTree *scene_tree = SceneTree::get_singleton();
+		ERR_FAIL_COND_MSG(scene_tree == nullptr, "[STEAM] SceneTree is not present, cannot connect Steam callbacks internally.");
+		SceneTree::get_singleton()->connect("idle_frame", Steam::singleton, "run_internal_callbacks");
+
 		were_callbacks_embedded = true;
-		SceneTree::get_singleton()->connect("idle_frame", Steam::singleton, "run_callbacks");
 	}
 }
 
@@ -534,8 +544,11 @@ Dictionary Steam::steamInitEx(uint32_t app_id, bool embed_callbacks) {
 void Steam::steamShutdown() {
 	// If callbacks were connected internally
 	if (were_callbacks_embedded) {
+		SceneTree *scene_tree = SceneTree::get_singleton();
+		ERR_FAIL_COND_MSG(scene_tree == nullptr, "[STEAM] SceneTree is not present, cannot disconnect Steam callbacks internally.");
+		scene_tree->disconnect("idle_frame", Steam::singleton, "run_internal_callbacks");
+
 		were_callbacks_embedded = false;
-		SceneTree::get_singleton()->disconnect("idle_frame", Steam::singleton, "run_callbacks");
 	}
 	SteamAPI_Shutdown();
 }
@@ -3059,8 +3072,8 @@ Dictionary Steam::getAllLobbyData(uint64_t steam_lobby_id) {
 		if (success) {
 			Dictionary data;
 			data["index"] = i;
-			data["key"] = key;
-			data["value"] = value;
+			data["key"] = String::utf8(key);
+			data["value"] = String::utf8(value);
 			all_data[i] = data;
 		}
 	}
@@ -7545,7 +7558,7 @@ void Steam::clan_activity_downloaded(DownloadClanActivityCountsResult_t *call_da
 void Steam::friend_rich_presence_update(FriendRichPresenceUpdate_t *call_data) {
 	uint64_t steam_id = call_data->m_steamIDFriend.ConvertToUint64();
 	AppId_t app_id = call_data->m_nAppID;
-	emit_signal("friend_rich_presence_updated", steam_id, app_id);
+	emit_signal("friend_rich_presence_update", steam_id, app_id);
 }
 
 // Called when a user has joined a Steam group chat that the we are in.
