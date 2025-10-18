@@ -461,27 +461,14 @@ bool Steam::restartAppIfNecessary(uint32_t app_id) {
 
 void Steam::run_callbacks() {
 	SteamAPI_RunCallbacks();
-	if (SteamProjectSettings::get_embed_callbacks()) {
-		WARN_PRINT_ONCE("[STEAM] Embedded callbacks are enabled, disabling them due to manual call.");
-		if (were_callbacks_embedded) {
-			SceneTree *scene_tree = SceneTree::get_singleton();
-			ERR_FAIL_COND_MSG(scene_tree == nullptr, "[STEAM] SceneTree is not present, cannot disconnect Steam callbacks internally.");
-			SceneTree::get_singleton()->disconnect("idle_frame", Steam::singleton, "run_internal_callbacks");
-
-			were_callbacks_embedded = false;
-		}
-	}
 }
 
-void Steam::run_internal_callbacks() {
-	SteamAPI_RunCallbacks();
-}
 
 void Steam::set_internal_callbacks(bool embed_callbacks) {
 	if (embed_callbacks || SteamProjectSettings::get_embed_callbacks()) {
 		SceneTree *scene_tree = SceneTree::get_singleton();
 		ERR_FAIL_COND_MSG(scene_tree == nullptr, "[STEAM] SceneTree is not present, cannot connect Steam callbacks internally.");
-		SceneTree::get_singleton()->connect("idle_frame", Steam::singleton, "run_internal_callbacks");
+		scene_tree->connect("idle_frame", this, "run_callbacks");
 
 		were_callbacks_embedded = true;
 	}
@@ -546,7 +533,7 @@ void Steam::steamShutdown() {
 	if (were_callbacks_embedded) {
 		SceneTree *scene_tree = SceneTree::get_singleton();
 		ERR_FAIL_COND_MSG(scene_tree == nullptr, "[STEAM] SceneTree is not present, cannot disconnect Steam callbacks internally.");
-		scene_tree->disconnect("idle_frame", Steam::singleton, "run_internal_callbacks");
+		scene_tree->disconnect("idle_frame", this, "run_callbacks");
 
 		were_callbacks_embedded = false;
 	}
