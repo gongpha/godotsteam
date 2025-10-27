@@ -8976,7 +8976,7 @@ void Steam::file_read_async_complete(RemoteStorageFileReadAsyncComplete_t *call_
 void Steam::file_share_result(RemoteStorageFileShareResult_t *call_data, bool io_failure) {
 	ERR_FAIL_COND_MSG(io_failure, "[STEAM] file_share_result signal failed internally");
 	EResult result = call_data->m_eResult;
-	int handle = call_data->m_hFile;
+	uint64_t handle = call_data->m_hFile;
 	const char *name = call_data->m_rgchFilename;
 	emit_signal("file_share_result", result, handle, name);
 }
