@@ -80,6 +80,7 @@ public:
 
 	// STEAMWORKS FUNCTIONS
 	// Main
+	String get_godotsteam_version() const { return godotsteam_version; }
 	uint32_t getSteamID32(uint64_t steam_id);
 	bool isAnonAccount(uint64_t steam_id);
 	bool isAnonUserAccount(uint64_t steam_id);
@@ -100,7 +101,6 @@ public:
 	uint32_t get_current_app_id() const { return current_app_id; }
 	uint64_t get_current_clan_id() const { return current_clan_id; }
 	uint64_t get_current_steam_id() const { return current_steam_id; }
-	String get_godotsteam_version() const { return godotsteam_version; }
 	int32 get_inventory_handle() const { return inventory_handle; }
 	uint64_t get_inventory_update_handle() const { return inventory_update_handle; }
 	uint64_t get_leaderboard_handle() const { return leaderboard_handle; }
@@ -724,7 +724,8 @@ public:
 	bool addRequiredTag(uint64_t query_handle, const String &tag_name);
 	bool addRequiredTagGroup(uint64_t query_handle, Array tag_array);
 	void createItem(uint32_t app_id, WorkshopFileType file_type);
-	uint64_t createQueryAllUGCRequest(UGCQuery query_type, UGCMatchingUGCType matching_type, uint32_t creator_id, uint32_t consumer_id, uint32_t page);
+	uint64_t createQueryAllUGCRequestPage(UGCQuery query_type, UGCMatchingUGCType matching_type, uint32_t creator_id, uint32_t consumer_id, uint32_t page);
+	uint64_t createQueryAllUGCRequestCursor(UGCQuery query_type, UGCMatchingUGCType matching_type, uint32_t creator_id, uint32_t consumer_id, const String &cursor);
 	uint64_t createQueryUGCDetailsRequest(Array published_file_id_array);
 	uint64_t createQueryUserUGCRequest(uint64_t steam_id, UserUGCList list_type, UGCMatchingUGCType matching_ugc_type, UserUGCListSortOrder sort_order, uint32_t creator_id, uint32_t consumer_id, uint32_t page);
 	void deleteItem(uint64_t published_file_id);
@@ -1443,11 +1444,11 @@ VARIANT_ENUM_CAST(TextFilteringContext);
 VARIANT_ENUM_CAST(TimelineGameMode);
 VARIANT_ENUM_CAST(TimelineEventClipPriority);
 
+VARIANT_ENUM_CAST(Universe);
 VARIANT_ENUM_CAST(UGCContentDescriptorID);
 VARIANT_ENUM_CAST(UGCMatchingUGCType);
 VARIANT_ENUM_CAST(UGCQuery);
 VARIANT_ENUM_CAST(UGCReadAction);
-VARIANT_ENUM_CAST(Universe);
 VARIANT_ENUM_CAST(UserHasLicenseForAppResult);
 VARIANT_ENUM_CAST(UserUGCList);
 VARIANT_ENUM_CAST(UserUGCListSortOrder);
