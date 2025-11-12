@@ -4438,22 +4438,22 @@ void Steam::createFakeUDPPort(int fake_server_port_index) {
 // this to initialize the relay network. If you do not call this, the initialization will be delayed until the first time you use
 // a feature that requires access to the relay network, which will delay that first access.
 void Steam::initRelayNetworkAccess() {
-	ERR_FAIL_COND_MSG(SteamNetworkingUtils() == NULL, "[STEAM] Networking Utils class not found when calling: initRelayNetworkAccess");
-	SteamNetworkingUtils()->InitRelayNetworkAccess();
+	ERR_FAIL_COND_MSG(SteamAPI_SteamNetworkingUtils_SteamAPI() == NULL, "[STEAM] Networking Utils class not found when calling: initRelayNetworkAccess");
+	SteamAPI_ISteamNetworkingUtils_InitRelayNetworkAccess(SteamAPI_SteamNetworkingUtils_SteamAPI());
 }
 
 // Useful for interfacing with code that assumes peers are identified using an IPv4 address.
 bool Steam::isFakeIPv4(String ip_address) {
-	ERR_FAIL_COND_V_MSG(SteamNetworkingUtils() == NULL, false, "[STEAM] Networking Utils class not found when calling: initRelayNetworkAccess");
-	return SteamNetworkingUtils()->IsFakeIPv4(getIPFromString(ip_address));
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamNetworkingUtils_SteamAPI() == NULL, false, "[STEAM] Networking Utils class not found when calling: initRelayNetworkAccess");
+	return SteamAPI_ISteamNetworkingUtils_IsFakeIPv4(SteamAPI_SteamNetworkingUtils_SteamAPI(), getIPFromString(ip_address));
 }
 
 // Get the real identity associated with a given FakeIP.
 Dictionary Steam::getRealIdentityForFakeIP(const String &fake_ip) {
 	Dictionary identity;
-	ERR_FAIL_COND_V_MSG(SteamNetworkingUtils() == NULL, identity, "[STEAM] Networking Utils class not found when calling: initRelayNetworkAccess");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamNetworkingUtils_SteamAPI() == NULL, identity, "[STEAM] Networking Utils class not found when calling: initRelayNetworkAccess");
 	SteamNetworkingIdentity real_identity;
-	Result success = (Result)SteamNetworkingUtils()->GetRealIdentityForFakeIP(getSteamIPFromString(fake_ip), &real_identity);
+	Result success = (Result)SteamAPI_ISteamNetworkingUtils_GetRealIdentityForFakeIP(SteamAPI_SteamNetworkingUtils_SteamAPI(), getSteamIPFromString(fake_ip), &real_identity);
 	identity["result"] = success;
 	identity["identity"] = getSteamIDFromIdentity(real_identity);
 	return identity;
@@ -4461,16 +4461,16 @@ Dictionary Steam::getRealIdentityForFakeIP(const String &fake_ip) {
 
 // Fetch current status of the relay network.  If you want more details, you can pass a non-NULL value.
 NetworkingAvailability Steam::getRelayNetworkStatus() {
-	ERR_FAIL_COND_V_MSG(SteamNetworkingUtils() == NULL, NETWORKING_AVAILABILITY_UNKNOWN, "[STEAM] Networking Utils class not found when calling: getRelayNetworkStatus");
-	return NetworkingAvailability(SteamNetworkingUtils()->GetRelayNetworkStatus(NULL));
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamNetworkingUtils_SteamAPI() == NULL, NETWORKING_AVAILABILITY_UNKNOWN, "[STEAM] Networking Utils class not found when calling: getRelayNetworkStatus");
+	return NetworkingAvailability(SteamAPI_ISteamNetworkingUtils_GetRelayNetworkStatus(SteamAPI_SteamNetworkingUtils_SteamAPI(), NULL));
 }
 
 // Return location info for the current host. Returns the approximate age of the data, in seconds, or -1 if no data is available.
 Dictionary Steam::getLocalPingLocation() {
 	Dictionary ping_location;
-	ERR_FAIL_COND_V_MSG(SteamNetworkingUtils() == NULL, ping_location, "[STEAM] Networking Utils class not found when calling: getLocalPingLocation");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamNetworkingUtils_SteamAPI() == NULL, ping_location, "[STEAM] Networking Utils class not found when calling: getLocalPingLocation");
 	SteamNetworkPingLocation_t location;
-	float age = SteamNetworkingUtils()->GetLocalPingLocation(location);
+	float age = SteamAPI_ISteamNetworkingUtils_GetLocalPingLocation(SteamAPI_SteamNetworkingUtils_SteamAPI(), location);
 
 	PackedByteArray data;
 	data.resize(512);
@@ -4487,7 +4487,7 @@ Dictionary Steam::getLocalPingLocation() {
 // routing through the relay network. For most basic relayed connections, this ping time will be pretty accurate, since it will
 // be based on the route likely to be actually used.
 int Steam::estimatePingTimeBetweenTwoLocations(PackedByteArray location1, PackedByteArray location2) {
-	ERR_FAIL_COND_V_MSG(SteamNetworkingUtils() == NULL, 0, "[STEAM] Networking Utils class not found when calling: estimatePingTimeBetweenTwoLocations");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamNetworkingUtils_SteamAPI() == NULL, 0, "[STEAM] Networking Utils class not found when calling: estimatePingTimeBetweenTwoLocations");
 	SteamNetworkPingLocation_t ping_location1;
 	SteamNetworkPingLocation_t ping_location2;
 	uint8_t *input_location_1 = (uint8_t *)location1.ptr();
@@ -4499,19 +4499,19 @@ int Steam::estimatePingTimeBetweenTwoLocations(PackedByteArray location1, Packed
 	for (int j = 0; j < 512; j++) {
 		ping_location2.m_data[j] = (uint8_t)input_location_2[j];
 	}
-	return SteamNetworkingUtils()->EstimatePingTimeBetweenTwoLocations(ping_location1, ping_location2);
+	return SteamAPI_ISteamNetworkingUtils_EstimatePingTimeBetweenTwoLocations(SteamAPI_SteamNetworkingUtils_SteamAPI(), ping_location1, ping_location2);
 }
 
 // Same as EstimatePingTime, but assumes that one location is the local host. This is a bit faster, especially if you need to
 // calculate a bunch of these in a loop to find the fastest one.
 int Steam::estimatePingTimeFromLocalHost(PackedByteArray location) {
-	ERR_FAIL_COND_V_MSG(SteamNetworkingUtils() == NULL, 0, "[STEAM] Networking Utils class not found when calling: estimatePingTimeFromLocalHost");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamNetworkingUtils_SteamAPI() == NULL, 0, "[STEAM] Networking Utils class not found when calling: estimatePingTimeFromLocalHost");
 	SteamNetworkPingLocation_t ping_location;
 	uint8_t *input_location = (uint8_t *)location.ptr();
 	for (int j = 0; j < 512; j++) {
 		ping_location.m_data[j] = input_location[j];
 	}
-	return SteamNetworkingUtils()->EstimatePingTimeFromLocalHost(ping_location);
+	return SteamAPI_ISteamNetworkingUtils_EstimatePingTimeFromLocalHost(SteamAPI_SteamNetworkingUtils_SteamAPI(), ping_location);
 }
 
 // Convert a ping location into a text format suitable for sending over the wire. The format is a compact and human readable.
@@ -4519,7 +4519,7 @@ int Steam::estimatePingTimeFromLocalHost(PackedByteArray location) {
 // k_cchMaxSteamNetworkingPingLocationString bytes.
 String Steam::convertPingLocationToString(PackedByteArray location) {
 	String location_string = "";
-	ERR_FAIL_COND_V_MSG(SteamNetworkingUtils() == NULL, location_string, "[STEAM] Networking Utils class not found when calling: convertPingLocationToString");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamNetworkingUtils_SteamAPI() == NULL, location_string, "[STEAM] Networking Utils class not found when calling: convertPingLocationToString");
 	SteamNetworkPingLocation_t ping_location;
 	uint8_t *input_location = (uint8_t *)location.ptr();
 	for (int j = 0; j < 512; j++) {
@@ -4527,7 +4527,7 @@ String Steam::convertPingLocationToString(PackedByteArray location) {
 	}
 
 	char buffer[512 + 1]{};
-	SteamNetworkingUtils()->ConvertPingLocationToString(ping_location, buffer, k_cchMaxSteamNetworkingPingLocationString);
+	SteamAPI_ISteamNetworkingUtils_ConvertPingLocationToString(SteamAPI_SteamNetworkingUtils_SteamAPI(), ping_location, buffer, k_cchMaxSteamNetworkingPingLocationString);
 	location_string += buffer;
 	return location_string;
 }
@@ -4536,16 +4536,16 @@ String Steam::convertPingLocationToString(PackedByteArray location) {
 // be possible to display or edit using a generic UI.  To get the first iterable value,
 // pass NETWORKING_CONFIG_INVALID.  Returns NETWORKING_CONFIG_INVALID to signal end of list.
 NetworkingConfigValue Steam::iterateGenericEditableConfigValues(NetworkingConfigValue current_value, bool enumerate_dev_vars) {
-	ERR_FAIL_COND_V_MSG(SteamNetworkingUtils() == NULL, NETWORKING_CONFIG_INVALID, "[STEAM] Networking Utils class not found when calling: iterateGenericEditableConfigValues");
-	return (NetworkingConfigValue)SteamNetworkingUtils()->IterateGenericEditableConfigValues((ESteamNetworkingConfigValue)current_value, enumerate_dev_vars);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamNetworkingUtils_SteamAPI() == NULL, NETWORKING_CONFIG_INVALID, "[STEAM] Networking Utils class not found when calling: iterateGenericEditableConfigValues");
+	return (NetworkingConfigValue)SteamAPI_ISteamNetworkingUtils_IterateGenericEditableConfigValues(SteamAPI_SteamNetworkingUtils_SteamAPI(), (ESteamNetworkingConfigValue)current_value, enumerate_dev_vars);
 }
 
 // Parse back SteamNetworkPingLocation_t string. Returns false if we couldn't understand the string.
 Dictionary Steam::parsePingLocationString(const String &location_string) {
 	Dictionary parse_string;
-	ERR_FAIL_COND_V_MSG(SteamNetworkingUtils() == NULL, parse_string, "[STEAM] Networking Utils class not found when calling: parsePingLocationString");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamNetworkingUtils_SteamAPI() == NULL, parse_string, "[STEAM] Networking Utils class not found when calling: parsePingLocationString");
 	SteamNetworkPingLocation_t result;
-	bool success = SteamNetworkingUtils()->ParsePingLocationString(location_string.utf8().get_data(), result);
+	bool success = SteamAPI_ISteamNetworkingUtils_ParsePingLocationString(SteamAPI_SteamNetworkingUtils_SteamAPI(), location_string.utf8().get_data(), result);
 	
 	PackedByteArray data;
 	data.resize(512);
@@ -4560,16 +4560,16 @@ Dictionary Steam::parsePingLocationString(const String &location_string) {
 
 // Check if the ping data of sufficient recency is available, and if it's too old, start refreshing it.
 bool Steam::checkPingDataUpToDate(float max_age_in_seconds) {
-	ERR_FAIL_COND_V_MSG(SteamNetworkingUtils() == NULL, false, "[STEAM] Networking Utils class not found when calling: checkPingDataUpToDate");
-	return SteamNetworkingUtils()->CheckPingDataUpToDate(max_age_in_seconds);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamNetworkingUtils_SteamAPI() == NULL, false, "[STEAM] Networking Utils class not found when calling: checkPingDataUpToDate");
+	return SteamAPI_ISteamNetworkingUtils_CheckPingDataUpToDate(SteamAPI_SteamNetworkingUtils_SteamAPI(), max_age_in_seconds);
 }
 
 // Fetch ping time of best available relayed route from this host to the specified data center.
 Dictionary Steam::getPingToDataCenter(uint32_t pop_id) {
 	Dictionary data_center_ping;
-	ERR_FAIL_COND_V_MSG(SteamNetworkingUtils() == NULL, data_center_ping, "[STEAM] Networking Utils class not found when calling: getPingToDataCenter");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamNetworkingUtils_SteamAPI() == NULL, data_center_ping, "[STEAM] Networking Utils class not found when calling: getPingToDataCenter");
 	SteamNetworkingPOPID via_relay_pop;
-	int ping = SteamNetworkingUtils()->GetPingToDataCenter((SteamNetworkingPOPID)pop_id, &via_relay_pop);
+	int ping = SteamAPI_ISteamNetworkingUtils_GetPingToDataCenter(SteamAPI_SteamNetworkingUtils_SteamAPI(), (SteamNetworkingPOPID)pop_id, &via_relay_pop);
 
 	data_center_ping["pop_relay"] = via_relay_pop;
 	data_center_ping["ping"] = ping;
@@ -4578,28 +4578,28 @@ Dictionary Steam::getPingToDataCenter(uint32_t pop_id) {
 
 // Get *direct* ping time to the relays at the point of presence.
 int Steam::getDirectPingToPOP(uint32_t pop_id) {
-	ERR_FAIL_COND_V_MSG(SteamNetworkingUtils() == NULL, 0, "[STEAM] Networking Utils class not found when calling: getDirectPingToPOP");
-	return SteamNetworkingUtils()->GetDirectPingToPOP((SteamNetworkingPOPID)pop_id);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamNetworkingUtils_SteamAPI() == NULL, 0, "[STEAM] Networking Utils class not found when calling: getDirectPingToPOP");
+	return SteamAPI_ISteamNetworkingUtils_GetDirectPingToPOP(SteamAPI_SteamNetworkingUtils_SteamAPI(), (SteamNetworkingPOPID)pop_id);
 }
 
 // Get the FakeIP type for the given IPv4 address.
 NetworkingFakeIPType Steam::getIPv4FakeIPType(const String &ipv4) {
-	ERR_FAIL_COND_V_MSG(SteamNetworkingUtils() == NULL, FAKE_IP_TYPE_INVALID, "[STEAM] Networking Utils class not found when calling: getIPv4FakeIPType");
-	return (NetworkingFakeIPType)SteamNetworkingUtils()->GetIPv4FakeIPType(getIPFromString(ipv4));
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamNetworkingUtils_SteamAPI() == NULL, FAKE_IP_TYPE_INVALID, "[STEAM] Networking Utils class not found when calling: getIPv4FakeIPType");
+	return (NetworkingFakeIPType)SteamAPI_ISteamNetworkingUtils_GetIPv4FakeIPType(SteamAPI_SteamNetworkingUtils_SteamAPI(), getIPFromString(ipv4));
 }
 
 // Get number of network points of presence in the config
 int Steam::getPOPCount() {
-	ERR_FAIL_COND_V_MSG(SteamNetworkingUtils() == NULL, 0, "[STEAM] Networking Utils class not found when calling: getPOPCount");
-	return SteamNetworkingUtils()->GetPOPCount();
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamNetworkingUtils_SteamAPI() == NULL, 0, "[STEAM] Networking Utils class not found when calling: getPOPCount");
+	return SteamAPI_ISteamNetworkingUtils_GetPOPCount(SteamAPI_SteamNetworkingUtils_SteamAPI());
 }
 
 // Get list of all POP IDs. Returns the number of entries that were filled into your list.
 Array Steam::getPOPList() {
 	Array pop_list;
-	ERR_FAIL_COND_V_MSG(SteamNetworkingUtils() == NULL, pop_list, "[STEAM] Networking Utils class not found when calling: getPOPList");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamNetworkingUtils_SteamAPI() == NULL, pop_list, "[STEAM] Networking Utils class not found when calling: getPOPList");
 	SteamNetworkingPOPID list[256];
-	int pops = SteamNetworkingUtils()->GetPOPList(list, 256);
+	int pops = SteamAPI_ISteamNetworkingUtils_GetPOPList(SteamAPI_SteamNetworkingUtils_SteamAPI(), list, 256);
 	
 	for (int i = 0; i < pops; i++) {
 		int pop_id = list[i];
@@ -4611,17 +4611,17 @@ Array Steam::getPOPList() {
 // Set a configuration value.
 //bool Steam::setConfigValue(NetworkingConfigValue setting, NetworkingConfigScope scope_type, uint32_t connection_handle, NetworkingConfigDataType data_type, auto value) {
 //	ERR_FAIL_COND_V_MSG(SteamGameServer() == NULL, false, "[STEAM] Networking Utils class not found when calling: setConfigValue");
-//	return SteamNetworkingUtils()->SetConfigValue((ESteamNetworkingConfigValue)setting, (ESteamNetworkingConfigScope)scope_type, connection_handle, (ESteamNetworkingConfigDataType)data_type, value);
+//	return SteamAPI_ISteamNetworkingUtils_SetConfigValue(SteamAPI_SteamNetworkingUtils_SteamAPI(), (ESteamNetworkingConfigValue)setting, (ESteamNetworkingConfigScope)scope_type, connection_handle, (ESteamNetworkingConfigDataType)data_type, value);
 //}
 
 // Get a configuration value.
 Dictionary Steam::getConfigValue(NetworkingConfigValue config_value, NetworkingConfigScope scope_type, uint32_t connection_handle) {
 	Dictionary config_info;
-	ERR_FAIL_COND_V_MSG(SteamNetworkingUtils() == NULL, config_info, "[STEAM] Networking Utils class not found when calling: getConfigValue");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamNetworkingUtils_SteamAPI() == NULL, config_info, "[STEAM] Networking Utils class not found when calling: getConfigValue");
 	ESteamNetworkingConfigDataType data_type;
 	size_t buffer_size;
 	PackedByteArray config_result;
-	NetworkingGetConfigValueResult result = (NetworkingGetConfigValueResult)SteamNetworkingUtils()->GetConfigValue((ESteamNetworkingConfigValue)config_value, (ESteamNetworkingConfigScope)scope_type, connection_handle, &data_type, &config_result, &buffer_size);
+	NetworkingGetConfigValueResult result = (NetworkingGetConfigValueResult)SteamAPI_ISteamNetworkingUtils_GetConfigValue(SteamAPI_SteamNetworkingUtils_SteamAPI(), (ESteamNetworkingConfigValue)config_value, (ESteamNetworkingConfigScope)scope_type, connection_handle, &data_type, &config_result, &buffer_size);
 	
 	config_info["result"] = result;
 	config_info["type"] = data_type;
@@ -4632,10 +4632,10 @@ Dictionary Steam::getConfigValue(NetworkingConfigValue config_value, NetworkingC
 // Returns info about a configuration value.
 Dictionary Steam::getConfigValueInfo(NetworkingConfigValue config_value) {
 	Dictionary config_info;
-	ERR_FAIL_COND_V_MSG(SteamNetworkingUtils() == NULL, config_info, "[STEAM] Networking Utils class not found when calling: getConfigValueInfo");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamNetworkingUtils_SteamAPI() == NULL, config_info, "[STEAM] Networking Utils class not found when calling: getConfigValueInfo");
 	ESteamNetworkingConfigDataType data_type;
 	ESteamNetworkingConfigScope scope;
-	const char *value_name = SteamNetworkingUtils()->GetConfigValueInfo((ESteamNetworkingConfigValue)config_value, &data_type, &scope);
+	const char *value_name = SteamAPI_ISteamNetworkingUtils_GetConfigValueInfo(SteamAPI_SteamNetworkingUtils_SteamAPI(), (ESteamNetworkingConfigValue)config_value, &data_type, &scope);
 	config_info["name"] = String(value_name);
 	config_info["type"] = data_type;
 	config_info["scope"] = scope;
@@ -4644,41 +4644,41 @@ Dictionary Steam::getConfigValueInfo(NetworkingConfigValue config_value) {
 
 // The following functions are handy shortcuts for common use cases.
 bool Steam::setGlobalConfigValueInt32(NetworkingConfigValue config, int32_t value) {
-	ERR_FAIL_COND_V_MSG(SteamNetworkingUtils() == NULL, false, "[STEAM] Networking Utils class not found when calling: setGlobalConfigValueInt32");
-	return SteamNetworkingUtils()->SetGlobalConfigValueInt32((ESteamNetworkingConfigValue)config, value);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamNetworkingUtils_SteamAPI() == NULL, false, "[STEAM] Networking Utils class not found when calling: setGlobalConfigValueInt32");
+	return SteamAPI_ISteamNetworkingUtils_SetGlobalConfigValueInt32(SteamAPI_SteamNetworkingUtils_SteamAPI(), (ESteamNetworkingConfigValue)config, value);
 }
 
 bool Steam::setGlobalConfigValueFloat(NetworkingConfigValue config, float value) {
-	ERR_FAIL_COND_V_MSG(SteamNetworkingUtils() == NULL, false, "[STEAM] Networking Utils class not found when calling: setGlobalConfigValueFloat");
-	return SteamNetworkingUtils()->SetGlobalConfigValueFloat((ESteamNetworkingConfigValue)config, value);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamNetworkingUtils_SteamAPI() == NULL, false, "[STEAM] Networking Utils class not found when calling: setGlobalConfigValueFloat");
+	return SteamAPI_ISteamNetworkingUtils_SetGlobalConfigValueFloat(SteamAPI_SteamNetworkingUtils_SteamAPI(), (ESteamNetworkingConfigValue)config, value);
 }
 
 bool Steam::setGlobalConfigValueString(NetworkingConfigValue config, const String &value) {
-	ERR_FAIL_COND_V_MSG(SteamNetworkingUtils() == NULL, false, "[STEAM] Networking Utils class not found when calling: setGlobalConfigValueString");
-	return SteamNetworkingUtils()->SetGlobalConfigValueString((ESteamNetworkingConfigValue)config, value.utf8().get_data());
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamNetworkingUtils_SteamAPI() == NULL, false, "[STEAM] Networking Utils class not found when calling: setGlobalConfigValueString");
+	return SteamAPI_ISteamNetworkingUtils_SetGlobalConfigValueString(SteamAPI_SteamNetworkingUtils_SteamAPI(), (ESteamNetworkingConfigValue)config, value.utf8().get_data());
 }
 
 bool Steam::setConnectionConfigValueInt32(uint32_t connection_handle, NetworkingConfigValue config, int32_t value) {
-	ERR_FAIL_COND_V_MSG(SteamNetworkingUtils() == NULL, false, "[STEAM] Networking Utils class not found when calling: setConnectionConfigValueInt32");
-	return SteamNetworkingUtils()->SetConnectionConfigValueInt32(connection_handle, (ESteamNetworkingConfigValue)config, value);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamNetworkingUtils_SteamAPI() == NULL, false, "[STEAM] Networking Utils class not found when calling: setConnectionConfigValueInt32");
+	return SteamAPI_ISteamNetworkingUtils_SetConnectionConfigValueInt32(SteamAPI_SteamNetworkingUtils_SteamAPI(), connection_handle, (ESteamNetworkingConfigValue)config, value);
 }
 
 bool Steam::setConnectionConfigValueFloat(uint32_t connection_handle, NetworkingConfigValue config, float value) {
-	ERR_FAIL_COND_V_MSG(SteamNetworkingUtils() == NULL, false, "[STEAM] Networking Utils class not found when calling: setConnectionConfigValueFloat");
-	return SteamNetworkingUtils()->SetConnectionConfigValueFloat(connection_handle, (ESteamNetworkingConfigValue)config, value);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamNetworkingUtils_SteamAPI() == NULL, false, "[STEAM] Networking Utils class not found when calling: setConnectionConfigValueFloat");
+	return SteamAPI_ISteamNetworkingUtils_SetConnectionConfigValueFloat(SteamAPI_SteamNetworkingUtils_SteamAPI(), connection_handle, (ESteamNetworkingConfigValue)config, value);
 }
 
 bool Steam::setConnectionConfigValueString(uint32_t connection_handle, NetworkingConfigValue config, const String &value) {
-	ERR_FAIL_COND_V_MSG(SteamNetworkingUtils() == NULL, false, "[STEAM] Networking Utils class not found when calling: setConnectionConfigValueString");
-	return SteamNetworkingUtils()->SetConnectionConfigValueString(connection_handle, (ESteamNetworkingConfigValue)config, value.utf8().get_data());
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamNetworkingUtils_SteamAPI() == NULL, false, "[STEAM] Networking Utils class not found when calling: setConnectionConfigValueString");
+	return SteamAPI_ISteamNetworkingUtils_SetConnectionConfigValueString(SteamAPI_SteamNetworkingUtils_SteamAPI(), connection_handle, (ESteamNetworkingConfigValue)config, value.utf8().get_data());
 }
 
 // A general purpose high resolution local timer with the following properties: Monotonicity is guaranteed. The initial value will
 // be at least 24*3600*30*1e6, i.e. about 30 days worth of microseconds. In this way, the timestamp value of 0 will always be at
 // least "30 days ago". Also, negative numbers will never be returned. Wraparound / overflow is not a practical concern.
 uint64_t Steam::getLocalTimestamp() {
-	ERR_FAIL_COND_V_MSG(SteamNetworkingUtils() == NULL, 0, "[STEAM] Networking Utils class not found when calling: getLocalTimestamp");
-	return SteamNetworkingUtils()->GetLocalTimestamp();
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamNetworkingUtils_SteamAPI() == NULL, 0, "[STEAM] Networking Utils class not found when calling: getLocalTimestamp");
+	return SteamAPI_ISteamNetworkingUtils_GetLocalTimestamp(SteamAPI_SteamNetworkingUtils_SteamAPI());
 }
 
 
@@ -7326,7 +7326,7 @@ void Steam::setGameLauncherMode(bool mode) {
 }
 
 bool Steam::setGlobalCallbackSteamNetConnectionStatusChanged() {
-	ERR_FAIL_COND_V_MSG(SteamNetworkingUtils() == NULL, false, "[STEAM] Networking Utils not found when calling: setGlobalCallbackSteamNetConnectionStatusChanged");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamNetworkingUtils_SteamAPI() == NULL, false, "[STEAM] Networking Utils not found when calling: setGlobalCallbackSteamNetConnectionStatusChanged");
 	FnSteamNetConnectionStatusChanged callback = [](SteamNetConnectionStatusChangedCallback_t *call_data) {
 		Steam::get_singleton()->network_connection_status_changed(call_data);
 	};
@@ -7334,7 +7334,7 @@ bool Steam::setGlobalCallbackSteamNetConnectionStatusChanged() {
 }
 
 bool Steam::setGlobalCallbackSteamNetAuthenticationStatusChanged() {
-	ERR_FAIL_COND_V_MSG(SteamNetworkingUtils() == NULL, false, "[STEAM] Networking Utils not found when calling: setGlobalCallbackSteamNetAuthenticationStatusChanged");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamNetworkingUtils_SteamAPI() == NULL, false, "[STEAM] Networking Utils not found when calling: setGlobalCallbackSteamNetAuthenticationStatusChanged");
 	FnSteamNetAuthenticationStatusChanged callback = [](SteamNetAuthenticationStatus_t *call_data) {
 		Steam::get_singleton()->network_authentication_status(call_data);
 	};
@@ -7342,7 +7342,7 @@ bool Steam::setGlobalCallbackSteamNetAuthenticationStatusChanged() {
 }
 
 bool Steam::setGlobalCallbackFakeIPResult() {
-	ERR_FAIL_COND_V_MSG(SteamNetworkingUtils() == NULL, false, "[STEAM] Networking Utils not found when calling: setGlobalCallbackFakeIPResult");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamNetworkingUtils_SteamAPI() == NULL, false, "[STEAM] Networking Utils not found when calling: setGlobalCallbackFakeIPResult");
 	FnSteamNetworkingFakeIPResult callback = [](SteamNetworkingFakeIPResult_t *call_data) {
 		Steam::get_singleton()->fake_ip_result(call_data);
 	};
@@ -7350,7 +7350,7 @@ bool Steam::setGlobalCallbackFakeIPResult() {
 }
 
 bool Steam::setGlobalCallbackMessagesSessionFailed() {
-	ERR_FAIL_COND_V_MSG(SteamNetworkingUtils() == NULL, false, "[STEAM] Networking Utils not found when calling: setGlobalCallbackMessagesSessionFailed");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamNetworkingUtils_SteamAPI() == NULL, false, "[STEAM] Networking Utils not found when calling: setGlobalCallbackMessagesSessionFailed");
 	FnSteamNetworkingMessagesSessionFailed callback = [](SteamNetworkingMessagesSessionFailed_t *call_data) {
 		Steam::get_singleton()->network_messages_session_failed(call_data);
 	};
@@ -7358,7 +7358,7 @@ bool Steam::setGlobalCallbackMessagesSessionFailed() {
 }
 
 bool Steam::setGlobalCallbackMessagesSessionRequest() {
-	ERR_FAIL_COND_V_MSG(SteamNetworkingUtils() == NULL, false, "[STEAM] Networking Utils not found when calling: setGlobalCallbackMessagesSessionRequest");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamNetworkingUtils_SteamAPI() == NULL, false, "[STEAM] Networking Utils not found when calling: setGlobalCallbackMessagesSessionRequest");
 	FnSteamNetworkingMessagesSessionRequest callback = [](SteamNetworkingMessagesSessionRequest_t *call_data) {
 		Steam::get_singleton()->network_messages_session_request(call_data);
 	};
@@ -7366,7 +7366,7 @@ bool Steam::setGlobalCallbackMessagesSessionRequest() {
 }
 
 bool Steam::setGlobalCallbackSteamRelayNetworkStatusChanged() {
-	ERR_FAIL_COND_V_MSG(SteamNetworkingUtils() == NULL, false, "[STEAM] Networking Utils not found when calling: setGlobalCallbackSteamRelayNetworkStatusChanged");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamNetworkingUtils_SteamAPI() == NULL, false, "[STEAM] Networking Utils not found when calling: setGlobalCallbackSteamRelayNetworkStatusChanged");
 	FnSteamRelayNetworkStatusChanged callback = [](SteamRelayNetworkStatus_t *call_data) {
 		Steam::get_singleton()->relay_network_status(call_data);
 	};
