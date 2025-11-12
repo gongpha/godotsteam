@@ -729,7 +729,8 @@ public:
 	bool addRequiredTag(uint64_t query_handle, const String &tag_name);
 	bool addRequiredTagGroup(uint64_t query_handle, Array tag_array);
 	void createItem(uint32_t app_id, WorkshopFileType file_type);
-	uint64_t createQueryAllUGCRequest(UGCQuery query_type, UGCMatchingUGCType matching_type, uint32_t creator_id, uint32_t consumer_id, uint32_t page);
+	uint64_t createQueryAllUGCRequestPage(UGCQuery query_type, UGCMatchingUGCType matching_type, uint32_t creator_id, uint32_t consumer_id, uint32_t page);
+	uint64_t createQueryAllUGCRequestCursor(UGCQuery query_type, UGCMatchingUGCType matching_type, uint32_t creator_id, uint32_t consumer_id, const String &cursor);
 	uint64_t createQueryUGCDetailsRequest(Array published_file_id_array);
 	uint64_t createQueryUserUGCRequest(uint64_t steam_id, UserUGCList list_type, UGCMatchingUGCType matching_ugc_type, UserUGCListSortOrder sort_order, uint32_t creator_id, uint32_t consumer_id, uint32_t page);
 	void deleteItem(uint64_t published_file_id);

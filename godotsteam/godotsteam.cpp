@@ -26,6 +26,7 @@
 //
 //===========================================================================//
 
+
 // Turn off MSVC-only warning about strcpy
 #ifdef _MSC_VER
 #define _CRT_SECURE_NO_WARNINGS 1
@@ -213,7 +214,7 @@ Steam::Steam() :
 	callbackUserStatsStored(this, &Steam::user_stats_stored),
 	callbackUserStatsUnloaded(this, &Steam::user_stats_unloaded),
 
-	// Utility
+	// Utils
 	callbackGamepadTextInputDismissed(this, &Steam::gamepad_text_input_dismissed),
 	callbackIPCountry(this, &Steam::ip_country),
 	callbackLowPower(this, &Steam::low_power),
@@ -464,13 +465,13 @@ bool Steam::restartAppIfNecessary(uint32_t app_id) {
 void Steam::run_callbacks() {
 	SteamAPI_RunCallbacks();
 	if (SteamProjectSettings::get_embed_callbacks() && !SteamProjectSettings::get_auto_init()) {
-		WARN_PRINT_ONCE("[STEAM] Embedded callbacks is enabled, ignoring manual call to run_callbacks.");
+		WARN_PRINT_ONCE("[STEAM] Embedded callbacks are enabled, disabling them due to manual call.");
 		if (were_callbacks_embedded) {
 			RenderingServer *rendering_server = RenderingServer::get_singleton();
 			ERR_FAIL_COND_MSG(rendering_server == nullptr, "[STEAM] SceneTree is not present, cannot disconnect Steam callbacks internally.");
 			rendering_server->disconnect("frame_post_draw", callable_mp(this, &Steam::run_internal_callbacks));
 
-			were_callbacks_embedded = true;
+			were_callbacks_embedded = false;
 		}
 	}
 }
@@ -2187,65 +2188,65 @@ bool Steam::setHTTPRequestUserAgentInfo(uint32_t request_handle, const String &u
 
 // Reconfigure the controller to use the specified action set.
 void Steam::activateActionSet(uint64_t input_handle, uint64_t action_set_handle) {
-	ERR_FAIL_COND_MSG(SteamInput() == NULL, "[STEAM] Input not found when calling: activateActionSet");
-	SteamInput()->ActivateActionSet((InputHandle_t)input_handle, (ControllerActionSetHandle_t)action_set_handle);
+	ERR_FAIL_COND_MSG(SteamAPI_SteamInput() == NULL, "[STEAM] Input not found when calling: activateActionSet");
+	SteamAPI_ISteamInput_ActivateActionSet(SteamAPI_SteamInput(), (InputHandle_t)input_handle, (ControllerActionSetHandle_t)action_set_handle);
 }
 
 // Reconfigure the controller to use the specified action set layer.
 void Steam::activateActionSetLayer(uint64_t input_handle, uint64_t action_set_layer_handle) {
-	ERR_FAIL_COND_MSG(SteamInput() == NULL, "[STEAM] Input not found when calling: activateActionSetLayer");
-	SteamInput()->ActivateActionSetLayer((InputHandle_t)input_handle, (ControllerActionSetHandle_t)action_set_layer_handle);
+	ERR_FAIL_COND_MSG(SteamAPI_SteamInput() == NULL, "[STEAM] Input not found when calling: activateActionSetLayer");
+	SteamAPI_ISteamInput_ActivateActionSetLayer(SteamAPI_SteamInput(), (InputHandle_t)input_handle, (ControllerActionSetHandle_t)action_set_layer_handle);
 }
 
 // Reconfigure the controller to stop using the specified action set.
 void Steam::deactivateActionSetLayer(uint64_t input_handle, uint64_t action_set_handle) {
-	ERR_FAIL_COND_MSG(SteamInput() == NULL,  "[STEAM] Input not found when calling: deactivateActionSetLayer");
-	SteamInput()->DeactivateActionSetLayer((InputHandle_t)input_handle, (ControllerActionSetHandle_t)action_set_handle);
+	ERR_FAIL_COND_MSG(SteamAPI_SteamInput() == NULL,  "[STEAM] Input not found when calling: deactivateActionSetLayer");
+	SteamAPI_ISteamInput_DeactivateActionSetLayer(SteamAPI_SteamInput(), (InputHandle_t)input_handle, (ControllerActionSetHandle_t)action_set_handle);
 }
 
 // Reconfigure the controller to stop using all action set layers.
 void Steam::deactivateAllActionSetLayers(uint64_t input_handle) {
-	ERR_FAIL_COND_MSG(SteamInput() == NULL, "[STEAM] Input not found when calling: deactivateAllActionSetLayers");
-	SteamInput()->DeactivateAllActionSetLayers((InputHandle_t)input_handle);
+	ERR_FAIL_COND_MSG(SteamAPI_SteamInput() == NULL, "[STEAM] Input not found when calling: deactivateAllActionSetLayers");
+	SteamAPI_ISteamInput_DeactivateAllActionSetLayers(SteamAPI_SteamInput(), (InputHandle_t)input_handle);
 }
 
 // Enable SteamInputActionEvent_t callbacks. Directly calls your callback function for lower latency than standard Steam callbacks.
 // Supports one callback at a time.
 // Note: this is called within either SteamInput()->RunFrame or by SteamAPI_RunCallbacks
 void Steam::enableActionEventCallbacks() {
-	ERR_FAIL_COND_MSG(SteamInput() == NULL, "[STEAM] Input not found when calling: enableActionEventCallbacks");
+	ERR_FAIL_COND_MSG(SteamAPI_SteamInput() == NULL, "[STEAM] Input not found when calling: enableActionEventCallbacks");
 	SteamInputActionEventCallbackPointer callback = [](SteamInputActionEvent_t *call_data){
 		Steam::get_singleton()->input_action_event_callback(call_data);
 	};
-	SteamInput()->EnableActionEventCallbacks(callback);
+	SteamAPI_ISteamInput_EnableActionEventCallbacks(SteamAPI_SteamInput(), callback);
 }
 
 // Enable SteamInputDeviceConnected_t and SteamInputDeviceDisconnected_t callbacks. Each controller that is already connected
 // will generate a device connected callback when you enable them.
 void Steam::enableDeviceCallbacks() {
-	ERR_FAIL_COND_MSG(SteamInput() == NULL, "[STEAM] Input not found when calling: enableDeviceCallbacks");
-	SteamInput()->EnableDeviceCallbacks();
+	ERR_FAIL_COND_MSG(SteamAPI_SteamInput() == NULL, "[STEAM] Input not found when calling: enableDeviceCallbacks");
+	SteamAPI_ISteamInput_EnableDeviceCallbacks(SteamAPI_SteamInput());
 }
 
 // Lookup the handle for an Action Set. Best to do this once on startup, and store the handles for all future API calls.
 uint64_t Steam::getActionSetHandle(const String &action_set_name) {
-	ERR_FAIL_COND_V_MSG(SteamInput() == NULL, 0, "[STEAM] Input not found when calling: activateActionSet");
-	return (uint64_t)SteamInput()->GetActionSetHandle(action_set_name.utf8().get_data());
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamInput() == NULL, 0, "[STEAM] Input not found when calling: activateActionSet");
+	return (uint64_t)SteamAPI_ISteamInput_GetActionSetHandle(SteamAPI_SteamInput(), action_set_name.utf8().get_data());
 }
 
 // Get an action origin that you can use in your glyph look up table or passed into GetGlyphForActionOrigin or
 // GetStringForActionOrigin.
 InputActionOrigin Steam::getActionOriginFromXboxOrigin(uint64_t input_handle, XboxOrigin origin) {
-	ERR_FAIL_COND_V_MSG(SteamInput() == NULL, INPUT_ACTION_ORIGIN_NONE, "[STEAM] Input not found when calling: getActionOriginFromXboxOrigin");
-	return InputActionOrigin(SteamInput()->GetActionOriginFromXboxOrigin((InputHandle_t)input_handle, (EXboxOrigin)origin));
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamInput() == NULL, INPUT_ACTION_ORIGIN_NONE, "[STEAM] Input not found when calling: getActionOriginFromXboxOrigin");
+	return InputActionOrigin(SteamAPI_ISteamInput_GetActionOriginFromXboxOrigin(SteamAPI_SteamInput(), (InputHandle_t)input_handle, (EXboxOrigin)origin));
 }
 
 // Fill an array with all of the currently active action set layers for a specified controller handle.
 Array Steam::getActiveActionSetLayers(uint64_t input_handle) {
 	Array handles;
-	ERR_FAIL_COND_V_MSG(SteamInput() == NULL, handles, "[STEAM] Input not found when calling: getActiveActionSetLayers");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamInput() == NULL, handles, "[STEAM] Input not found when calling: getActiveActionSetLayers");
 	InputActionSetHandle_t out[INPUT_MAX_COUNT];
-	int ret = SteamInput()->GetActiveActionSetLayers(input_handle, out);
+	int ret = SteamAPI_ISteamInput_GetActiveActionSetLayers(SteamAPI_SteamInput(), input_handle, out);
 	for (int i = 0; i < ret; i++) {
 		handles.push_back((uint64_t)out[i]);
 	}
@@ -2255,11 +2256,11 @@ Array Steam::getActiveActionSetLayers(uint64_t input_handle) {
 // Returns the current state of the supplied analog game action.
 Dictionary Steam::getAnalogActionData(uint64_t input_handle, uint64_t analog_action_handle) {
 	Dictionary action_data;
-	ERR_FAIL_COND_V_MSG(SteamInput() == NULL, action_data, "[STEAM] Input not found when calling: getAnalogActionData");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamInput() == NULL, action_data, "[STEAM] Input not found when calling: getAnalogActionData");
 	ControllerAnalogActionData_t data;
 	memset(&data, 0, sizeof(data));
-	if (SteamInput() != NULL) {
-		data = SteamInput()->GetAnalogActionData((InputHandle_t)input_handle, (ControllerAnalogActionHandle_t)analog_action_handle);
+	if (SteamAPI_SteamInput() != NULL) {
+		data = SteamAPI_ISteamInput_GetAnalogActionData(SteamAPI_SteamInput(), (InputHandle_t)input_handle, (ControllerAnalogActionHandle_t)analog_action_handle);
 	}
 	action_data["mode"] = data.eMode;
 	action_data["x"] = data.x;
@@ -2270,16 +2271,16 @@ Dictionary Steam::getAnalogActionData(uint64_t input_handle, uint64_t analog_act
 
 // Get the handle of the specified Analog action.
 uint64_t Steam::getAnalogActionHandle(const String &action_name) {
-	ERR_FAIL_COND_V_MSG(SteamInput() == NULL, 0, "[STEAM] Input not found when calling: getAnalogActionHandle");
-	return (uint64_t)SteamInput()->GetAnalogActionHandle(action_name.utf8().get_data());
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamInput() == NULL, 0, "[STEAM] Input not found when calling: getAnalogActionHandle");
+	return (uint64_t)SteamAPI_ISteamInput_GetAnalogActionHandle(SteamAPI_SteamInput(), action_name.utf8().get_data());
 }
 
 // Get the origin(s) for an analog action within an action.
 Array Steam::getAnalogActionOrigins(uint64_t input_handle, uint64_t action_set_handle, uint64_t analog_action_handle) {
 	Array list;
-	ERR_FAIL_COND_V_MSG(SteamInput() == NULL, list, "[STEAM] Input not found when calling: getAnalogActionOrigins");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamInput() == NULL, list, "[STEAM] Input not found when calling: getAnalogActionOrigins");
 	EInputActionOrigin out[STEAM_CONTROLLER_MAX_ORIGINS];
-	int ret = SteamInput()->GetAnalogActionOrigins((InputHandle_t)input_handle, (ControllerActionSetHandle_t)action_set_handle, (ControllerAnalogActionHandle_t)analog_action_handle, out);
+	int ret = SteamAPI_ISteamInput_GetAnalogActionOrigins(SteamAPI_SteamInput(), (InputHandle_t)input_handle, (ControllerActionSetHandle_t)action_set_handle, (ControllerAnalogActionHandle_t)analog_action_handle, out);
 	for (int i = 0; i < ret; i++) {
 		list.push_back((int)out[i]);
 	}
@@ -2289,9 +2290,9 @@ Array Steam::getAnalogActionOrigins(uint64_t input_handle, uint64_t action_set_h
 // Get current controllers handles.
 Array Steam::getConnectedControllers() {
 	Array list;
-	ERR_FAIL_COND_V_MSG(SteamInput() == NULL, list, "[STEAM] Input not found when calling: getConnectedControllers");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamInput() == NULL, list, "[STEAM] Input not found when calling: getConnectedControllers");
 	InputHandle_t handles[INPUT_MAX_COUNT];
-	int ret = SteamInput()->GetConnectedControllers(handles);
+	int ret = SteamAPI_ISteamInput_GetConnectedControllers(SteamAPI_SteamInput(), handles);
 	printf("[Steam] Inputs found %d controllers.", ret);
 	for (int i = 0; i < ret; i++) {
 		list.push_back((uint64_t)handles[i]);
@@ -2301,14 +2302,14 @@ Array Steam::getConnectedControllers() {
 
 // Returns the associated controller handle for the specified emulated gamepad.
 uint64_t Steam::getControllerForGamepadIndex(int index) {
-	ERR_FAIL_COND_V_MSG(SteamInput() == NULL, 0, "[STEAM] Input not found when calling: getControllerForGamepadIndex");
-	return (uint64_t)SteamInput()->GetControllerForGamepadIndex(index);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamInput() == NULL, 0, "[STEAM] Input not found when calling: getControllerForGamepadIndex");
+	return (uint64_t)SteamAPI_ISteamInput_GetControllerForGamepadIndex(SteamAPI_SteamInput(), index);
 }
 
 // Get the currently active action set for the specified controller.
 uint64_t Steam::getCurrentActionSet(uint64_t input_handle) {
-	ERR_FAIL_COND_V_MSG(SteamInput() == NULL, 0, "[STEAM] Input not found when calling: getCurrentActionSet");
-	return (uint64_t)SteamInput()->GetCurrentActionSet((InputHandle_t)input_handle);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamInput() == NULL, 0, "[STEAM] Input not found when calling: getCurrentActionSet");
+	return (uint64_t)SteamAPI_ISteamInput_GetCurrentActionSet(SteamAPI_SteamInput(), (InputHandle_t)input_handle);
 }
 
 // Get's the major and minor device binding revisions for Steam Input API configurations. Minor revisions are for small changes
@@ -2319,10 +2320,10 @@ uint64_t Steam::getCurrentActionSet(uint64_t input_handle) {
 // the new configuration. New configurations will need to be made for every controller when updating the Major revision.
 Array Steam::getDeviceBindingRevision(uint64_t input_handle) {
 	Array revision;
-	ERR_FAIL_COND_V_MSG(SteamInput() == NULL, revision, "[STEAM] Input not found when calling: getDeviceBindingRevision");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamInput() == NULL, revision, "[STEAM] Input not found when calling: getDeviceBindingRevision");
 	int major = 0;
 	int minor = 0;
-	bool success = SteamInput()->GetDeviceBindingRevision((InputHandle_t)input_handle, &major, &minor);
+	bool success = SteamAPI_ISteamInput_GetDeviceBindingRevision(SteamAPI_SteamInput(), (InputHandle_t)input_handle, &major, &minor);
 	if (success) {
 		revision.append(major);
 		revision.append(minor);
@@ -2333,11 +2334,11 @@ Array Steam::getDeviceBindingRevision(uint64_t input_handle) {
 // Returns the current state of the supplied digital game action.
 Dictionary Steam::getDigitalActionData(uint64_t input_handle, uint64_t digital_action_handle) {
 	Dictionary digital_action;
-	ERR_FAIL_COND_V_MSG(SteamInput() == NULL, digital_action, "[STEAM] Input not found when calling: getDigitalActionData");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamInput() == NULL, digital_action, "[STEAM] Input not found when calling: getDigitalActionData");
 	InputDigitalActionData_t data;
 	memset(&data, 0, sizeof(data));
-	if (SteamInput() != NULL) {
-		data = SteamInput()->GetDigitalActionData((InputHandle_t)input_handle, (ControllerDigitalActionHandle_t)digital_action_handle);
+	if (SteamAPI_SteamInput() != NULL) {
+		data = SteamAPI_ISteamInput_GetDigitalActionData(SteamAPI_SteamInput(), (InputHandle_t)input_handle, (ControllerDigitalActionHandle_t)digital_action_handle);
 	}
 	digital_action["state"] = data.bState;
 	digital_action["active"] = data.bActive;
@@ -2346,16 +2347,16 @@ Dictionary Steam::getDigitalActionData(uint64_t input_handle, uint64_t digital_a
 
 // Get the handle of the specified digital action.
 uint64_t Steam::getDigitalActionHandle(const String &action_name) {
-	ERR_FAIL_COND_V_MSG(SteamInput() == NULL, 0, "[STEAM] Input not found when calling: getDigitalActionHandle");
-	return (uint64_t)SteamInput()->GetDigitalActionHandle(action_name.utf8().get_data());
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamInput() == NULL, 0, "[STEAM] Input not found when calling: getDigitalActionHandle");
+	return (uint64_t)SteamAPI_ISteamInput_GetDigitalActionHandle(SteamAPI_SteamInput(), action_name.utf8().get_data());
 }
 
 // Get the origin(s) for an analog action within an action.
 Array Steam::getDigitalActionOrigins(uint64_t input_handle, uint64_t action_set_handle, uint64_t digital_action_handle) {
 	Array list;
-	ERR_FAIL_COND_V_MSG(SteamInput() == NULL, list, "[STEAM] Input not found when calling: getDigitalActionOrigins");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamInput() == NULL, list, "[STEAM] Input not found when calling: getDigitalActionOrigins");
 	EInputActionOrigin out[STEAM_CONTROLLER_MAX_ORIGINS];
-	int ret = SteamInput()->GetDigitalActionOrigins((InputHandle_t)input_handle, (ControllerActionSetHandle_t)action_set_handle, (ControllerDigitalActionHandle_t)digital_action_handle, out);
+	int ret = SteamAPI_ISteamInput_GetDigitalActionOrigins(SteamAPI_SteamInput(), (InputHandle_t)input_handle, (ControllerActionSetHandle_t)action_set_handle, (ControllerDigitalActionHandle_t)digital_action_handle, out);
 	for (int i = 0; i < ret; i++) {
 		list.push_back((int)out[i]);
 	}
@@ -2364,49 +2365,49 @@ Array Steam::getDigitalActionOrigins(uint64_t input_handle, uint64_t action_set_
 
 // Returns the associated gamepad index for the specified controller.
 int Steam::getGamepadIndexForController(uint64_t input_handle) {
-	ERR_FAIL_COND_V_MSG(SteamInput() == NULL, -1, "[STEAM] Input not found when calling: getGamepadIndexForController");
-	return SteamInput()->GetGamepadIndexForController((InputHandle_t)input_handle);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamInput() == NULL, -1, "[STEAM] Input not found when calling: getGamepadIndexForController");
+	return SteamAPI_ISteamInput_GetGamepadIndexForController(SteamAPI_SteamInput(), (InputHandle_t)input_handle);
 }
 
 // Get a local path to art for on-screen glyph for a particular origin.
 String Steam::getGlyphForActionOrigin(InputActionOrigin origin) {
-	ERR_FAIL_COND_V_MSG(SteamInput() == NULL, "", "[STEAM] Input not found when calling: getGlyphForActionOrigin");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamInput() == NULL, "", "[STEAM] Input not found when calling: getGlyphForActionOrigin");
 	ERR_FAIL_COND_V_MSG(origin < 0 || origin > InputActionOrigin(k_EInputActionOrigin_MaximumPossibleValue), "", "[Steam] origin is invalid for getGlyphForActionOrigin");
-	return SteamInput()->GetGlyphForActionOrigin_Legacy((EInputActionOrigin)origin);
+	return SteamAPI_ISteamInput_GetGlyphForActionOrigin_Legacy(SteamAPI_SteamInput(), (EInputActionOrigin)origin);
 }
 
 // Get a local path to art for on-screen glyph for a particular Xbox controller origin
 String Steam::getGlyphForXboxOrigin(XboxOrigin origin) {
-	ERR_FAIL_COND_V_MSG(SteamInput() == NULL, "", "[STEAM] Input not found when calling: getGlyphForXboxOrigin");
-	return SteamInput()->GetGlyphForXboxOrigin((EXboxOrigin)origin);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamInput() == NULL, "", "[STEAM] Input not found when calling: getGlyphForXboxOrigin");
+	return SteamAPI_ISteamInput_GetGlyphForXboxOrigin(SteamAPI_SteamInput(), (EXboxOrigin)origin);
 }
 
 // Get a local path to a PNG file for the provided origin's glyph.
 String Steam::getGlyphPNGForActionOrigin(InputActionOrigin origin, InputGlyphSize size, uint32_t flags) {
-	ERR_FAIL_COND_V_MSG(SteamInput() == NULL, "", "[STEAM] Input not found when calling: getGlyphPNGForActionOrigin");
-	return SteamInput()->GetGlyphPNGForActionOrigin((EInputActionOrigin)origin, (ESteamInputGlyphSize)size, flags);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamInput() == NULL, "", "[STEAM] Input not found when calling: getGlyphPNGForActionOrigin");
+	return SteamAPI_ISteamInput_GetGlyphPNGForActionOrigin(SteamAPI_SteamInput(), (EInputActionOrigin)origin, (ESteamInputGlyphSize)size, flags);
 }
 
 // Get a local path to a SVG file for the provided origin's glyph.
 String Steam::getGlyphSVGForActionOrigin(InputActionOrigin origin, uint32_t flags) {
-	ERR_FAIL_COND_V_MSG(SteamInput() == NULL, "", "[STEAM] Input not found when calling: getGlyphSVGForActionOrigin");
-	return SteamInput()->GetGlyphSVGForActionOrigin((EInputActionOrigin)origin, flags);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamInput() == NULL, "", "[STEAM] Input not found when calling: getGlyphSVGForActionOrigin");
+	return SteamAPI_ISteamInput_GetGlyphSVGForActionOrigin(SteamAPI_SteamInput(), (EInputActionOrigin)origin, flags);
 }
 
 // Get the input type (device model) for the specified controller.
 InputType Steam::getInputTypeForHandle(uint64_t input_handle) {
-	ERR_FAIL_COND_V_MSG(SteamInput() == NULL, INPUT_TYPE_UNKNOWN, "[STEAM] Input not found when calling: getInputTypeForHandle");
-	ESteamInputType this_input_type = SteamInput()->GetInputTypeForHandle((InputHandle_t)input_handle);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamInput() == NULL, INPUT_TYPE_UNKNOWN, "[STEAM] Input not found when calling: getInputTypeForHandle");
+	ESteamInputType this_input_type = SteamAPI_ISteamInput_GetInputTypeForHandle(SteamAPI_SteamInput(), (InputHandle_t)input_handle);
 	return (InputType)this_input_type;
 }
 
 // Returns raw motion data for the specified controller.
 Dictionary Steam::getMotionData(uint64_t input_handle) {
 	Dictionary motion_data;
-	ERR_FAIL_COND_V_MSG(SteamInput() == NULL, motion_data, "[STEAM] Input not found when calling: getMotionData");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamInput() == NULL, motion_data, "[STEAM] Input not found when calling: getMotionData");
 	ControllerMotionData_t data;
 	memset(&data, 0, sizeof(data));
-	data = SteamInput()->GetMotionData((InputHandle_t)input_handle);
+	data = SteamAPI_ISteamInput_GetMotionData(SteamAPI_SteamInput(), (InputHandle_t)input_handle);
 
 	motion_data["rot_quat_x"] = data.rotQuatX;
 	motion_data["rot_quat_y"] = data.rotQuatY;
@@ -2424,8 +2425,8 @@ Dictionary Steam::getMotionData(uint64_t input_handle) {
 // Get the Steam Remote Play session ID associated with a device, or 0 if there is no session associated with it. See
 // isteamremoteplay.h for more information on Steam Remote Play sessions.
 uint32_t Steam::getRemotePlaySessionID(uint64_t input_handle) {
-	ERR_FAIL_COND_V_MSG(SteamInput() == NULL, 0, "[STEAM] Input not found when calling: getRemotePlaySessionID");
-	return SteamInput()->GetRemotePlaySessionID((InputHandle_t)input_handle);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamInput() == NULL, 0, "[STEAM] Input not found when calling: getRemotePlaySessionID");
+	return SteamAPI_ISteamInput_GetRemotePlaySessionID(SteamAPI_SteamInput(), (InputHandle_t)input_handle);
 }
 
 // Get a bitmask of the Steam Input Configuration types opted in for the current session. Returns ESteamInputConfigurationEnableType
@@ -2433,63 +2434,63 @@ uint32_t Steam::getRemotePlaySessionID(uint64_t input_handle) {
 // Note: user can override the settings from the Steamworks Partner site so the returned values may not exactly match your default
 // configuration.
 uint16_t Steam::getSessionInputConfigurationSettings() {
-	ERR_FAIL_COND_V_MSG(SteamInput() == NULL, INPUT_CONFIGURATION_ENABLE_TYPE_NONE, "[STEAM] Input not found when calling: getSessionInputConfigurationSettings");
-	return SteamInput()->GetSessionInputConfigurationSettings();
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamInput() == NULL, INPUT_CONFIGURATION_ENABLE_TYPE_NONE, "[STEAM] Input not found when calling: getSessionInputConfigurationSettings");
+	return SteamAPI_ISteamInput_GetSessionInputConfigurationSettings(SteamAPI_SteamInput());
 }
 
 // Returns a localized string (from Steam's language setting) for the specified origin.
 String Steam::getStringForActionOrigin(InputActionOrigin origin) {
-	ERR_FAIL_COND_V_MSG(SteamInput() == NULL, "", "[STEAM] Input not found when calling: getStringForActionOrigin");
-	return SteamInput()->GetStringForActionOrigin((EInputActionOrigin)origin);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamInput() == NULL, "", "[STEAM] Input not found when calling: getStringForActionOrigin");
+	return SteamAPI_ISteamInput_GetStringForActionOrigin(SteamAPI_SteamInput(), (EInputActionOrigin)origin);
 }
 
 // Returns a localized string (from Steam's language setting) for the user-facing action name corresponding to the specified handle.
 String Steam::getStringForAnalogActionName(uint64_t action_handle) {
-	ERR_FAIL_COND_V_MSG(SteamInput() == NULL, "", "[STEAM] Input not found when calling: getStringForAnalogActionName");
-	return SteamInput()->GetStringForAnalogActionName((InputAnalogActionHandle_t)action_handle);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamInput() == NULL, "", "[STEAM] Input not found when calling: getStringForAnalogActionName");
+	return SteamAPI_ISteamInput_GetStringForAnalogActionName(SteamAPI_SteamInput(), (InputAnalogActionHandle_t)action_handle);
 }
 
 // Returns a localized string (from Steam's language setting) for the user-facing action name corresponding to the specified handle.
 String Steam::getStringForDigitalActionName(uint64_t action_handle) {
-	ERR_FAIL_COND_V_MSG(SteamInput() == NULL, "", "[STEAM] Input not found when calling: getStringForDigitalActionName");
-	return SteamInput()->GetStringForDigitalActionName((InputDigitalActionHandle_t)action_handle);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamInput() == NULL, "", "[STEAM] Input not found when calling: getStringForDigitalActionName");
+	return SteamAPI_ISteamInput_GetStringForDigitalActionName(SteamAPI_SteamInput(), (InputDigitalActionHandle_t)action_handle);
 }
 
 // Returns a localized string (from Steam's language setting) for the specified Xbox controller origin.
 String Steam::getStringForXboxOrigin(XboxOrigin origin) {
-	ERR_FAIL_COND_V_MSG(SteamInput() == NULL, "", "[STEAM] Input not found when calling: getStringForXboxOrigin");
-	return SteamInput()->GetStringForXboxOrigin((EXboxOrigin)origin);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamInput() == NULL, "", "[STEAM] Input not found when calling: getStringForXboxOrigin");
+	return SteamAPI_ISteamInput_GetStringForXboxOrigin(SteamAPI_SteamInput(), (EXboxOrigin)origin);
 }
 
 // Start SteamInputs interface.
 bool Steam::inputInit(bool explicitly_call_runframe) {
-	ERR_FAIL_COND_V_MSG(SteamInput() == NULL, false, "[STEAM] Input not found when calling: inputInit");
-	return SteamInput()->Init(explicitly_call_runframe);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamInput() == NULL, false, "[STEAM] Input not found when calling: inputInit");
+	return SteamAPI_ISteamInput_Init(SteamAPI_SteamInput(), explicitly_call_runframe);
 }
 
 // Stop SteamInputs interface.
 bool Steam::inputShutdown() {
-	ERR_FAIL_COND_V_MSG(SteamInput() == NULL, false, "[STEAM] Input not found when calling: inputShutdown");
-	return SteamInput()->Shutdown();
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamInput() == NULL, false, "[STEAM] Input not found when calling: inputShutdown");
+	return SteamAPI_ISteamInput_Shutdown(SteamAPI_SteamInput());
 }
 
 // Returns true if new data has been received since the last time action data was accessed via GetDigitalActionData or
 // GetAnalogActionData. The game will still need to call SteamInput()->RunFrame() or SteamAPI_RunCallbacks() before this to update
 // the data stream.
 bool Steam::newDataAvailable() {
-	ERR_FAIL_COND_V_MSG(SteamInput() == NULL, false, "[STEAM] Input not found when calling: newDataAvailable");
-	return SteamInput()->BNewDataAvailable();
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamInput() == NULL, false, "[STEAM] Input not found when calling: newDataAvailable");
+	return SteamAPI_ISteamInput_BNewDataAvailable(SteamAPI_SteamInput());
 }
 
 // Syncronize controllers.
 void Steam::runFrame(bool reserved_value) {
-	ERR_FAIL_COND_MSG(SteamInput() == NULL, "[STEAM] Input not found when calling: runFrame");
-	SteamInput()->RunFrame(reserved_value);
+	ERR_FAIL_COND_MSG(SteamAPI_SteamInput() == NULL, "[STEAM] Input not found when calling: runFrame");
+	SteamAPI_ISteamInput_RunFrame(SteamAPI_SteamInput(), reserved_value);
 }
 
 // Set the trigger effect for a DualSense controller
 //void Steam::setDualSenseTriggerEffect(uint64_t input_handle, int parameter_index, int trigger_mask, SCEPadTriggerEffectMode effect_mode, int position, int amplitude, int frequency) {
-//	ERR_FAIL_COND_MSG(SteamInput() == NULL, "[STEAM] Input not found when calling: getActiveActionSetLayers");
+//	ERR_FAIL_COND_MSG(SteamAPI_SteamInput() == NULL, "[STEAM] Input not found when calling: getActiveActionSetLayers");
 //	ScePadTriggerEffectParam these_parameters;
 //	memset(&these_parameters, 0, sizeof(these_parameters));
 //	these_parameters.triggerMask = trigger_mask;
@@ -2497,80 +2498,80 @@ void Steam::runFrame(bool reserved_value) {
 //	these_parameters.command[parameter_index].commandData.vibrationParam.position = position;
 //	these_parameters.command[parameter_index].commandData.vibrationParam.amplitude = amplitude;
 //	these_parameters.command[parameter_index].commandData.vibrationParam.frequency = frequency;
-//	SteamInput()->SetDualSenseTriggerEffect((InputHandle_t)input_handle, &these_parameters);
+//	SteamAPI_ISteamInput_SetDualSenseTriggerEffect(SteamAPI_SteamInput(), (InputHandle_t)input_handle, &these_parameters);
 //}
 
 // Set the absolute path to the Input Action Manifest file containing the in-game actions and file paths to the official
 // configurations. Used in games that bundle Steam Input configurations inside of the game depot instead of using the Steam Workshop.
 bool Steam::setInputActionManifestFilePath(const String &manifest_path) {
-	ERR_FAIL_COND_V_MSG(SteamInput() == NULL, false, "[STEAM] Input not found when calling: setInputActionManifestFilePath");
-	return SteamInput()->SetInputActionManifestFilePath(manifest_path.utf8().get_data());
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamInput() == NULL, false, "[STEAM] Input not found when calling: setInputActionManifestFilePath");
+	return SteamAPI_ISteamInput_SetInputActionManifestFilePath(SteamAPI_SteamInput(), manifest_path.utf8().get_data());
 }
 
 // Set the controller LED color on supported controllers.
 void Steam::setLEDColor(uint64_t input_handle, uint8_t color_r, uint8_t color_g, uint8_t color_b, InputLEDFlag flags) {
-	ERR_FAIL_COND_MSG(SteamInput() == NULL, "[STEAM] Input not found when calling: setLEDColor");
-	SteamInput()->SetLEDColor((InputHandle_t)input_handle, color_r, color_g, color_b, (InputLEDFlag)flags);
+	ERR_FAIL_COND_MSG(SteamAPI_SteamInput() == NULL, "[STEAM] Input not found when calling: setLEDColor");
+	SteamAPI_ISteamInput_SetLEDColor(SteamAPI_SteamInput(), (InputHandle_t)input_handle, color_r, color_g, color_b, (InputLEDFlag)flags);
 }
 
 // Invokes the Steam overlay and brings up the binding screen.
 bool Steam::showBindingPanel(uint64_t input_handle) {
-	ERR_FAIL_COND_V_MSG(SteamInput() == NULL, false, "[STEAM] Input not found when calling: showBindingPanel");
-	return SteamInput()->ShowBindingPanel((InputHandle_t)input_handle);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamInput() == NULL, false, "[STEAM] Input not found when calling: showBindingPanel");
+	return SteamAPI_ISteamInput_ShowBindingPanel(SteamAPI_SteamInput(), (InputHandle_t)input_handle);
 }
 
 // Stops the momentum of an analog action (where applicable, ie a touchpad w/ virtual trackball settings).
 void Steam::stopAnalogActionMomentum(uint64_t input_handle, uint64_t action) {
-	ERR_FAIL_COND_MSG(SteamInput() == NULL, "[STEAM] Input not found when calling: stopAnalogActionMomentum");
-	SteamInput()->StopAnalogActionMomentum((InputHandle_t)input_handle, (InputAnalogActionHandle_t)action);
+	ERR_FAIL_COND_MSG(SteamAPI_SteamInput() == NULL, "[STEAM] Input not found when calling: stopAnalogActionMomentum");
+	SteamAPI_ISteamInput_StopAnalogActionMomentum(SteamAPI_SteamInput(), (InputHandle_t)input_handle, (InputAnalogActionHandle_t)action);
 }
 
 // Get the equivalent origin for a given controller type or the closest controller type that existed in the SDK you built into
 // your game if eDestinationInputType is INPUT_TYPE_UNKNOWN. This action origin can be used in your glyph look up table
 // or passed into GetGlyphForActionOrigin or GetStringForActionOrigin.
 InputActionOrigin Steam::translateActionOrigin(InputType destination_input, InputActionOrigin source_origin) {
-	ERR_FAIL_COND_V_MSG(SteamInput() == NULL, INPUT_ACTION_ORIGIN_NONE, "[STEAM] Input not found when calling: translateActionOrigin");
-	return (InputActionOrigin)SteamInput()->TranslateActionOrigin((ESteamInputType)destination_input, (EInputActionOrigin)source_origin);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamInput() == NULL, INPUT_ACTION_ORIGIN_NONE, "[STEAM] Input not found when calling: translateActionOrigin");
+	return (InputActionOrigin)SteamAPI_ISteamInput_TranslateActionOrigin(SteamAPI_SteamInput(), (ESteamInputType)destination_input, (EInputActionOrigin)source_origin);
 }
 
 // Triggers a (low-level) haptic pulse on supported controllers.
 void Steam::triggerHapticPulse(uint64_t input_handle, ControllerPad target_pad, int duration) {
-	ERR_FAIL_COND_MSG(SteamInput() == NULL, "[STEAM] Input not found when calling: triggerHapticPulse");
-	SteamInput()->Legacy_TriggerHapticPulse((InputHandle_t)input_handle, (ESteamControllerPad)target_pad, duration);
+	ERR_FAIL_COND_MSG(SteamAPI_SteamInput() == NULL, "[STEAM] Input not found when calling: triggerHapticPulse");
+	SteamAPI_ISteamInput_Legacy_TriggerHapticPulse(SteamAPI_SteamInput(), (InputHandle_t)input_handle, (ESteamControllerPad)target_pad, duration);
 }
 
 // Triggers a repeated haptic pulse on supported controllers.
 void Steam::triggerRepeatedHapticPulse(uint64_t input_handle, ControllerPad target_pad, int duration, int offset, int repeat, int flags) {
-	ERR_FAIL_COND_MSG(SteamInput() == NULL, "[STEAM] Input not found when calling: triggerRepeatedHapticPulse");
-	SteamInput()->Legacy_TriggerRepeatedHapticPulse((InputHandle_t)input_handle, (ESteamControllerPad)target_pad, duration, offset, repeat, flags);
+	ERR_FAIL_COND_MSG(SteamAPI_SteamInput() == NULL, "[STEAM] Input not found when calling: triggerRepeatedHapticPulse");
+	SteamAPI_ISteamInput_Legacy_TriggerRepeatedHapticPulse(SteamAPI_SteamInput(), (InputHandle_t)input_handle, (ESteamControllerPad)target_pad, duration, offset, repeat, flags);
 }
 
 // Send a haptic pulse, works on Steam Deck and Steam Controller devices.
 void Steam::triggerSimpleHapticEvent(uint64_t input_handle, ControllerHapticLocation haptic_location, uint8_t intensity, const String &gain_db, uint8_t other_intensity, const String &other_gain_db) {
-	ERR_FAIL_COND_MSG(SteamInput() == NULL, "[STEAM] Input not found when calling: triggerSimpleHapticEvent");
+	ERR_FAIL_COND_MSG(SteamAPI_SteamInput() == NULL, "[STEAM] Input not found when calling: triggerSimpleHapticEvent");
 	char gain = gain_db[0];
 	char other_gain = other_gain_db[0];
-	SteamInput()->TriggerSimpleHapticEvent((InputHandle_t)input_handle, (EControllerHapticLocation)haptic_location, intensity, gain, other_intensity, other_gain);
+	SteamAPI_ISteamInput_TriggerSimpleHapticEvent(SteamAPI_SteamInput(), (InputHandle_t)input_handle, (EControllerHapticLocation)haptic_location, intensity, gain, other_intensity, other_gain);
 }
 
 // Trigger a vibration event on supported controllers.
 void Steam::triggerVibration(uint64_t input_handle, uint16_t left_speed, uint16_t right_speed) {
-	ERR_FAIL_COND_MSG(SteamInput() == NULL, "[STEAM] Input not found when calling: triggerVibration");
-	SteamInput()->TriggerVibration((InputHandle_t)input_handle, (unsigned short)left_speed, (unsigned short)right_speed);
+	ERR_FAIL_COND_MSG(SteamAPI_SteamInput() == NULL, "[STEAM] Input not found when calling: triggerVibration");
+	SteamAPI_ISteamInput_TriggerVibration(SteamAPI_SteamInput(), (InputHandle_t)input_handle, (unsigned short)left_speed, (unsigned short)right_speed);
 }
 
 // Trigger a vibration event on supported controllers including Xbox trigger impulse rumble - Steam will translate these commands
 // into haptic pulses for Steam Controllers.
 void Steam::triggerVibrationExtended(uint64_t input_handle, uint16_t left_speed, uint16_t right_speed, uint16_t left_trigger_speed, uint16_t right_trigger_speed) {
-	ERR_FAIL_COND_MSG(SteamInput() == NULL, "[STEAM] Input not found when calling: triggerVibrationExtended");
-	SteamInput()->TriggerVibrationExtended((InputHandle_t)input_handle, (unsigned short)left_speed, (unsigned short)right_speed, (unsigned short)left_trigger_speed, (unsigned short)right_trigger_speed);
+	ERR_FAIL_COND_MSG(SteamAPI_SteamInput() == NULL, "[STEAM] Input not found when calling: triggerVibrationExtended");
+	SteamAPI_ISteamInput_TriggerVibrationExtended(SteamAPI_SteamInput(), (InputHandle_t)input_handle, (unsigned short)left_speed, (unsigned short)right_speed, (unsigned short)left_trigger_speed, (unsigned short)right_trigger_speed);
 }
 
 // Waits on an IPC event from Steam sent when there is new data to be fetched from the data drop. Returns true when data was
 // recievied before the timeout expires. Useful for games with a dedicated input thread.
 bool Steam::waitForData(bool wait_forever, uint32_t timeout) {
-	ERR_FAIL_COND_V_MSG(SteamInput() == NULL, false, "[STEAM] Input not found when calling: waitForData");
-	return SteamInput()->BWaitForData(wait_forever, timeout);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamInput() == NULL, false, "[STEAM] Input not found when calling: waitForData");
+	return SteamAPI_ISteamInput_BWaitForData(SteamAPI_SteamInput(), wait_forever, timeout);
 }
 
 
@@ -2660,7 +2661,7 @@ int32 Steam::exchangeItems(const PackedInt64Array output_items, const PackedInt3
 
 	uint32_t *quantity_out = (uint32_t*) output_quantity.ptr();
 	uint32_t *quantity_in = (uint32_t*) input_quantity.ptr();
-	
+
 	uint32_t array_size = input_items.size();
 	SteamItemInstanceID_t *input_item_ids = new SteamItemInstanceID_t[array_size];
 	for (uint32_t i = 0; i < array_size; i++) {
@@ -2669,7 +2670,6 @@ int32 Steam::exchangeItems(const PackedInt64Array output_items, const PackedInt3
 	const SteamItemInstanceID_t *these_item_ids = input_item_ids;
 
 	if (SteamInventory()->ExchangeItems(&new_inventory_handle, generated_items, quantity_out, total_output, these_item_ids, quantity_in, array_size)) {
-		// Update the internally stored handle
 		inventory_handle = new_inventory_handle;
 	}
 	delete[] generated_items;
@@ -2867,7 +2867,6 @@ bool Steam::loadItemDefinitions() {
 // Removes a dynamic property for the given item.
 bool Steam::removeProperty(uint64_t item_id, const String &name, uint64_t this_inventory_update_handle) {
 	ERR_FAIL_COND_V_MSG(SteamInventory() == NULL, false, "[STEAM] Inventory class not found when calling: removeProperty");
-	// If no inventory update handle is passed, use internal one
 	if (this_inventory_update_handle == 0) {
 		this_inventory_update_handle = inventory_update_handle;
 	}
@@ -3718,7 +3717,7 @@ bool Steam::updateVolume(float volume) {
 
 // This allows the game to specify accept an incoming packet.
 bool Steam::acceptP2PSessionWithUser(uint64_t remote_steam_id) {
-	ERR_FAIL_COND_V_MSG(SteamNetworking() == NULL, false, "[STEAM] Game Server class not found when calling: acceptP2PSessionWithUser");
+	ERR_FAIL_COND_V_MSG(SteamNetworking() == NULL, false, "[STEAM] Networking class not found when calling: acceptP2PSessionWithUser");
 	CSteamID steam_id = createSteamID(remote_steam_id);
 	return SteamNetworking()->AcceptP2PSessionWithUser(steam_id);
 }
@@ -3726,13 +3725,13 @@ bool Steam::acceptP2PSessionWithUser(uint64_t remote_steam_id) {
 // Allow or disallow P2P connections to fall back to being relayed through the Steam servers if a direct connection or
 // NAT-traversal cannot be established.
 bool Steam::allowP2PPacketRelay(bool allow) {
-	ERR_FAIL_COND_V_MSG(SteamNetworking() == NULL, false, "[STEAM] Game Server class not found when calling: allowP2PPacketRelay");
+	ERR_FAIL_COND_V_MSG(SteamNetworking() == NULL, false, "[STEAM] Networking class not found when calling: allowP2PPacketRelay");
 	return SteamNetworking()->AllowP2PPacketRelay(allow);
 }
 
 // Closes a P2P channel when you're done talking to a user on the specific channel.
 bool Steam::closeP2PChannelWithUser(uint64_t remote_steam_id, int channel) {
-	ERR_FAIL_COND_V_MSG(SteamNetworking() == NULL, false, "[STEAM] Game Server class not found when calling: closeP2PChannelWithUser");
+	ERR_FAIL_COND_V_MSG(SteamNetworking() == NULL, false, "[STEAM] Networking class not found when calling: closeP2PChannelWithUser");
 	CSteamID steam_id = createSteamID(remote_steam_id);
 	return SteamNetworking()->CloseP2PChannelWithUser(steam_id, channel);
 }
@@ -3740,7 +3739,7 @@ bool Steam::closeP2PChannelWithUser(uint64_t remote_steam_id, int channel) {
 // This should be called when you're done communicating with a user, as this will free up all of the resources allocated for the
 // connection under-the-hood.
 bool Steam::closeP2PSessionWithUser(uint64_t remote_steam_id) {
-	ERR_FAIL_COND_V_MSG(SteamNetworking() == NULL, false, "[STEAM] Game Server class not found when calling: closeP2PSessionWithUser");
+	ERR_FAIL_COND_V_MSG(SteamNetworking() == NULL, false, "[STEAM] Networking class not found when calling: closeP2PSessionWithUser");
 	CSteamID steam_id = createSteamID(remote_steam_id);
 	return SteamNetworking()->CloseP2PSessionWithUser(steam_id);
 }
@@ -3748,7 +3747,7 @@ bool Steam::closeP2PSessionWithUser(uint64_t remote_steam_id) {
 // Fills out a P2PSessionState_t structure with details about the connection like whether or not there is an active connection.
 Dictionary Steam::getP2PSessionState(uint64_t remote_steam_id) {
 	Dictionary result;
-	ERR_FAIL_COND_V_MSG(SteamNetworking() == NULL, result, "[STEAM] Game Server class not found when calling: getP2PSessionState");
+	ERR_FAIL_COND_V_MSG(SteamNetworking() == NULL, result, "[STEAM] Networking class not found when calling: getP2PSessionState");
 	CSteamID steam_id = createSteamID(remote_steam_id);
 	P2PSessionState_t p2pSessionState;
 	if (SteamNetworking()->GetP2PSessionState(steam_id, &p2pSessionState)) {
@@ -3766,7 +3765,7 @@ Dictionary Steam::getP2PSessionState(uint64_t remote_steam_id) {
 
 // Calls IsP2PPacketAvailable() under the hood, returns the size of the available packet or zero if there is no such packet.
 uint32_t Steam::getAvailableP2PPacketSize(int channel) {
-	ERR_FAIL_COND_V_MSG(SteamNetworking() == NULL, 0, "[STEAM] Game Server class not found when calling: getAvailableP2PPacketSize");
+	ERR_FAIL_COND_V_MSG(SteamNetworking() == NULL, 0, "[STEAM] Networking class not found when calling: getAvailableP2PPacketSize");
 	uint32_t message_size = 0;
 	return (SteamNetworking()->IsP2PPacketAvailable(&message_size, channel)) ? message_size : 0;
 }
@@ -3774,7 +3773,7 @@ uint32_t Steam::getAvailableP2PPacketSize(int channel) {
 // Reads in a packet that has been sent from another user via SendP2PPacket.
 Dictionary Steam::readP2PPacket(uint32_t packet_size, int channel) {
 	Dictionary result;
-	ERR_FAIL_COND_V_MSG(SteamNetworking() == NULL, result, "[STEAM] Game Server class not found when calling: readP2PPacket");
+	ERR_FAIL_COND_V_MSG(SteamNetworking() == NULL, result, "[STEAM] Networking class not found when calling: readP2PPacket");
 	PackedByteArray data;
 	data.resize(packet_size);
 	CSteamID steam_id;
@@ -3791,7 +3790,7 @@ Dictionary Steam::readP2PPacket(uint32_t packet_size, int channel) {
 
 // Sends a P2P packet to the specified user.
 bool Steam::sendP2PPacket(uint64_t remote_steam_id, PackedByteArray data, P2PSend send_type, int channel) {
-	ERR_FAIL_COND_V_MSG(SteamNetworking() == NULL, false, "[STEAM] Game Server class not found when calling: sendP2PPacket");
+	ERR_FAIL_COND_V_MSG(SteamNetworking() == NULL, false, "[STEAM] Networking class not found when calling: sendP2PPacket");
 	CSteamID steam_id = createSteamID(remote_steam_id);
 	return SteamNetworking()->SendP2PPacket(steam_id, data.ptr(), data.size(), EP2PSend(send_type), channel);
 }
@@ -4065,7 +4064,6 @@ Array Steam::receiveMessagesOnPollGroup(uint32_t poll_group, int max_messages) {
 	ERR_FAIL_COND_V_MSG(SteamNetworkingSockets() == NULL, messages, "[STEAM] Networking Sockets class not found when calling: receiveMessagesOnPollGroup");
 	SteamNetworkingMessage_t** poll_messages = new SteamNetworkingMessage_t *[max_messages];
 	int available_messages = SteamNetworkingSockets()->ReceiveMessagesOnPollGroup((HSteamNetPollGroup)poll_group, poll_messages, max_messages);
-		
 	for(int i = 0; i < available_messages; i++) {
 		Dictionary message;
 
@@ -4125,7 +4123,7 @@ Dictionary Steam::getDetailedConnectionStatus(uint32_t connection) {
 
 	connection_status["success"] = success;
 	connection_status["status"] = buffer;
-	return connection_status; 
+	return connection_status;
 }
 
 // Fetch connection user data. Returns -1 if handle is invalid or if you haven't set any userdata on the connection.
@@ -4266,7 +4264,6 @@ Dictionary Steam::getConnectionRealTimeStatus(uint32_t connection, int lanes, bo
 	
 	real_time_status["response"] = result;
 	if (result == RESULT_OK) {
-
 		Dictionary connection_status;
 		if (get_status) {
 			connection_status["state"] = this_status.m_eState;
@@ -5509,14 +5506,14 @@ void Steam::updateRangeTimelineEvent(uint64_t this_event, const String &title, c
 // This is a soft-dependency that is displayed on the web. It is up to the application to determine whether the item can actually
 // be used or not.
 void Steam::addAppDependency(uint64_t published_file_id, uint32_t app_id) {
-	ERR_FAIL_COND_MSG(SteamUGC() == NULL, "[STEAM] UGC class not found when calling: addAppDependency");
-	SteamAPICall_t api_call = SteamUGC()->AddAppDependency((PublishedFileId_t)published_file_id, (AppId_t)app_id);
+	ERR_FAIL_COND_MSG(SteamAPI_SteamUGC() == NULL, "[STEAM] UGC class not found when calling: addAppDependency");
+	SteamAPICall_t api_call = SteamAPI_ISteamUGC_AddAppDependency(SteamAPI_SteamUGC(), (PublishedFileId_t)published_file_id, (AppId_t)app_id);
 	callResultAddAppDependency.Set(api_call, this, &Steam::add_app_dependency_result);
 }
 
 bool Steam::addContentDescriptor(uint64_t update_handle, UGCContentDescriptorID descriptor_id) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: addContentDescriptor");
-	return SteamUGC()->AddContentDescriptor((UGCUpdateHandle_t)update_handle, (EUGCContentDescriptorID)descriptor_id);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: addContentDescriptor");
+	return SteamAPI_ISteamUGC_AddContentDescriptor(SteamAPI_SteamUGC(), (UGCUpdateHandle_t)update_handle, (EUGCContentDescriptorID)descriptor_id);
 }
 
 // Adds a workshop item as a dependency to the specified item. If the nParentPublishedFileID item is of type
@@ -5524,62 +5521,62 @@ bool Steam::addContentDescriptor(uint64_t update_handle, UGCContentDescriptorID 
 // Otherwise, the dependency is a soft one that is displayed on the web and can be retrieved via the ISteamUGC API using a
 // combination of the m_unNumChildren member variable of the SteamUGCDetails_t struct and GetQueryUGCChildren.
 void Steam::addDependency(uint64_t published_file_id, uint64_t child_published_file_id) {
-	ERR_FAIL_COND_MSG(SteamUGC() == NULL, "[STEAM] UGC class not found when calling: addDependency");
-	SteamAPICall_t api_call = SteamUGC()->AddDependency((PublishedFileId_t)published_file_id, (PublishedFileId_t)child_published_file_id);
+	ERR_FAIL_COND_MSG(SteamAPI_SteamUGC() == NULL, "[STEAM] UGC class not found when calling: addDependency");
+	SteamAPICall_t api_call = SteamAPI_ISteamUGC_AddDependency(SteamAPI_SteamUGC(), (PublishedFileId_t)published_file_id, (PublishedFileId_t)child_published_file_id);
 	callResultAddUGCDependency.Set(api_call, this, &Steam::add_ugc_dependency_result);
 }
 
 // Adds a excluded tag to a pending UGC Query. This will only return UGC without the specified tag.
 bool Steam::addExcludedTag(uint64_t query_handle, const String &tag_name) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: addExcludedTag");
-	return SteamUGC()->AddExcludedTag((UGCQueryHandle_t)query_handle, tag_name.utf8().get_data());
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: addExcludedTag");
+	return SteamAPI_ISteamUGC_AddExcludedTag(SteamAPI_SteamUGC(), (UGCQueryHandle_t)query_handle, tag_name.utf8().get_data());
 }
 
 // Adds a key-value tag pair to an item. Keys can map to multiple different values (1-to-many relationship).
 bool Steam::addItemKeyValueTag(uint64_t update_handle, const String &key, const String &value) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: addItemKeyValueTag");
-	return SteamUGC()->AddItemKeyValueTag((UGCUpdateHandle_t)update_handle, key.utf8().get_data(), value.utf8().get_data());
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: addItemKeyValueTag");
+	return SteamAPI_ISteamUGC_AddItemKeyValueTag(SteamAPI_SteamUGC(), (UGCUpdateHandle_t)update_handle, key.utf8().get_data(), value.utf8().get_data());
 }
 
 // Adds an additional preview file for the item.
 bool Steam::addItemPreviewFile(uint64_t update_handle, const String &preview_file, ItemPreviewType preview_type) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: addItemPreviewFile");
-	return SteamUGC()->AddItemPreviewFile((UGCUpdateHandle_t)update_handle, preview_file.utf8().get_data(), (EItemPreviewType)preview_type);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: addItemPreviewFile");
+	return SteamAPI_ISteamUGC_AddItemPreviewFile(SteamAPI_SteamUGC(), (UGCUpdateHandle_t)update_handle, preview_file.utf8().get_data(), (EItemPreviewType)preview_type);
 }
 
 // Adds an additional video preview from YouTube for the item.
 bool Steam::addItemPreviewVideo(uint64_t update_handle, const String &video_id) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: addItemPreviewVideo");
-	return SteamUGC()->AddItemPreviewVideo((UGCUpdateHandle_t)update_handle, video_id.utf8().get_data());
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: addItemPreviewVideo");
+	return SteamAPI_ISteamUGC_AddItemPreviewVideo(SteamAPI_SteamUGC(), (UGCUpdateHandle_t)update_handle, video_id.utf8().get_data());
 }
 
 // Adds a workshop item to the users favorites list.
 void Steam::addItemToFavorites(uint32_t app_id, uint64_t published_file_id) {
-	ERR_FAIL_COND_MSG(SteamUGC() == NULL, "[STEAM] UGC class not found when calling: addItemToFavorites");
+	ERR_FAIL_COND_MSG(SteamAPI_SteamUGC() == NULL, "[STEAM] UGC class not found when calling: addItemToFavorites");
 	AppId_t app = (uint32_t)app_id;
 	PublishedFileId_t file_id = (uint64_t)published_file_id;
-	SteamAPICall_t api_call = SteamUGC()->AddItemToFavorites(app, file_id);
+	SteamAPICall_t api_call = SteamAPI_ISteamUGC_AddItemToFavorites(SteamAPI_SteamUGC(), app, file_id);
 	callResultFavoriteItemListChanged.Set(api_call, this, &Steam::user_favorite_items_list_changed);
 }
 
 // Adds a required key-value tag to a pending UGC Query. This will only return workshop items that have a key = pKey and a
 // value = pValue.
 bool Steam::addRequiredKeyValueTag(uint64_t query_handle, const String &key, const String &value) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: addRequiredKeyValueTag");
-	return SteamUGC()->AddRequiredKeyValueTag((UGCQueryHandle_t)query_handle, key.utf8().get_data(), value.utf8().get_data());
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: addRequiredKeyValueTag");
+	return SteamAPI_ISteamUGC_AddRequiredKeyValueTag(SteamAPI_SteamUGC(), (UGCQueryHandle_t)query_handle, key.utf8().get_data(), value.utf8().get_data());
 }
 
 // Adds a required tag to a pending UGC Query. This will only return UGC with the specified tag.
 bool Steam::addRequiredTag(uint64_t query_handle, const String &tag_name) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: addRequiredTag");
-	return SteamUGC()->AddRequiredTag((UGCQueryHandle_t)query_handle, tag_name.utf8().get_data());
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: addRequiredTag");
+	return SteamAPI_ISteamUGC_AddRequiredTag(SteamAPI_SteamUGC(), (UGCQueryHandle_t)query_handle, tag_name.utf8().get_data());
 }
 
 // Adds the requirement that the returned items from the pending UGC Query have at least one of the tags in the given set (logical
 // "or"). For each tag group that is added, at least one tag from each group is required to be on the matching items.
 bool Steam::addRequiredTagGroup(uint64_t query_handle, Array tag_array) {
 	bool added_tag_group = false;
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, added_tag_group, "[STEAM] UGC class not found when calling: addRequiredTagGroup");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, added_tag_group, "[STEAM] UGC class not found when calling: addRequiredTagGroup");
 	UGCQueryHandle_t handle = uint64_t(query_handle);
 	std::vector<CharString> string_store(tag_array.size());
 	std::vector<const char *> strings(tag_array.size());
@@ -5592,46 +5589,55 @@ bool Steam::addRequiredTagGroup(uint64_t query_handle, Array tag_array) {
 	SteamParamStringArray_t tag;
 	tag.m_nNumStrings = strings.size();
 	tag.m_ppStrings = strings.data();
-	added_tag_group = SteamUGC()->AddRequiredTagGroup(handle, &tag);
+	added_tag_group = SteamAPI_ISteamUGC_AddRequiredTagGroup(SteamAPI_SteamUGC(), handle, &tag);
 	return added_tag_group;
 }
 
 // Lets game servers set a specific workshop folder before issuing any UGC commands.
 bool Steam::initWorkshopForGameServer(uint32_t workshop_depot_id, String folder) {
 	bool initialized_workshop = false;
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, initialized_workshop, "[STEAM] UGC class not found when calling: initWorkshopForGameServer");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, initialized_workshop, "[STEAM] UGC class not found when calling: initWorkshopForGameServer");
 	DepotId_t workshop = (uint32_t)workshop_depot_id;
-	initialized_workshop = SteamUGC()->BInitWorkshopForGameServer(workshop, folder.utf8().get_data());
+	initialized_workshop = SteamAPI_ISteamUGC_BInitWorkshopForGameServer(SteamAPI_SteamUGC(), workshop, folder.utf8().get_data());
 	return initialized_workshop;
 }
 
 // Creates a new workshop item with no content attached yet.
 void Steam::createItem(uint32_t app_id, WorkshopFileType file_type) {
-	ERR_FAIL_COND_MSG(SteamUGC() == NULL, "[STEAM] UGC class not found when calling: createItem");
-	SteamAPICall_t api_call = SteamUGC()->CreateItem((AppId_t)app_id, (EWorkshopFileType)file_type);
+	ERR_FAIL_COND_MSG(SteamAPI_SteamUGC() == NULL, "[STEAM] UGC class not found when calling: createItem");
+	SteamAPICall_t api_call = SteamAPI_ISteamUGC_CreateItem(SteamAPI_SteamUGC(), (AppId_t)app_id, (EWorkshopFileType)file_type);
 	callResultItemCreate.Set(api_call, this, &Steam::item_created);
 }
 
 // Query for all matching UGC. You can use this to list all of the available UGC for your app.
-uint64_t Steam::createQueryAllUGCRequest(UGCQuery query_type, UGCMatchingUGCType matching_type, uint32_t creator_id, uint32_t consumer_id, uint32_t page) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, 0, "[STEAM] UGC class not found when calling: createQueryAllUGCRequest");
+uint64_t Steam::createQueryAllUGCRequestPage(UGCQuery query_type, UGCMatchingUGCType matching_type, uint32_t creator_id, uint32_t consumer_id, uint32_t page) {
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, 0, "[STEAM] UGC class not found when calling: createQueryAllUGCRequest");
 	AppId_t creator = (uint32_t)creator_id;
 	AppId_t consumer = (uint32_t)consumer_id;
-	UGCQueryHandle_t handle = SteamUGC()->CreateQueryAllUGCRequest((EUGCQuery)query_type, (EUGCMatchingUGCType)matching_type, creator, consumer, page);
+	UGCQueryHandle_t handle = SteamAPI_ISteamUGC_CreateQueryAllUGCRequestPage(SteamAPI_SteamUGC(), (EUGCQuery)query_type, (EUGCMatchingUGCType)matching_type, creator, consumer, page);
+	return (uint64_t)handle;
+}
+
+// Query for all matching UGC. You can use this to list all of the available UGC for your app.
+uint64_t Steam::createQueryAllUGCRequestCursor(UGCQuery query_type, UGCMatchingUGCType matching_type, uint32_t creator_id, uint32_t consumer_id, const String& cursor) {
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, 0, "[STEAM] UGC class not found when calling: createQueryAllUGCRequest");
+	AppId_t creator = (uint32_t)creator_id;
+	AppId_t consumer = (uint32_t)consumer_id;
+	UGCQueryHandle_t handle = SteamAPI_ISteamUGC_CreateQueryAllUGCRequestCursor(SteamAPI_SteamUGC(), (EUGCQuery)query_type, (EUGCMatchingUGCType)matching_type, creator, consumer, cursor.utf8().get_data());
 	return (uint64_t)handle;
 }
 
 // Query for the details of specific workshop items.
 uint64_t Steam::createQueryUGCDetailsRequest(Array published_file_id_array) {
 	uint64_t this_handle = 0;
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, this_handle, "[STEAM] UGC class not found when calling: createQueryUGCDetailsRequest");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, this_handle, "[STEAM] UGC class not found when calling: createQueryUGCDetailsRequest");
 	uint32_t file_count = published_file_id_array.size();
 	if (file_count != 0) {
 		PublishedFileId_t *file_ids = new PublishedFileId_t[file_count];
 		for (uint32_t i = 0; i < file_count; i++) {
 			file_ids[i] = (uint64_t)published_file_id_array[i];
 		}
-		UGCQueryHandle_t handle = SteamUGC()->CreateQueryUGCDetailsRequest(file_ids, file_count);
+		UGCQueryHandle_t handle = SteamAPI_ISteamUGC_CreateQueryUGCDetailsRequest(SteamAPI_SteamUGC(), file_ids, file_count);
 		delete[] file_ids;
 		this_handle = (uint64_t)handle;
 	}
@@ -5640,21 +5646,21 @@ uint64_t Steam::createQueryUGCDetailsRequest(Array published_file_id_array) {
 
 // Query UGC associated with a user. You can use this to list the UGC the user is subscribed to amongst other things.
 uint64_t Steam::createQueryUserUGCRequest(uint64_t steam_id, UserUGCList list_type, UGCMatchingUGCType matching_ugc_type, UserUGCListSortOrder sort_order, uint32_t creator_id, uint32_t consumer_id, uint32_t page) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, 0, "[STEAM] UGC class not found when calling: createQueryUGCDetailsRequest");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, 0, "[STEAM] UGC class not found when calling: createQueryUGCDetailsRequest");
 	// Get tue universe ID from the Steam ID
 	CSteamID user_id = (uint64)steam_id;
 	AccountID_t account = (AccountID_t)user_id.ConvertToUint64();
 	AppId_t creator = (int)creator_id;
 	AppId_t consumer = (int)consumer_id;
-	UGCQueryHandle_t handle = SteamUGC()->CreateQueryUserUGCRequest(account, (EUserUGCList)list_type, (EUGCMatchingUGCType)matching_ugc_type, (EUserUGCListSortOrder)sort_order, creator, consumer, page);
+	UGCQueryHandle_t handle = SteamAPI_ISteamUGC_CreateQueryUserUGCRequest(SteamAPI_SteamUGC(), account, (EUserUGCList)list_type, (EUGCMatchingUGCType)matching_ugc_type, (EUserUGCListSortOrder)sort_order, creator, consumer, page);
 	return (uint64_t)handle;
 }
 
 // Deletes the item without prompting the user.
 void Steam::deleteItem(uint64_t published_file_id) {
-	ERR_FAIL_COND_MSG(SteamUGC() == NULL, "[STEAM] UGC class not found when calling: deleteItem");
+	ERR_FAIL_COND_MSG(SteamAPI_SteamUGC() == NULL, "[STEAM] UGC class not found when calling: deleteItem");
 	PublishedFileId_t file_id = (uint64_t)published_file_id;
-	SteamAPICall_t api_call = SteamUGC()->DeleteItem(file_id);
+	SteamAPICall_t api_call = SteamAPI_ISteamUGC_DeleteItem(SteamAPI_SteamUGC(), file_id);
 	callResultDeleteItem.Set(api_call, this, &Steam::item_deleted);
 }
 
@@ -5663,26 +5669,26 @@ void Steam::deleteItem(uint64_t published_file_id) {
 // If item is not subscribed to, it will be cached for some time. If bHighPriority is set, any other item download will be
 // suspended and this item downloaded ASAP.
 bool Steam::downloadItem(uint64_t published_file_id, bool high_priority) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: downloadItem");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: downloadItem");
 	PublishedFileId_t file_id = (uint64_t)published_file_id;
-	return SteamUGC()->DownloadItem(file_id, high_priority);
+	return SteamAPI_ISteamUGC_DownloadItem(SteamAPI_SteamUGC(), file_id, high_priority);
 }
 
 // Returns any app dependencies that are associated with the given item.
 void Steam::getAppDependencies(uint64_t published_file_id) {
-	ERR_FAIL_COND_MSG(SteamUGC() == NULL, "[STEAM] UGC class not found when calling: getAppDependencies");
+	ERR_FAIL_COND_MSG(SteamAPI_SteamUGC() == NULL, "[STEAM] UGC class not found when calling: getAppDependencies");
 	PublishedFileId_t file_id = (uint64_t)published_file_id;
-	SteamAPICall_t api_call = SteamUGC()->GetAppDependencies(file_id);
+	SteamAPICall_t api_call = SteamAPI_ISteamUGC_GetAppDependencies(SteamAPI_SteamUGC(), file_id);
 	callResultGetAppDependencies.Set(api_call, this, &Steam::get_app_dependencies_result);
 }
 
 // Get info about a pending download of a workshop item that has k_EItemStateNeedsUpdate set.
 Dictionary Steam::getItemDownloadInfo(uint64_t published_file_id) {
 	Dictionary info;
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, info, "[STEAM] UGC class not found when calling: getItemDownloadInfo");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, info, "[STEAM] UGC class not found when calling: getItemDownloadInfo");
 	uint64 downloaded = 0;
 	uint64 total = 0;
-	info["ret"] = SteamUGC()->GetItemDownloadInfo((PublishedFileId_t)published_file_id, &downloaded, &total);
+	info["ret"] = SteamAPI_ISteamUGC_GetItemDownloadInfo(SteamAPI_SteamUGC(), (PublishedFileId_t)published_file_id, &downloaded, &total);
 	if (info["ret"]) {
 		info["downloaded"] = uint64_t(downloaded);
 		info["total"] = uint64_t(total);
@@ -5694,12 +5700,12 @@ Dictionary Steam::getItemDownloadInfo(uint64_t published_file_id) {
 Dictionary Steam::getItemInstallInfo(uint64_t published_file_id) {
 	Dictionary info;
 	info["ret"] = false;
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, info, "[STEAM] UGC class not found when calling: getItemInstallInfo");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, info, "[STEAM] UGC class not found when calling: getItemInstallInfo");
 	PublishedFileId_t file_id = (uint64_t)published_file_id;
 	uint64 size_on_disk;
 	char folder[1024] = { 0 };
 	uint32_t time_stamp;
-	info["ret"] = SteamUGC()->GetItemInstallInfo((PublishedFileId_t)file_id, &size_on_disk, folder, sizeof(folder), &time_stamp);
+	info["ret"] = SteamAPI_ISteamUGC_GetItemInstallInfo(SteamAPI_SteamUGC(), (PublishedFileId_t)file_id, &size_on_disk, folder, sizeof(folder), &time_stamp);
 	if (info["ret"]) {
 		info["size"] = (uint64_t)size_on_disk;
 		info["folder"] = folder;
@@ -5710,19 +5716,19 @@ Dictionary Steam::getItemInstallInfo(uint64_t published_file_id) {
 
 // Gets the current state of a workshop item on this client.
 uint32_t Steam::getItemState(uint64_t published_file_id) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, 0, "[STEAM] UGC class not found when calling: getItemState");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, 0, "[STEAM] UGC class not found when calling: getItemState");
 	PublishedFileId_t file_id = (uint64_t)published_file_id;
-	return SteamUGC()->GetItemState(file_id);
+	return SteamAPI_ISteamUGC_GetItemState(SteamAPI_SteamUGC(), file_id);
 }
 
 // Gets the progress of an item update.
 Dictionary Steam::getItemUpdateProgress(uint64_t update_handle) {
 	Dictionary update_progress;
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, update_progress, "[STEAM] UGC class not found when calling: getItemUpdateProgress");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, update_progress, "[STEAM] UGC class not found when calling: getItemUpdateProgress");
 	UGCUpdateHandle_t handle = (uint64_t)update_handle;
 	uint64 processed = 0;
 	uint64 total = 0;
-	EItemUpdateStatus status = SteamUGC()->GetItemUpdateProgress(handle, &processed, &total);
+	EItemUpdateStatus status = SteamAPI_ISteamUGC_GetItemUpdateProgress(SteamAPI_SteamUGC(), handle, &processed, &total);
 	update_progress["status"] = status;
 	update_progress["processed"] = uint64_t(processed);
 	update_progress["total"] = uint64_t(total);
@@ -5731,25 +5737,25 @@ Dictionary Steam::getItemUpdateProgress(uint64_t update_handle) {
 
 // Gets the total number of items the current user is subscribed to for the game or application.
 uint32_t Steam::getNumSubscribedItems(bool include_locally_disabled) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, 0, "[STEAM] UGC class not found when calling: getNumSubscribedItems");
-	return SteamUGC()->GetNumSubscribedItems(include_locally_disabled);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, 0, "[STEAM] UGC class not found when calling: getNumSubscribedItems");
+	return SteamAPI_ISteamUGC_GetNumSubscribedItems(SteamAPI_SteamUGC(), include_locally_disabled);
 }
 
 // Get the number of supported game versions for this UGC content.
 uint32_t Steam::getNumSupportedGameVersions(uint64_t query_handle, uint32_t index) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, 0, "[STEAM] UGC class not found when calling: getNumSupportedGameVersions");
-	return SteamUGC()->GetNumSupportedGameVersions((UGCQueryHandle_t)query_handle, index);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, 0, "[STEAM] UGC class not found when calling: getNumSupportedGameVersions");
+	return SteamAPI_ISteamUGC_GetNumSupportedGameVersions(SteamAPI_SteamUGC(), (UGCQueryHandle_t)query_handle, index);
 }
 
 // Retrieve the details of an additional preview associated with an individual workshop item after receiving a querying UGC call
 // result.
 Dictionary Steam::getQueryUGCAdditionalPreview(uint64_t query_handle, uint32_t index, uint32_t preview_index) {
 	Dictionary preview;
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, preview, "[STEAM] UGC class not found when calling: getQueryUGCAdditionalPreview");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, preview, "[STEAM] UGC class not found when calling: getQueryUGCAdditionalPreview");
 	char url_or_video_id[256 + 1]{};
 	char original_filename[256 + 1]{};
 	EItemPreviewType previewType;
-	bool success = SteamUGC()->GetQueryUGCAdditionalPreview((UGCQueryHandle_t)query_handle, index, preview_index, url_or_video_id, 256, original_filename, 256, &previewType);
+	bool success = SteamAPI_ISteamUGC_GetQueryUGCAdditionalPreview(SteamAPI_SteamUGC(), (UGCQueryHandle_t)query_handle, index, preview_index, url_or_video_id, 256, original_filename, 256, &previewType);
 	if (success) {
 		preview["success"] = success;
 		preview["handle"] = query_handle;
@@ -5766,10 +5772,10 @@ Dictionary Steam::getQueryUGCAdditionalPreview(uint64_t query_handle, uint32_t i
 // either be a part of a collection or some other dependency (see AddDependency).
 Dictionary Steam::getQueryUGCChildren(uint64_t query_handle, uint32_t index, uint32_t child_count) {
 	Dictionary children;
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, children, "[STEAM] UGC class not found when calling: getQueryUGCChildren");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, children, "[STEAM] UGC class not found when calling: getQueryUGCChildren");
 	PackedVector2Array vec;
 	vec.resize(child_count);
-	bool success = SteamUGC()->GetQueryUGCChildren((UGCQueryHandle_t)query_handle, index, (PublishedFileId_t *)vec.ptrw(), child_count);
+	bool success = SteamAPI_ISteamUGC_GetQueryUGCChildren(SteamAPI_SteamUGC(), (UGCQueryHandle_t)query_handle, index, (PublishedFileId_t *)vec.ptrw(), child_count);
 	if (success) {
 		Array godot_arr;
 		godot_arr.resize(child_count);
@@ -5787,10 +5793,10 @@ Dictionary Steam::getQueryUGCChildren(uint64_t query_handle, uint32_t index, uin
 
 Dictionary Steam::getQueryUGCContentDescriptors(uint64_t query_handle, uint32_t index, uint32_t max_entries) {
 	Dictionary descriptors;
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, descriptors, "[STEAM] UGC class not found when calling: getQueryUGCContentDescriptors");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, descriptors, "[STEAM] UGC class not found when calling: getQueryUGCContentDescriptors");
 	PackedVector2Array vec;
 	vec.resize(max_entries);
-	uint32_t result = SteamUGC()->GetQueryUGCContentDescriptors((UGCQueryHandle_t)query_handle, index, (EUGCContentDescriptorID *)vec.ptrw(), max_entries);
+	uint32_t result = SteamAPI_ISteamUGC_GetQueryUGCContentDescriptors(SteamAPI_SteamUGC(), (UGCQueryHandle_t)query_handle, index, (EUGCContentDescriptorID *)vec.ptrw(), max_entries);
 	Array descriptor_array;
 	descriptor_array.resize(max_entries);
 	for (uint32_t i = 0; i < max_entries; i++) {
@@ -5806,10 +5812,10 @@ Dictionary Steam::getQueryUGCContentDescriptors(uint64_t query_handle, uint32_t 
 // Retrieve the details of a key-value tag associated with an individual workshop item after receiving a querying UGC call result.
 Dictionary Steam::getQueryUGCKeyValueTag(uint64_t query_handle, uint32_t index, uint32_t key_value_tag_index) {
 	Dictionary tag;
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, tag, "[STEAM] UGC class not found when calling: getQueryUGCKeyValueTag");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, tag, "[STEAM] UGC class not found when calling: getQueryUGCKeyValueTag");
 	char key[256 + 1]{};
 	char value[256 + 1]{};
-	bool success = SteamUGC()->GetQueryUGCKeyValueTag((UGCQueryHandle_t)query_handle, index, key_value_tag_index, key, 256, value, 256);
+	bool success = SteamAPI_ISteamUGC_GetQueryUGCKeyValueTag(SteamAPI_SteamUGC(), (UGCQueryHandle_t)query_handle, index, key_value_tag_index, key, 256, value, 256);
 	if (success) {
 		tag["success"] = success;
 		tag["handle"] = query_handle;
@@ -5824,9 +5830,9 @@ Dictionary Steam::getQueryUGCKeyValueTag(uint64_t query_handle, uint32_t index, 
 // Retrieve the developer set metadata of an individual workshop item after receiving a querying UGC call result.
 String Steam::getQueryUGCMetadata(uint64_t query_handle, uint32_t index) {
 	String query_ugc_metadata = "";
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, query_ugc_metadata, "[STEAM] UGC class not found when calling: getQueryUGCMetadata");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, query_ugc_metadata, "[STEAM] UGC class not found when calling: getQueryUGCMetadata");
 	char ugc_metadata[5000 + 1]{};
-	bool success = SteamUGC()->GetQueryUGCMetadata((UGCQueryHandle_t)query_handle, index, ugc_metadata, 5000);
+	bool success = SteamAPI_ISteamUGC_GetQueryUGCMetadata(SteamAPI_SteamUGC(), (UGCQueryHandle_t)query_handle, index, ugc_metadata, 5000);
 	if (success) {
 		query_ugc_metadata = ugc_metadata;
 	}
@@ -5835,29 +5841,29 @@ String Steam::getQueryUGCMetadata(uint64_t query_handle, uint32_t index) {
 
 // Retrieve the number of additional previews of an individual workshop item after receiving a querying UGC call result.
 uint32_t Steam::getQueryUGCNumAdditionalPreviews(uint64_t query_handle, uint32_t index) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, 0, "[STEAM] UGC class not found when calling: getQueryUGCNumAdditionalPreviews");
-	return SteamUGC()->GetQueryUGCNumAdditionalPreviews((UGCQueryHandle_t)query_handle, index);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, 0, "[STEAM] UGC class not found when calling: getQueryUGCNumAdditionalPreviews");
+	return SteamAPI_ISteamUGC_GetQueryUGCNumAdditionalPreviews(SteamAPI_SteamUGC(), (UGCQueryHandle_t)query_handle, index);
 }
 
 // Retrieve the number of key-value tags of an individual workshop item after receiving a querying UGC call result.
 uint32_t Steam::getQueryUGCNumKeyValueTags(uint64_t query_handle, uint32_t index) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, 0, "[STEAM] UGC class not found when calling: getQueryUGCNumKeyValueTags");
-	return SteamUGC()->GetQueryUGCNumKeyValueTags((UGCQueryHandle_t)query_handle, index);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, 0, "[STEAM] UGC class not found when calling: getQueryUGCNumKeyValueTags");
+	return SteamAPI_ISteamUGC_GetQueryUGCNumKeyValueTags(SteamAPI_SteamUGC(), (UGCQueryHandle_t)query_handle, index);
 }
 
 // Retrieve the number of tags for an individual workshop item after receiving a querying UGC call result. You should call this in
 // a loop to get the details of all the workshop items returned.
 uint32_t Steam::getQueryUGCNumTags(uint64_t query_handle, uint32_t index) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, 0, "[STEAM] UGC class not found when calling: getQueryUGCNumTags");
-	return SteamUGC()->GetQueryUGCNumTags((UGCQueryHandle_t)query_handle, index);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, 0, "[STEAM] UGC class not found when calling: getQueryUGCNumTags");
+	return SteamAPI_ISteamUGC_GetQueryUGCNumTags(SteamAPI_SteamUGC(), (UGCQueryHandle_t)query_handle, index);
 }
 
 // Retrieve the URL to the preview image of an individual workshop item after receiving a querying UGC call result.
 String Steam::getQueryUGCPreviewURL(uint64_t query_handle, uint32_t index) {
 	String query_ugc_preview_url = "";
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, query_ugc_preview_url, "[STEAM] UGC class not found when calling: getQueryUGCPreviewURL");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, query_ugc_preview_url, "[STEAM] UGC class not found when calling: getQueryUGCPreviewURL");
 	char url[256 + 1]{};
-	bool success = SteamUGC()->GetQueryUGCPreviewURL((UGCQueryHandle_t)query_handle, index, url, 256);
+	bool success = SteamAPI_ISteamUGC_GetQueryUGCPreviewURL(SteamAPI_SteamUGC(), (UGCQueryHandle_t)query_handle, index, url, 256);
 	if (success) {
 		query_ugc_preview_url = url;
 	}
@@ -5867,9 +5873,9 @@ String Steam::getQueryUGCPreviewURL(uint64_t query_handle, uint32_t index) {
 // Retrieve the details of an individual workshop item after receiving a querying UGC call result.
 Dictionary Steam::getQueryUGCResult(uint64_t query_handle, uint32_t index) {
 	Dictionary ugc_result;
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, ugc_result, "[STEAM] UGC class not found when calling: getQueryUGCResult");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, ugc_result, "[STEAM] UGC class not found when calling: getQueryUGCResult");
 	SteamUGCDetails_t query_details;
-	bool success = SteamUGC()->GetQueryUGCResult((UGCQueryHandle_t)query_handle, index, &query_details);
+	bool success = SteamAPI_ISteamUGC_GetQueryUGCResult(SteamAPI_SteamUGC(), (UGCQueryHandle_t)query_handle, index, &query_details);
 	if (success) {
 		ugc_result["result"] = (Result)query_details.m_eResult;
 		ugc_result["file_id"] = (uint64_t)query_details.m_nPublishedFileId;
@@ -5908,9 +5914,9 @@ Dictionary Steam::getQueryUGCResult(uint64_t query_handle, uint32_t index) {
 // Retrieve various statistics of an individual workshop item after receiving a querying UGC call result.
 Dictionary Steam::getQueryUGCStatistic(uint64_t query_handle, uint32_t index, ItemStatistic stat_type) {
 	Dictionary ugc_stat;
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, ugc_stat, "[STEAM] UGC class not found when calling: getQueryUGCStatistic");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, ugc_stat, "[STEAM] UGC class not found when calling: getQueryUGCStatistic");
 	uint64 value = 0;
-	bool success = SteamUGC()->GetQueryUGCStatistic((UGCQueryHandle_t)query_handle, index, (EItemStatistic)stat_type, &value);
+	bool success = SteamAPI_ISteamUGC_GetQueryUGCStatistic(SteamAPI_SteamUGC(), (UGCQueryHandle_t)query_handle, index, (EItemStatistic)stat_type, &value);
 	if (success) {
 		ugc_stat["success"] = success;
 		ugc_stat["handle"] = query_handle;
@@ -5924,9 +5930,9 @@ Dictionary Steam::getQueryUGCStatistic(uint64_t query_handle, uint32_t index, It
 // Retrieve the "nth" tag associated with an individual workshop item after receiving a querying UGC call result.
 // You should call this in a loop to get the details of all the workshop items returned.
 String Steam::getQueryUGCTag(uint64_t query_handle, uint32_t index, uint32_t tag_index) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, "", "[STEAM] UGC class not found when calling: getQueryUGCTag");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, "", "[STEAM] UGC class not found when calling: getQueryUGCTag");
 	char tag[64 + 1]{};
-	SteamUGC()->GetQueryUGCTag((UGCQueryHandle_t)query_handle, index, tag_index, tag, 64);
+	SteamAPI_ISteamUGC_GetQueryUGCTag(SteamAPI_SteamUGC(), (UGCQueryHandle_t)query_handle, index, tag_index, tag, 64);
 	return tag;
 }
 
@@ -5934,19 +5940,19 @@ String Steam::getQueryUGCTag(uint64_t query_handle, uint32_t index, uint32_t tag
 // receiving a querying UGC call result.
 // You should call this in a loop to get the details of all the workshop items returned.
 String Steam::getQueryUGCTagDisplayName(uint64_t query_handle, uint32_t index, uint32_t tag_index) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, "", "[STEAM] UGC class not found when calling: getQueryUGCTagDisplayName");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, "", "[STEAM] UGC class not found when calling: getQueryUGCTagDisplayName");
 	char tag[256 + 1]{};
-	SteamUGC()->GetQueryUGCTagDisplayName((UGCQueryHandle_t)query_handle, index, tag_index, tag, 256);
+	SteamAPI_ISteamUGC_GetQueryUGCTagDisplayName(SteamAPI_SteamUGC(), (UGCQueryHandle_t)query_handle, index, tag_index, tag, 256);
 	return tag;
 }
 
 // Gets a list of all of the items the current user is subscribed to for the current game.
 Array Steam::getSubscribedItems(bool include_locally_disabled) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, Array(), "[STEAM] UGC class not found when calling: getSubscribedItems");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, Array(), "[STEAM] UGC class not found when calling: getSubscribedItems");
 	Array subscribed;
-	uint32_t num_items = SteamUGC()->GetNumSubscribedItems(include_locally_disabled);
+	uint32_t num_items = SteamAPI_ISteamUGC_GetNumSubscribedItems(SteamAPI_SteamUGC(), include_locally_disabled);
 	PublishedFileId_t *items = new PublishedFileId_t[num_items];
-	uint32_t item_list = SteamUGC()->GetSubscribedItems(items, num_items, include_locally_disabled);
+	uint32_t item_list = SteamAPI_ISteamUGC_GetSubscribedItems(SteamAPI_SteamUGC(), items, num_items, include_locally_disabled);
 	for (uint32_t i = 0; i < item_list; i++) {
 		subscribed.append((uint64_t)items[i]);
 	}
@@ -5957,11 +5963,11 @@ Array Steam::getSubscribedItems(bool include_locally_disabled) {
 // Some items can specify that they have a version that is valid for a range of game versions (Steam branch).
 Dictionary Steam::getSupportedGameVersionData(uint64_t query_handle, uint32_t index, uint32_t version_index) {
 	Dictionary supported_version;
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, supported_version, "[STEAM] UGC class not found when calling: getSupportedGameVersionData");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, supported_version, "[STEAM] UGC class not found when calling: getSupportedGameVersionData");
 	char branch_min[STEAM_BUFFER_SIZE];
 	char branch_max[STEAM_BUFFER_SIZE];
 	uint32_t branch_size = 0;
-	if (SteamUGC()->GetSupportedGameVersionData((UGCQueryHandle_t)query_handle, index, version_index, branch_min, branch_max, branch_size)) {
+	if (SteamAPI_ISteamUGC_GetSupportedGameVersionData(SteamAPI_SteamUGC(), (UGCQueryHandle_t)query_handle, index, version_index, branch_min, branch_max, branch_size)) {
 		supported_version["min"] = branch_min;
 		supported_version["max"] = branch_max;
 	}
@@ -5972,10 +5978,10 @@ Dictionary Steam::getSupportedGameVersionData(uint64_t query_handle, uint32_t in
 // Information is unclear how this actually works so here goes nothing!
 Array Steam::getUserContentDescriptorPreferences(uint32_t max_entries) {
 	Array descriptors;
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, descriptors, "[STEAM] UGC class not found when calling: getUserContentDescriptorPreferences");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, descriptors, "[STEAM] UGC class not found when calling: getUserContentDescriptorPreferences");
 	EUGCContentDescriptorID *descriptor_list = new EUGCContentDescriptorID[max_entries];
 	// What is this actually returning?
-	SteamUGC()->GetUserContentDescriptorPreferences(descriptor_list, max_entries);
+	SteamAPI_ISteamUGC_GetUserContentDescriptorPreferences(SteamAPI_SteamUGC(), descriptor_list, max_entries);
 	for (uint32_t i = 0; i < max_entries; i++) {
 		descriptors.append(descriptor_list[i]);
 	}
@@ -5984,141 +5990,141 @@ Array Steam::getUserContentDescriptorPreferences(uint32_t max_entries) {
 
 // Gets the users vote status on a workshop item.
 void Steam::getUserItemVote(uint64_t published_file_id) {
-	ERR_FAIL_COND_MSG(SteamUGC() == NULL, "[STEAM] UGC class not found when calling: getUserItemVote");	
+	ERR_FAIL_COND_MSG(SteamAPI_SteamUGC() == NULL, "[STEAM] UGC class not found when calling: getUserItemVote");	
 	PublishedFileId_t file_id = (uint64_t)published_file_id;
-	SteamAPICall_t api_call = SteamUGC()->GetUserItemVote(file_id);
+	SteamAPICall_t api_call = SteamAPI_ISteamUGC_GetUserItemVote(SteamAPI_SteamUGC(), file_id);
 	callResultGetUserItemVote.Set(api_call, this, &Steam::get_item_vote_result);
 }
 
 // Retrieve information related to the user's acceptance or not of the app's specific Workshop EULA.
 void Steam::getWorkshopEULAStatus() {
-	ERR_FAIL_COND_MSG(SteamUGC() == NULL, "[STEAM] UGC class not found when calling: subscribeItem");
-	SteamAPICall_t api_call = SteamUGC()->GetWorkshopEULAStatus();
+	ERR_FAIL_COND_MSG(SteamAPI_SteamUGC() == NULL, "[STEAM] UGC class not found when calling: subscribeItem");
+	SteamAPICall_t api_call = SteamAPI_ISteamUGC_GetWorkshopEULAStatus(SteamAPI_SteamUGC());
 	callResultWorkshopEULAStatus.Set(api_call, this, &Steam::workshop_eula_status);
 }
 
 // Releases a UGC query handle when you are done with it to free up memory.
 bool Steam::releaseQueryUGCRequest(uint64_t query_handle) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: releaseQueryUGCRequest");
-	return SteamUGC()->ReleaseQueryUGCRequest((UGCQueryHandle_t)query_handle);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: releaseQueryUGCRequest");
+	return SteamAPI_ISteamUGC_ReleaseQueryUGCRequest(SteamAPI_SteamUGC(), (UGCQueryHandle_t)query_handle);
 }
 
 // Remove all existing key-value tags (you can add new ones via the AddItemKeyValueTag function).
 bool Steam::removeAllItemKeyValueTags(uint64_t update_handle) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: removeAllItemKeyValueTags");
-	return SteamUGC()->RemoveAllItemKeyValueTags((UGCUpdateHandle_t)update_handle);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: removeAllItemKeyValueTags");
+	return SteamAPI_ISteamUGC_RemoveAllItemKeyValueTags(SteamAPI_SteamUGC(), (UGCUpdateHandle_t)update_handle);
 }
 
 // Removes the dependency between the given item and the appid. This list of dependencies can be retrieved by calling
 // GetAppDependencies.
 void Steam::removeAppDependency(uint64_t published_file_id, uint32_t app_id) {
-	ERR_FAIL_COND_MSG(SteamUGC() == NULL, "[STEAM] UGC class not found when calling: removeAppDependency");	
+	ERR_FAIL_COND_MSG(SteamAPI_SteamUGC() == NULL, "[STEAM] UGC class not found when calling: removeAppDependency");	
 	PublishedFileId_t file_id = (uint64_t)published_file_id;
 	AppId_t app = (uint32_t)app_id;
-	SteamAPICall_t api_call = SteamUGC()->RemoveAppDependency(file_id, app);
+	SteamAPICall_t api_call = SteamAPI_ISteamUGC_RemoveAppDependency(SteamAPI_SteamUGC(), file_id, app);
 	callResultRemoveAppDependency.Set(api_call, this, &Steam::remove_app_dependency_result);
 }
 
 bool Steam::removeContentDescriptor(uint64_t update_handle, UGCContentDescriptorID descriptor_id) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: removeContentDescriptor");
-	return SteamUGC()->RemoveContentDescriptor((UGCUpdateHandle_t)update_handle, (EUGCContentDescriptorID)descriptor_id);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: removeContentDescriptor");
+	return SteamAPI_ISteamUGC_RemoveContentDescriptor(SteamAPI_SteamUGC(), (UGCUpdateHandle_t)update_handle, (EUGCContentDescriptorID)descriptor_id);
 }
 
 // Removes a workshop item as a dependency from the specified item.
 void Steam::removeDependency(uint64_t published_file_id, uint64_t child_published_file_id) {
-	ERR_FAIL_COND_MSG(SteamUGC() == NULL, "[STEAM] UGC class not found when calling: removeDependency");	
+	ERR_FAIL_COND_MSG(SteamAPI_SteamUGC() == NULL, "[STEAM] UGC class not found when calling: removeDependency");	
 	PublishedFileId_t file_id = (uint64_t)published_file_id;
 	PublishedFileId_t child_id = (uint64_t)child_published_file_id;
-	SteamAPICall_t api_call = SteamUGC()->RemoveDependency(file_id, child_id);
+	SteamAPICall_t api_call = SteamAPI_ISteamUGC_RemoveDependency(SteamAPI_SteamUGC(), file_id, child_id);
 	callResultRemoveUGCDependency.Set(api_call, this, &Steam::remove_ugc_dependency_result);
 }
 
 // Removes a workshop item from the users favorites list.
 void Steam::removeItemFromFavorites(uint32_t app_id, uint64_t published_file_id) {
-	ERR_FAIL_COND_MSG(SteamUGC() == NULL, "[STEAM] UGC class not found when calling: removeItemFromFavorites");	
+	ERR_FAIL_COND_MSG(SteamAPI_SteamUGC() == NULL, "[STEAM] UGC class not found when calling: removeItemFromFavorites");	
 	PublishedFileId_t file_id = (uint64_t)published_file_id;
 	AppId_t app = (uint32_t)app_id;
-	SteamAPICall_t api_call = SteamUGC()->RemoveItemFromFavorites(app, file_id);
+	SteamAPICall_t api_call = SteamAPI_ISteamUGC_RemoveItemFromFavorites(SteamAPI_SteamUGC(), app, file_id);
 	callResultFavoriteItemListChanged.Set(api_call, this, &Steam::user_favorite_items_list_changed);
 }
 
 // Removes an existing key value tag from an item.
 bool Steam::removeItemKeyValueTags(uint64_t update_handle, const String &key) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: removeItemKeyValueTags");
-	return SteamUGC()->RemoveItemKeyValueTags((UGCUpdateHandle_t)update_handle, key.utf8().get_data());
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: removeItemKeyValueTags");
+	return SteamAPI_ISteamUGC_RemoveItemKeyValueTags(SteamAPI_SteamUGC(), (UGCUpdateHandle_t)update_handle, key.utf8().get_data());
 }
 
 // Removes an existing preview from an item.
 bool Steam::removeItemPreview(uint64_t update_handle, uint32_t index) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: removeItemPreview");
-	return SteamUGC()->RemoveItemPreview((UGCUpdateHandle_t)update_handle, index);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: removeItemPreview");
+	return SteamAPI_ISteamUGC_RemoveItemPreview(SteamAPI_SteamUGC(), (UGCUpdateHandle_t)update_handle, index);
 }
 
 // Send a UGC query to Steam.
 void Steam::sendQueryUGCRequest(uint64_t query_handle) {
-	ERR_FAIL_COND_MSG(SteamUGC() == NULL, "[STEAM] UGC class not found when calling: sendQueryUGCRequest");	
-	SteamAPICall_t api_call = SteamUGC()->SendQueryUGCRequest((UGCQueryHandle_t)query_handle);
+	ERR_FAIL_COND_MSG(SteamAPI_SteamUGC() == NULL, "[STEAM] UGC class not found when calling: sendQueryUGCRequest");	
+	SteamAPICall_t api_call = SteamAPI_ISteamUGC_SendQueryUGCRequest(SteamAPI_SteamUGC(), (UGCQueryHandle_t)query_handle);
 	callResultUGCQueryCompleted.Set(api_call, this, &Steam::ugc_query_completed);
 }
 
 // Admin queries return hidden items.
 bool Steam::setAdminQuery(uint64_t query_handle, bool admin_query) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setAdminQuery");
-	return SteamUGC()->SetAdminQuery((UGCQueryHandle_t)query_handle, admin_query);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setAdminQuery");
+	return SteamAPI_ISteamUGC_SetAdminQuery(SteamAPI_SteamUGC(), (UGCQueryHandle_t)query_handle, admin_query);
 }
 
 // Sets whether results will be returned from the cache for the specific period of time on a pending UGC Query.
 bool Steam::setAllowCachedResponse(uint64_t query_handle, uint32_t max_age_seconds) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setAllowCachedResponse");
-	return SteamUGC()->SetAllowCachedResponse((UGCQueryHandle_t)query_handle, max_age_seconds);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setAllowCachedResponse");
+	return SteamAPI_ISteamUGC_SetAllowCachedResponse(SteamAPI_SteamUGC(), (UGCQueryHandle_t)query_handle, max_age_seconds);
 }
 
 // Use legacy upload for a single small file. The parameter to [`setItemContent()`](#setitemcontent) should either be
 // a directory with one file or the full path to the file.  The file must also be less than 10MB in size.
 bool Steam::setAllowLegacyUpload(uint64_t update_handle, bool allow_legacy_upload) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setAllowLegacyUpload");	
-	return SteamUGC()->SetAllowLegacyUpload((UGCUpdateHandle_t)update_handle, allow_legacy_upload);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setAllowLegacyUpload");	
+	return SteamAPI_ISteamUGC_SetAllowLegacyUpload(SteamAPI_SteamUGC(), (UGCUpdateHandle_t)update_handle, allow_legacy_upload);
 }
 
 // Sets to only return items that have a specific filename on a pending UGC Query.
 bool Steam::setCloudFileNameFilter(uint64_t query_handle, const String &match_cloud_filename) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setCloudFileNameFilter");
-	return SteamUGC()->SetCloudFileNameFilter((UGCQueryHandle_t)query_handle, match_cloud_filename.utf8().get_data());
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setCloudFileNameFilter");
+	return SteamAPI_ISteamUGC_SetCloudFileNameFilter(SteamAPI_SteamUGC(), (UGCQueryHandle_t)query_handle, match_cloud_filename.utf8().get_data());
 }
 
 // Sets the folder that will be stored as the content for an item.
 bool Steam::setItemContent(uint64_t update_handle, const String &content_folder) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setItemContent");
-	return SteamUGC()->SetItemContent((UGCUpdateHandle_t)update_handle, content_folder.utf8().get_data());
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setItemContent");
+	return SteamAPI_ISteamUGC_SetItemContent(SteamAPI_SteamUGC(), (UGCUpdateHandle_t)update_handle, content_folder.utf8().get_data());
 }
 
 // Sets a new description for an item.
 bool Steam::setItemDescription(uint64_t update_handle, const String &description) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setItemDescription");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setItemDescription");
 	ERR_FAIL_COND_V_MSG((uint32_t)description.length() > (uint32_t)k_cchPublishedDocumentDescriptionMax, false, "[STEAM] Description cannot have more than 8000 ASCII characters. Description not set.");
-	return SteamUGC()->SetItemDescription((UGCUpdateHandle_t)update_handle, description.utf8().get_data());
+	return SteamAPI_ISteamUGC_SetItemDescription(SteamAPI_SteamUGC(), (UGCUpdateHandle_t)update_handle, description.utf8().get_data());
 }
 
 // Sets arbitrary metadata for an item. This metadata can be returned from queries without having to download and install the
 // actual content.
 bool Steam::setItemMetadata(uint64_t update_handle, const String &ugc_metadata) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setItemMetadata");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setItemMetadata");
 	if (ugc_metadata.utf8().length() > 5000) {
 		printf("Metadata cannot be more than %d bytes. Metadata not set.", 5000);
 	}
-	return SteamUGC()->SetItemMetadata((UGCUpdateHandle_t)update_handle, ugc_metadata.utf8().get_data());
+	return SteamAPI_ISteamUGC_SetItemMetadata(SteamAPI_SteamUGC(), (UGCUpdateHandle_t)update_handle, ugc_metadata.utf8().get_data());
 }
 
 // Sets the primary preview image for the item.
 bool Steam::setItemPreview(uint64_t update_handle, const String &preview_file) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setItemPreview");
-	return SteamUGC()->SetItemPreview((UGCUpdateHandle_t)update_handle, preview_file.utf8().get_data());
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setItemPreview");
+	return SteamAPI_ISteamUGC_SetItemPreview(SteamAPI_SteamUGC(), (UGCUpdateHandle_t)update_handle, preview_file.utf8().get_data());
 }
 
 // Sets arbitrary developer specified tags on an item.
 bool Steam::setItemTags(uint64_t update_handle, Array tag_array, bool allow_admin_tags) {
 	bool tags_set = false;
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setItemTags");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setItemTags");
 	std::vector<CharString> string_store(tag_array.size());
 	std::vector<const char *> strings(tag_array.size());
 	uint32_t str_count = tag_array.size();
@@ -6130,179 +6136,179 @@ bool Steam::setItemTags(uint64_t update_handle, Array tag_array, bool allow_admi
 	SteamParamStringArray_t tag;
 	tag.m_nNumStrings = strings.size();
 	tag.m_ppStrings = strings.data();
-	tags_set = SteamUGC()->SetItemTags((UGCUpdateHandle_t)update_handle, &tag, allow_admin_tags);
+	tags_set = SteamAPI_ISteamUGC_SetItemTags(SteamAPI_SteamUGC(), (UGCUpdateHandle_t)update_handle, &tag, allow_admin_tags);
 	return tags_set;
 }
 
 // Sets a new title for an item.
 bool Steam::setItemTitle(uint64_t update_handle, const String &title) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setItemTitle");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setItemTitle");
 	if (title.length() > 255) {
 		printf("Title cannot have more than %d ASCII characters. Title not set.", 255);
 		return false;
 	}
-	return SteamUGC()->SetItemTitle((UGCUpdateHandle_t)update_handle, title.utf8().get_data());
+	return SteamAPI_ISteamUGC_SetItemTitle(SteamAPI_SteamUGC(), (UGCUpdateHandle_t)update_handle, title.utf8().get_data());
 }
 
 // Sets the language of the title and description that will be set in this item update.
 bool Steam::setItemUpdateLanguage(uint64_t update_handle, const String &language) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setItemUpdateLanguage");
-	return SteamUGC()->SetItemUpdateLanguage((UGCUpdateHandle_t)update_handle, language.utf8().get_data());
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setItemUpdateLanguage");
+	return SteamAPI_ISteamUGC_SetItemUpdateLanguage(SteamAPI_SteamUGC(), (UGCUpdateHandle_t)update_handle, language.utf8().get_data());
 }
 
 // Sets the visibility of an item.
 bool Steam::setItemVisibility(uint64_t update_handle, RemoteStoragePublishedFileVisibility visibility) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setItemVisibility");
-	return SteamUGC()->SetItemVisibility((UGCUpdateHandle_t)update_handle, (ERemoteStoragePublishedFileVisibility)visibility);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setItemVisibility");
+	return SteamAPI_ISteamUGC_SetItemVisibility(SteamAPI_SteamUGC(), (UGCUpdateHandle_t)update_handle, (ERemoteStoragePublishedFileVisibility)visibility);
 }
 
 // Sets whether the item should be disabled locally or not. This means that it will not be returned in getSubscribedItems() by default.
 bool Steam::setItemsDisabledLocally(PackedInt64Array published_file_ids, bool disabled_locally) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setItemsDisabledLocally");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setItemsDisabledLocally");
 
 	uint32_t file_count = published_file_ids.size();
 	PublishedFileId_t *file_ids = new PublishedFileId_t[file_count];
 	for (uint32_t i = 0; i < file_count; i++) {
 		file_ids[i] = (uint64_t)published_file_ids[i];
 	}
-	return SteamUGC()->SetItemsDisabledLocally(file_ids, file_count, disabled_locally);
+	return SteamAPI_ISteamUGC_SetItemsDisabledLocally(SteamAPI_SteamUGC(), file_ids, file_count, disabled_locally);
 }
 
 // Sets the language to return the title and description in for the items on a pending UGC Query.
 bool Steam::setLanguage(uint64_t query_handle, const String &language) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setLanguage");
-	return SteamUGC()->SetLanguage((UGCQueryHandle_t)query_handle, language.utf8().get_data());
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setLanguage");
+	return SteamAPI_ISteamUGC_SetLanguage(SteamAPI_SteamUGC(), (UGCQueryHandle_t)query_handle, language.utf8().get_data());
 }
 
 // Sets whether workshop items will be returned if they have one or more matching tag, or if all tags need to match on a pending
 // UGC Query.
 bool Steam::setMatchAnyTag(uint64_t query_handle, bool match_any_tag) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setMatchAnyTag");
-	return SteamUGC()->SetMatchAnyTag((UGCQueryHandle_t)query_handle, match_any_tag);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setMatchAnyTag");
+	return SteamAPI_ISteamUGC_SetMatchAnyTag(SteamAPI_SteamUGC(), (UGCQueryHandle_t)query_handle, match_any_tag);
 }
 
 // Sets whether the order of the results will be updated based on the rank of items over a number of days on a pending UGC Query.
 bool Steam::setRankedByTrendDays(uint64_t query_handle, uint32_t days) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setRankedByTrendDays");
-	return SteamUGC()->SetRankedByTrendDays((UGCQueryHandle_t)query_handle, CLAMP(days, 0, 360));
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setRankedByTrendDays");
+	return SteamAPI_ISteamUGC_SetRankedByTrendDays(SteamAPI_SteamUGC(), (UGCQueryHandle_t)query_handle, CLAMP(days, uint32_t(0), uint32_t(360)));
 }
 
 // An empty string for either parameter means that it will match any version on that end of the range. This will only be applied
 // if the actual content has been changed.
 bool Steam::setRequiredGameVersions(uint64_t query_handle, String game_branch_min, String game_branch_max) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setRequiredGameVersions");
-	return SteamUGC()->SetRequiredGameVersions((UGCQueryHandle_t)query_handle, game_branch_min.utf8().get_data(), game_branch_max.utf8().get_data());
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setRequiredGameVersions");
+	return SteamAPI_ISteamUGC_SetRequiredGameVersions(SteamAPI_SteamUGC(), (UGCQueryHandle_t)query_handle, game_branch_min.utf8().get_data(), game_branch_max.utf8().get_data());
 }
 
 // Sets whether to return any additional images/videos attached to the items on a pending UGC Query.
 bool Steam::setReturnAdditionalPreviews(uint64_t query_handle, bool return_additional_previews) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setReturnAdditionalPreviews");
-	return SteamUGC()->SetReturnAdditionalPreviews((UGCQueryHandle_t)query_handle, return_additional_previews);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setReturnAdditionalPreviews");
+	return SteamAPI_ISteamUGC_SetReturnAdditionalPreviews(SteamAPI_SteamUGC(), (UGCQueryHandle_t)query_handle, return_additional_previews);
 }
 
 // Sets whether to return the IDs of the child items of the items on a pending UGC Query.
 bool Steam::setReturnChildren(uint64_t query_handle, bool return_children) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setReturnChildren");
-	return SteamUGC()->SetReturnChildren((UGCQueryHandle_t)query_handle, return_children);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setReturnChildren");
+	return SteamAPI_ISteamUGC_SetReturnChildren(SteamAPI_SteamUGC(), (UGCQueryHandle_t)query_handle, return_children);
 }
 
 // Sets whether to return any key-value tags for the items on a pending UGC Query.
 bool Steam::setReturnKeyValueTags(uint64_t query_handle, bool return_key_value_tags) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setReturnKeyValueTags");
-	return SteamUGC()->SetReturnKeyValueTags((UGCQueryHandle_t)query_handle, return_key_value_tags);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setReturnKeyValueTags");
+	return SteamAPI_ISteamUGC_SetReturnKeyValueTags(SteamAPI_SteamUGC(), (UGCQueryHandle_t)query_handle, return_key_value_tags);
 }
 
 // Sets whether to return the full description for the items on a pending UGC Query.
 bool Steam::setReturnLongDescription(uint64_t query_handle, bool return_long_description) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setReturnLongDescription");
-	return SteamUGC()->SetReturnLongDescription((UGCQueryHandle_t)query_handle, return_long_description);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setReturnLongDescription");
+	return SteamAPI_ISteamUGC_SetReturnLongDescription(SteamAPI_SteamUGC(), (UGCQueryHandle_t)query_handle, return_long_description);
 }
 
 // Sets whether to return the developer specified metadata for the items on a pending UGC Query.
 bool Steam::setReturnMetadata(uint64_t query_handle, bool return_metadata) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setReturnMetadata");
-	return SteamUGC()->SetReturnMetadata((UGCQueryHandle_t)query_handle, return_metadata);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setReturnMetadata");
+	return SteamAPI_ISteamUGC_SetReturnMetadata(SteamAPI_SteamUGC(), (UGCQueryHandle_t)query_handle, return_metadata);
 }
 
 // Sets whether to only return IDs instead of all the details on a pending UGC Query.
 bool Steam::setReturnOnlyIDs(uint64_t query_handle, bool return_only_ids) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setReturnOnlyIDs");
-	return SteamUGC()->SetReturnOnlyIDs((UGCQueryHandle_t)query_handle, return_only_ids);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setReturnOnlyIDs");
+	return SteamAPI_ISteamUGC_SetReturnOnlyIDs(SteamAPI_SteamUGC(), (UGCQueryHandle_t)query_handle, return_only_ids);
 }
 
 // Sets whether to return the the playtime stats on a pending UGC Query.
 bool Steam::setReturnPlaytimeStats(uint64_t query_handle, uint32_t days) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setReturnPlaytimeStats");
-	return SteamUGC()->SetReturnPlaytimeStats((UGCQueryHandle_t)query_handle, days);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setReturnPlaytimeStats");
+	return SteamAPI_ISteamUGC_SetReturnPlaytimeStats(SteamAPI_SteamUGC(), (UGCQueryHandle_t)query_handle, days);
 }
 
 // Sets whether to only return the the total number of matching items on a pending UGC Query.
 bool Steam::setReturnTotalOnly(uint64_t query_handle, bool return_total_only) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setReturnTotalOnly");
-	return SteamUGC()->SetReturnTotalOnly((UGCQueryHandle_t)query_handle, return_total_only);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setReturnTotalOnly");
+	return SteamAPI_ISteamUGC_SetReturnTotalOnly(SteamAPI_SteamUGC(), (UGCQueryHandle_t)query_handle, return_total_only);
 }
 
 // Sets a string to that items need to match in either the title or the description on a pending UGC Query.
 bool Steam::setSearchText(uint64_t query_handle, const String &search_text) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setSearchText");
-	return SteamUGC()->SetSearchText((UGCQueryHandle_t)query_handle, search_text.utf8().get_data());
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setSearchText");
+	return SteamAPI_ISteamUGC_SetSearchText(SteamAPI_SteamUGC(), (UGCQueryHandle_t)query_handle, search_text.utf8().get_data());
 }
 
 // Set the local load order for these items. If there are any items not in the given list, they will sort by the time subscribed.
 bool Steam::setSubscriptionsLoadOrder(PackedInt64Array published_file_ids) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setSubscriptionsLoadOrder");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setSubscriptionsLoadOrder");
 	uint32_t file_count = published_file_ids.size();
 	PublishedFileId_t *file_ids = new PublishedFileId_t[file_count];
 	for (uint32_t i = 0; i < file_count; i++) {
 		file_ids[i] = (uint64_t)published_file_ids[i];
 	}
-	return SteamUGC()->SetSubscriptionsLoadOrder(file_ids, file_count);
+	return SteamAPI_ISteamUGC_SetSubscriptionsLoadOrder(SteamAPI_SteamUGC(), file_ids, file_count);
 }
 
 // Set the time range this item was created.
 bool Steam::setTimeCreatedDateRange(uint64_t update_handle, uint32_t start, uint32_t end) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setTimeCreatedDateRange");
-	return SteamUGC()->SetTimeCreatedDateRange((UGCUpdateHandle_t)update_handle, start, end);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setTimeCreatedDateRange");
+	return SteamAPI_ISteamUGC_SetTimeCreatedDateRange(SteamAPI_SteamUGC(), (UGCUpdateHandle_t)update_handle, start, end);
 }
 
 // Set the time range this item was updated.
 bool Steam::setTimeUpdatedDateRange(uint64_t update_handle, uint32_t start, uint32_t end) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setTimeUpdatedDateRange");
-	return SteamUGC()->SetTimeUpdatedDateRange((UGCUpdateHandle_t)update_handle, start, end);
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: setTimeUpdatedDateRange");
+	return SteamAPI_ISteamUGC_SetTimeUpdatedDateRange(SteamAPI_SteamUGC(), (UGCUpdateHandle_t)update_handle, start, end);
 }
 
 // Allows the user to rate a workshop item up or down.
 void Steam::setUserItemVote(uint64_t published_file_id, bool vote_up) {
-	ERR_FAIL_COND_MSG(SteamUGC() == NULL, "[STEAM] UGC class not found when calling: setUserItemVote");
+	ERR_FAIL_COND_MSG(SteamAPI_SteamUGC() == NULL, "[STEAM] UGC class not found when calling: setUserItemVote");
 	PublishedFileId_t file_id = (uint64_t)published_file_id;
-	SteamAPICall_t api_call = SteamUGC()->SetUserItemVote(file_id, vote_up);
+	SteamAPICall_t api_call = SteamAPI_ISteamUGC_SetUserItemVote(SteamAPI_SteamUGC(), file_id, vote_up);
 	callResultSetUserItemVote.Set(api_call, this, &Steam::set_user_item_vote);
 }
 
 // Show the app's latest Workshop EULA to the user in an overlay window, where they can accept it or not.
 bool Steam::showWorkshopEULA() {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: showWorkshopEULA");
-	return SteamUGC()->ShowWorkshopEULA();
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: showWorkshopEULA");
+	return SteamAPI_ISteamUGC_ShowWorkshopEULA(SteamAPI_SteamUGC());
 }
 
 // Starts the item update process.
 uint64_t Steam::startItemUpdate(uint32_t app_id, uint64_t published_file_id) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, 0, "[STEAM] UGC class not found when calling: startItemUpdate");
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, 0, "[STEAM] UGC class not found when calling: startItemUpdate");
 	AppId_t app = (uint32_t)app_id;
 	PublishedFileId_t file_id = (uint64_t)published_file_id;
-	return SteamUGC()->StartItemUpdate(app, file_id);
+	return SteamAPI_ISteamUGC_StartItemUpdate(SteamAPI_SteamUGC(), app, file_id);
 }
 
 // Start tracking playtime on a set of workshop items.
 void Steam::startPlaytimeTracking(Array published_file_ids) {
-	ERR_FAIL_COND_MSG(SteamUGC() == NULL, "[STEAM] UGC class not found when calling: startPlaytimeTracking");
+	ERR_FAIL_COND_MSG(SteamAPI_SteamUGC() == NULL, "[STEAM] UGC class not found when calling: startPlaytimeTracking");
 	uint32_t file_count = published_file_ids.size();
 	if (file_count > 0) {
 		PublishedFileId_t *file_ids = new PublishedFileId_t[file_count];
 		for (uint32_t i = 0; i < file_count; i++) {
 			file_ids[i] = (uint64_t)published_file_ids[i];
 		}
-		SteamAPICall_t api_call = SteamUGC()->StartPlaytimeTracking(file_ids, file_count);
+		SteamAPICall_t api_call = SteamAPI_ISteamUGC_StartPlaytimeTracking(SteamAPI_SteamUGC(), file_ids, file_count);
 		callResultStartPlaytimeTracking.Set(api_call, this, &Steam::start_playtime_tracking);
 		delete[] file_ids;
 	}
@@ -6310,7 +6316,7 @@ void Steam::startPlaytimeTracking(Array published_file_ids) {
 
 // Stop tracking playtime on a set of workshop items.
 void Steam::stopPlaytimeTracking(Array published_file_ids) {
-	ERR_FAIL_COND_MSG(SteamUGC() == NULL, "[STEAM] UGC class not found when calling: stopPlaytimeTracking");
+	ERR_FAIL_COND_MSG(SteamAPI_SteamUGC() == NULL, "[STEAM] UGC class not found when calling: stopPlaytimeTracking");
 	uint32_t file_count = published_file_ids.size();
 	if (file_count > 0) {
 		PublishedFileId_t *file_ids = new PublishedFileId_t[file_count];
@@ -6318,7 +6324,7 @@ void Steam::stopPlaytimeTracking(Array published_file_ids) {
 		for (uint32_t i = 0; i < file_count; i++) {
 			file_ids[i] = (uint64_t)published_file_ids[i];
 		}
-		SteamAPICall_t api_call = SteamUGC()->StopPlaytimeTracking(file_ids, file_count);
+		SteamAPICall_t api_call = SteamAPI_ISteamUGC_StopPlaytimeTracking(SteamAPI_SteamUGC(), file_ids, file_count);
 		callResultStopPlaytimeTracking.Set(api_call, this, &Steam::stop_playtime_tracking);
 		delete[] file_ids;
 	}
@@ -6326,56 +6332,56 @@ void Steam::stopPlaytimeTracking(Array published_file_ids) {
 
 // Stop tracking playtime of all workshop items.
 void Steam::stopPlaytimeTrackingForAllItems() {
-	ERR_FAIL_COND_MSG(SteamUGC() == NULL, "[STEAM] UGC class not found when calling: stopPlaytimeTrackingForAllItems");
-	SteamAPICall_t api_call = SteamUGC()->StopPlaytimeTrackingForAllItems();
+	ERR_FAIL_COND_MSG(SteamAPI_SteamUGC() == NULL, "[STEAM] UGC class not found when calling: stopPlaytimeTrackingForAllItems");
+	SteamAPICall_t api_call = SteamAPI_ISteamUGC_StopPlaytimeTrackingForAllItems(SteamAPI_SteamUGC());
 	callResultStopPlaytimeTracking.Set(api_call, this, &Steam::stop_playtime_tracking);
 }
 
 // Uploads the changes made to an item to the Steam Workshop; to be called after setting your changes.
 void Steam::submitItemUpdate(uint64_t update_handle, const String &change_note) {
-	ERR_FAIL_COND_MSG(SteamUGC() == NULL, "[STEAM] UGC class not found when calling: submitItemUpdate");
+	ERR_FAIL_COND_MSG(SteamAPI_SteamUGC() == NULL, "[STEAM] UGC class not found when calling: submitItemUpdate");
 	SteamAPICall_t api_call;
 	if (change_note.length() == 0 || change_note.is_empty()) {
-		api_call = SteamUGC()->SubmitItemUpdate((UGCUpdateHandle_t)update_handle, NULL);
+		api_call = SteamAPI_ISteamUGC_SubmitItemUpdate(SteamAPI_SteamUGC(), (UGCUpdateHandle_t)update_handle, NULL);
 	}
 	else {
-		api_call = SteamUGC()->SubmitItemUpdate((UGCUpdateHandle_t)update_handle, change_note.utf8().get_data());
+		api_call = SteamAPI_ISteamUGC_SubmitItemUpdate(SteamAPI_SteamUGC(), (UGCUpdateHandle_t)update_handle, change_note.utf8().get_data());
 	}
 	callResultItemUpdate.Set(api_call, this, &Steam::item_updated);
 }
 
 // Subscribe to a workshop item. It will be downloaded and installed as soon as possible.
 void Steam::subscribeItem(uint64_t published_file_id) {
-	ERR_FAIL_COND_MSG(SteamUGC() == NULL, "[STEAM] UGC class not found when calling: subscribeItem");
+	ERR_FAIL_COND_MSG(SteamAPI_SteamUGC() == NULL, "[STEAM] UGC class not found when calling: subscribeItem");
 	PublishedFileId_t file_id = (uint64_t)published_file_id;
-	SteamAPICall_t api_call = SteamUGC()->SubscribeItem(file_id);
+	SteamAPICall_t api_call = SteamAPI_ISteamUGC_SubscribeItem(SteamAPI_SteamUGC(), file_id);
 	callResultSubscribeItem.Set(api_call, this, &Steam::subscribe_item);
 }
 
 // SuspendDownloads( true ) will suspend all workshop downloads until SuspendDownloads( false ) is called or the game ends.
 void Steam::suspendDownloads(bool suspend) {
-	ERR_FAIL_COND_MSG(SteamUGC() == NULL, "[STEAM] UGC class not found when calling: suspendDownloads");
-	SteamUGC()->SuspendDownloads(suspend);
+	ERR_FAIL_COND_MSG(SteamAPI_SteamUGC() == NULL, "[STEAM] UGC class not found when calling: suspendDownloads");
+	SteamAPI_ISteamUGC_SuspendDownloads(SteamAPI_SteamUGC(), suspend);
 }
 
 // Unsubscribe from a workshop item. This will result in the item being removed after the game quits.
 void Steam::unsubscribeItem(uint64_t published_file_id) {
-	ERR_FAIL_COND_MSG(SteamUGC() == NULL, "[STEAM] UGC class not found when calling: unsubscribeItem");
+	ERR_FAIL_COND_MSG(SteamAPI_SteamUGC() == NULL, "[STEAM] UGC class not found when calling: unsubscribeItem");
 	PublishedFileId_t file_id = (uint64_t)published_file_id;
-	SteamAPICall_t api_call = SteamUGC()->UnsubscribeItem(file_id);
+	SteamAPICall_t api_call = SteamAPI_ISteamUGC_UnsubscribeItem(SteamAPI_SteamUGC(), file_id);
 	callResultUnsubscribeItem.Set(api_call, this, &Steam::unsubscribe_item);
 }
 
 // Updates an existing additional preview file for the item.
 bool Steam::updateItemPreviewFile(uint64_t update_handle, uint32_t index, const String &preview_file) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: updateItemPreviewFile");
-	return SteamUGC()->UpdateItemPreviewFile((UGCUpdateHandle_t)update_handle, index, preview_file.utf8().get_data());
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: updateItemPreviewFile");
+	return SteamAPI_ISteamUGC_UpdateItemPreviewFile(SteamAPI_SteamUGC(), (UGCUpdateHandle_t)update_handle, index, preview_file.utf8().get_data());
 }
 
 // Updates an additional video preview from YouTube for the item.
 bool Steam::updateItemPreviewVideo(uint64_t update_handle, uint32_t index, const String &video_id) {
-	ERR_FAIL_COND_V_MSG(SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: updateItemPreviewVideo");
-	return SteamUGC()->UpdateItemPreviewVideo((UGCUpdateHandle_t)update_handle, index, video_id.utf8().get_data());
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, false, "[STEAM] UGC class not found when calling: updateItemPreviewVideo");
+	return SteamAPI_ISteamUGC_UpdateItemPreviewVideo(SteamAPI_SteamUGC(), (UGCUpdateHandle_t)update_handle, index, video_id.utf8().get_data());
 }
 
 
@@ -9499,7 +9505,7 @@ void Steam::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("activateGameOverlayRemotePlayTogetherInviteDialog", "lobby_id"), &Steam::activateGameOverlayRemotePlayTogetherInviteDialog);
 	ClassDB::bind_method(D_METHOD("activateGameOverlayToStore", "app_id", "store_flag"), &Steam::activateGameOverlayToStore, DEFVAL(OVERLAY_TO_STORE_FLAG_NONE));
 	ClassDB::bind_method(D_METHOD("activateGameOverlayToUser", "type", "steam_id"), &Steam::activateGameOverlayToUser, DEFVAL(""), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("activateGameOverlayToWebPage", "url", "webpage_mode"), &Steam::activateGameOverlayToWebPage);
+	ClassDB::bind_method(D_METHOD("activateGameOverlayToWebPage", "url", "webpage_mode"), &Steam::activateGameOverlayToWebPage, DEFVAL(OVERLAY_TO_WEB_PAGE_MODE_DEFAULT));
 	ClassDB::bind_method(D_METHOD("clearRichPresence"), &Steam::clearRichPresence);
 	ClassDB::bind_method(D_METHOD("closeClanChatWindowInSteam", "chat_id"), &Steam::closeClanChatWindowInSteam);
 	ClassDB::bind_method(D_METHOD("downloadClanActivityCounts", "clan_id_array"), &Steam::downloadClanActivityCounts);
@@ -10047,7 +10053,8 @@ void Steam::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("addRequiredTagGroup", "query_handle", "tag_array"), &Steam::addRequiredTagGroup);
 	ClassDB::bind_method(D_METHOD("initWorkshopForGameServer", "workshop_depot_id", "folder"), &Steam::initWorkshopForGameServer);
 	ClassDB::bind_method(D_METHOD("createItem", "app_id", "file_type"), &Steam::createItem);
-	ClassDB::bind_method(D_METHOD("createQueryAllUGCRequest", "query_type", "matching_type", "creator_id", "consumer_id", "page"), &Steam::createQueryAllUGCRequest);
+	ClassDB::bind_method(D_METHOD("createQueryAllUGCRequestPage", "query_type", "matching_type", "creator_id", "consumer_id", "page"), &Steam::createQueryAllUGCRequestPage);
+	ClassDB::bind_method(D_METHOD("createQueryAllUGCRequestCursor", "query_type", "matching_type", "creator_id", "consumer_id", "cursor"), &Steam::createQueryAllUGCRequestCursor);
 	ClassDB::bind_method(D_METHOD("createQueryUGCDetailsRequest", "published_file_id_array"), &Steam::createQueryUGCDetailsRequest);
 	ClassDB::bind_method(D_METHOD("createQueryUserUGCRequest", "account_id", "list_type", "matching_ugc_type", "sort_order", "creator_id", "consumer_id", "page"), &Steam::createQueryUserUGCRequest);
 	ClassDB::bind_method(D_METHOD("deleteItem", "published_file_id"), &Steam::deleteItem);
@@ -10060,7 +10067,7 @@ void Steam::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("getNumSupportedGameVersions", "query_handle", "index"), &Steam::getNumSupportedGameVersions);
 	ClassDB::bind_method(D_METHOD("getQueryUGCAdditionalPreview", "query_handle", "index", "preview_index"), &Steam::getQueryUGCAdditionalPreview);
 	ClassDB::bind_method(D_METHOD("getQueryUGCChildren", "query_handle", "index", "child_count"), &Steam::getQueryUGCChildren);
-	ClassDB::bind_method(D_METHOD("getQueryUGCContentDescriptors", "query_handle", "index", "max_entries"), &Steam::getQueryUGCContentDescriptors);
+	ClassDB::bind_method(D_METHOD("getQueryUGCContentDescriptors", "query_handle", "index", "max_entries"), &Steam::getQueryUGCContentDescriptors, DEFVAL(5));
 	ClassDB::bind_method(D_METHOD("getQueryUGCKeyValueTag", "query_handle", "index", "key_value_tag_index"), &Steam::getQueryUGCKeyValueTag);
 	ClassDB::bind_method(D_METHOD("getQueryUGCMetadata", "query_handle", "index"), &Steam::getQueryUGCMetadata);
 	ClassDB::bind_method(D_METHOD("getQueryUGCNumAdditionalPreviews", "query_handle", "index"), &Steam::getQueryUGCNumAdditionalPreviews);
@@ -10073,7 +10080,7 @@ void Steam::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("getQueryUGCTagDisplayName", "query_handle", "index", "tag_index"), &Steam::getQueryUGCTagDisplayName);
 	ClassDB::bind_method(D_METHOD("getSubscribedItems", "include_locally_disabled"), &Steam::getSubscribedItems, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("getSupportedGameVersionData", "query_handle", "index", "version_index"), &Steam::getSupportedGameVersionData);
-	ClassDB::bind_method(D_METHOD("getUserContentDescriptorPreferences", "max_entries"), &Steam::getUserContentDescriptorPreferences);
+	ClassDB::bind_method(D_METHOD("getUserContentDescriptorPreferences", "max_entries"), &Steam::getUserContentDescriptorPreferences, DEFVAL(5));
 	ClassDB::bind_method(D_METHOD("getUserItemVote", "published_file_id"), &Steam::getUserItemVote);
 	ClassDB::bind_method(D_METHOD("releaseQueryUGCRequest", "query_handle"), &Steam::releaseQueryUGCRequest);
 	ClassDB::bind_method(D_METHOD("removeAllItemKeyValueTags", "update_handle"), &Steam::removeAllItemKeyValueTags);
@@ -10449,7 +10456,7 @@ void Steam::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("workshop_eula_status", PropertyInfo(Variant::INT, "result"), PropertyInfo(Variant::INT, "app_id"), PropertyInfo(Variant::DICTIONARY, "eula_data")));
 
 	// USER
-	ADD_SIGNAL(MethodInfo("client_game_server_deny", PropertyInfo(Variant::INT, "app_id"), PropertyInfo(Variant::STRING, "ip"), PropertyInfo(Variant::INT, "server_port"), PropertyInfo(Variant::INT, "secure"), PropertyInfo(Variant::INT, "reason")));
+	ADD_SIGNAL(MethodInfo("client_game_server_deny", PropertyInfo(Variant::INT, "app_id"), PropertyInfo(Variant::STRING, "server_ip"), PropertyInfo(Variant::INT, "server_port"), PropertyInfo(Variant::INT, "secure"), PropertyInfo(Variant::INT, "reason")));
 	ADD_SIGNAL(MethodInfo("duration_control", PropertyInfo(Variant::INT, "result"), PropertyInfo(Variant::DICTIONARY, "duration")));
 	ADD_SIGNAL(MethodInfo("encrypted_app_ticket_response", PropertyInfo(Variant::INT, "result")));
 	ADD_SIGNAL(MethodInfo("game_web_callback", PropertyInfo(Variant::STRING, "url")));
@@ -12472,6 +12479,5 @@ Steam::~Steam() {
 	if (is_init_success) {
 		SteamAPI_Shutdown();
 	}
-
 	singleton = nullptr;
 }
