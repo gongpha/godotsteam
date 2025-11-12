@@ -4061,7 +4061,6 @@ Array Steam::receiveMessagesOnPollGroup(uint32_t poll_group, int max_messages) {
 	ERR_FAIL_COND_V_MSG(SteamNetworkingSockets() == NULL, messages, "[STEAM] Networking Sockets class not found when calling: receiveMessagesOnPollGroup");
 	SteamNetworkingMessage_t** poll_messages = new SteamNetworkingMessage_t *[max_messages];
 	int available_messages = SteamNetworkingSockets()->ReceiveMessagesOnPollGroup((HSteamNetPollGroup)poll_group, poll_messages, max_messages);
-
 	for(int i = 0; i < available_messages; i++) {
 		Dictionary message;
 
