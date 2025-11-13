@@ -597,7 +597,7 @@ public:
 	NetworkingConfigValue iterateGenericEditableConfigValues(NetworkingConfigValue current_value, bool enumerate_dev_vars);
 	Dictionary parsePingLocationString(const String &location_string);
 	bool setConnectionConfigValueFloat(uint32_t connection_handle, NetworkingConfigValue config, float value);
-	bool setConnectionConfigValueInt32(uint32_t connection_handle, NetworkingConfigValue config, int32 value);
+	bool setConnectionConfigValueInt32(uint32_t connection_handle, NetworkingConfigValue config, int32_t value);
 	bool setConnectionConfigValueString(uint32_t connection_handle, NetworkingConfigValue config, const String &value);
 //	void setDebugOutputFunction(NetworkingSocketsDebugOutputType detail_level);
 	bool setGlobalCallbackFakeIPResult();
@@ -607,7 +607,7 @@ public:
 	bool setGlobalCallbackSteamNetConnectionStatusChanged();
 	bool setGlobalCallbackSteamRelayNetworkStatusChanged();
 	bool setGlobalConfigValueFloat(NetworkingConfigValue config, float value);
-	bool setGlobalConfigValueInt32(NetworkingConfigValue config, int32 value);
+	bool setGlobalConfigValueInt32(NetworkingConfigValue config, int32_t value);
 	bool setGlobalConfigValueString(NetworkingConfigValue config, const String &value);
 
 	// Parental Settings

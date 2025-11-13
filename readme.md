@@ -25,7 +25,7 @@ Current Build
 You can [download pre-compiled versions of this repo here](https://codeberg.org/godotsteam/godotsteam/releases).
 
 **Version 4.16.2 Changes**
-- Changed: converted Input and UGC class to Flat API to stop MinGW crashes
+- Changed: converted Input, Networking Utils, and UGC class to Flat API to stop MinGW crashes
 - Changed: int to uint64_t in file_share_result callback which broke the UGC handle
 - Removed: remnant bind for current_stats_received which was removed long ago
 
