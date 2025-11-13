@@ -801,7 +801,20 @@
 				You should destroy the poll group when you are done using [method Steam.destroyPollGroup].
 			</description>
 		</method>
-		<method name="createQueryAllUGCRequest">
+		<method name="createQueryAllUGCRequestCursor">
+			<return type="int" />
+			<argument index="0" name="query_type" type="int" enum="UGCQuery" />
+			<argument index="1" name="matching_type" type="int" enum="UGCMatchingUGCType" />
+			<argument index="2" name="creator_id" type="int" />
+			<argument index="3" name="consumer_id" type="int" />
+			<argument index="4" name="cursor" type="String" />
+			<description>
+				Query for all matching UGC. You can use this to list all of the available UGC for your app.
+				This will return up to 50 results. You can make subsequent calls to this function, increasing the page each time to get the next set of results.
+				To query for the UGC associated with a single user you can use [method Steam.createQueryUserUGCRequest] instead.
+			</description>
+		</method>
+		<method name="createQueryAllUGCRequestPage">
 			<return type="int" />
 			<argument index="0" name="query_type" type="int" enum="UGCQuery" />
 			<argument index="1" name="matching_type" type="int" enum="UGCMatchingUGCType" />
@@ -812,8 +825,6 @@
 				Query for all matching UGC. You can use this to list all of the available UGC for your app.
 				This will return up to 50 results. You can make subsequent calls to this function, increasing the page each time to get the next set of results.
 				To query for the UGC associated with a single user you can use [method Steam.createQueryUserUGCRequest] instead.
-				[b]Note:[/b] Either consumer_id or creator_id must have a valid app ID.
-				[b]Note:[/b] You must release the handle returned by this function by calling [method Steam.releaseQueryUGCRequest] when you are done with it.
 			</description>
 		</method>
 		<method name="createQueryUGCDetailsRequest">
@@ -7054,14 +7065,6 @@
 			<argument index="1" name="beacon_id" type="int" />
 			<description>
 				This callback is used as a call response for [method Steam.createBeacon]. If successful, your beacon has been posted in the desired location and you may start receiving [signal Steam.reservation_notification] callbacks for users following the beacon.
-			</description>
-		</signal>
-		<signal name="current_stats_received">
-			<argument index="0" name="game_id" type="int" />
-			<argument index="1" name="result" type="int" />
-			<argument index="2" name="user_id" type="int" />
-			<description>
-				Called when the latest stats and achievements for the local user have been received from the server; in response to function [method Steam.requestCurrentStats]
 			</description>
 		</signal>
 		<signal name="dlc_installed">
