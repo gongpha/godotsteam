@@ -5751,16 +5751,16 @@ Dictionary Steam::getQueryUGCAdditionalPreview(uint64_t query_handle, uint32_t i
 	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == NULL, preview, "[STEAM] UGC class not found when calling: getQueryUGCAdditionalPreview");
 	char url_or_video_id[256 + 1]{};
 	char original_filename[256 + 1]{};
-	EItemPreviewType previewType;
-	bool success = SteamAPI_ISteamUGC_GetQueryUGCAdditionalPreview(SteamAPI_SteamUGC(), (UGCQueryHandle_t)query_handle, index, preview_index, url_or_video_id, 256, original_filename, 256, &previewType);
+	EItemPreviewType preview_type;
+	bool success = SteamAPI_ISteamUGC_GetQueryUGCAdditionalPreview(SteamAPI_SteamUGC(), (UGCQueryHandle_t)query_handle, index, preview_index, url_or_video_id, 256, original_filename, 256, &preview_type);
 	if (success) {
 		preview["success"] = success;
-		preview["handle"] = query_handle;
+		preview["handle"] = (uint64_t)query_handle;
 		preview["index"] = index;
 		preview["preview"] = preview_index;
 		preview["urlOrVideo"] = url_or_video_id;
 		preview["filename"] = original_filename;
-		preview["type"] = previewType;
+		preview["type"] = preview_type;
 	}
 	return preview;
 }
@@ -5781,7 +5781,7 @@ Dictionary Steam::getQueryUGCChildren(uint64_t query_handle, uint32_t index, uin
 		}
 
 		children["success"] = success;
-		children["handle"] = query_handle;
+		children["handle"] = (uint64_t)query_handle;
 		children["index"] = index;
 		children["children"] = godot_arr;
 	}

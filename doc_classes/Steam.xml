@@ -801,7 +801,20 @@
 				You should destroy the poll group when you are done using [method Steam.destroyPollGroup].
 			</description>
 		</method>
-		<method name="createQueryAllUGCRequest">
+		<method name="createQueryAllUGCRequestCursor">
+			<return type="int" />
+			<param index="0" name="query_type" type="int" enum="UGCQuery" />
+			<param index="1" name="matching_type" type="int" enum="UGCMatchingUGCType" />
+			<param index="2" name="creator_id" type="int" />
+			<param index="3" name="consumer_id" type="int" />
+			<param index="4" name="cursor" type="String" />
+			<description>
+				Query for all matching UGC. You can use this to list all of the available UGC for your app.
+				This will return up to 50 results. You can make subsequent calls to this function, increasing the page each time to get the next set of results.
+				To query for the UGC associated with a single user you can use [method Steam.createQueryUserUGCRequest] instead.
+			</description>
+		</method>
+		<method name="createQueryAllUGCRequestPage">
 			<return type="int" />
 			<param index="0" name="query_type" type="int" enum="UGCQuery" />
 			<param index="1" name="matching_type" type="int" enum="UGCMatchingUGCType" />
@@ -812,8 +825,6 @@
 				Query for all matching UGC. You can use this to list all of the available UGC for your app.
 				This will return up to 50 results. You can make subsequent calls to this function, increasing the page each time to get the next set of results.
 				To query for the UGC associated with a single user you can use [method Steam.createQueryUserUGCRequest] instead.
-				[b]Note:[/b] Either consumer_id or creator_id must have a valid app ID.
-				[b]Note:[/b] You must release the handle returned by this function by calling [method Steam.releaseQueryUGCRequest] when you are done with it.
 			</description>
 		</method>
 		<method name="createQueryUGCDetailsRequest">
@@ -822,7 +833,7 @@
 			<description>
 				Query for the details of specific workshop items.
 				This will return up to 50 results.
-				To query all the UGC for your app you can use [method Steam.createQueryAllUGCRequest] instead.
+				To query all the UGC for your app you can use [method Steam.createQueryAllUGCRequestPage] or [method Steam.createQueryAllUGCRequestCursor] instead.
 				[b]Note:[/b] Either consumer_id or creator_id must have a valid app ID.
 				[b]Note:[/b] You must release the handle returned by this function by calling [method Steam.releaseQueryUGCRequest] when you are done with it.
 			</description>
@@ -839,7 +850,7 @@
 			<description>
 				Query UGC associated with a user. You can use this to list the UGC the user is subscribed to amongst other things.
 				This will return up to 50 results.
-				To query all the UGC for your app you can use [method Steam.createQueryAllUGCRequest] instead.
+				To query all the UGC for your app you can use [method Steam.createQueryAllUGCRequestPage] or [method Steam.createQueryAllUGCRequestCursor] instead.
 				[b]Note:[/b] Either consumer_id or creator_id must have a valid app ID.
 				[b]Note:[/b] You must release the handle returned by this function by calling [method Steam.releaseQueryUGCRequest] when you are done with it.
 			</description>
@@ -5373,7 +5384,7 @@
 			<param index="0" name="query_handle" type="int" />
 			<description>
 				Send a UGC query to Steam.
-				This must be called with a handle obtained from [method Steam.createQueryUserUGCRequest], [method Steam.createQueryAllUGCRequest], or [method Steam.createQueryUGCDetailsRequest] to actually send the request to Steam.
+				This must be called with a handle obtained from [method Steam.createQueryUserUGCRequest], [method Steam.createQueryAllUGCRequestPage], [method Steam.createQueryAllUGCRequestCursor], or [method Steam.createQueryUGCDetailsRequest] to actually send the request to Steam.
 				Before calling this you should use one or more of the following APIs to customize your query: [method Steam.addRequiredTag], [method Steam.addExcludedTag], [method Steam.setReturnOnlyIDs], [method Steam.setReturnKeyValueTags], [method Steam.setReturnLongDescription], [method Steam.setReturnMetadata], [method Steam.setReturnChildren], [method Steam.setReturnAdditionalPreviews], [method Steam.setReturnTotalOnly], [method Steam.setLanguage], [method Steam.setAllowCachedResponse], [method Steam.setCloudFileNameFilter], [method Steam.setMatchAnyTag], [method Steam.setSearchText], [method Steam.setRankedByTrendDays], or [method Steam.addRequiredKeyValueTag].
 				Triggers a [signal Steam.ugc_query_completed] callback.
 			</description>
@@ -5988,7 +5999,7 @@
 			<param index="1" name="match_any_tag" type="bool" />
 			<description>
 				Sets whether workshop items will be returned if they have one or more matching tag, or if all tags need to match on a pending UGC Query.
-				[b]Note:[/b] This can only be used with [method Steam.createQueryAllUGCRequest].
+				[b]Note:[/b] This can only be used with [method Steam.createQueryAllUGCRequestPage] or [method Steam.createQueryAllUGCRequestCursor].
 				[b]Note:[/b] This must be set before you submit the UGC query handle using [method Steam.submitItemUpdate].
 			</description>
 		</method>
@@ -6137,7 +6148,7 @@
 			<param index="1" name="days" type="int" />
 			<description>
 				Sets whether the order of the results will be updated based on the rank of items over a number of days on a pending UGC Query.
-				[b]Note:[/b] This can only be used with [method Steam.createQueryAllUGCRequest].
+				[b]Note:[/b] This can only be used with [method Steam.createQueryAllUGCRequestPage] or [method Steam.createQueryAllUGCRequestCursor].
 				[b]Note:[/b] This must be set before you submit the UGC query handle using [method Steam.submitItemUpdate].
 			</description>
 		</method>
@@ -6246,7 +6257,7 @@
 			<param index="1" name="search_text" type="String" />
 			<description>
 				Sets a string to that items need to match in either the title or the description on a pending UGC Query.
-				[b]Note:[/b] This can only be used with [method Steam.createQueryAllUGCRequest].
+				[b]Note:[/b] This can only be used with [method Steam.createQueryAllUGCRequestPage] or [method Steam.createQueryAllUGCRequestCursor].
 				[b]Note:[/b] This must be set before you submit the UGC query handle using [method Steam.submitItemUpdate].
 			</description>
 		</method>
@@ -7090,14 +7101,6 @@
 			<param index="1" name="beacon_id" type="int" />
 			<description>
 				This callback is used as a call response for [method Steam.createBeacon]. If successful, your beacon has been posted in the desired location and you may start receiving [signal Steam.reservation_notification] callbacks for users following the beacon.
-			</description>
-		</signal>
-		<signal name="current_stats_received">
-			<param index="0" name="game_id" type="int" />
-			<param index="1" name="result" type="int" />
-			<param index="2" name="user_id" type="int" />
-			<description>
-				Called when the latest stats and achievements for the local user have been received from the server; in response to function [method Steam.requestCurrentStats]
 			</description>
 		</signal>
 		<signal name="dlc_installed">
