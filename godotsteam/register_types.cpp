@@ -1,8 +1,8 @@
-//===========================================================================//
+//================================================================================================//
 // GodotSteam - register_types.cpp
-//===========================================================================//
+//================================================================================================//
 //
-// Copyright (c) 2015-Current | GP Garcia and Contributors
+// Copyright (c) 2015-Current | GP Garcia, Chris Ridenour, and Contributors
 //
 // View all contributors at https://godotsteam.com/contribute/contributors/
 //
@@ -24,7 +24,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 //
-//===========================================================================//
+//================================================================================================//
 
 #include "register_types.h"
 
@@ -36,6 +36,7 @@
 #include <godot_cpp/godot.hpp>
 
 #include "godotsteam.h"
+#include "godotsteam_multiplayer_peer.h"
 #include "godotsteam_project_settings.h"
 
 
@@ -64,12 +65,18 @@ void initialize_godotsteam(ModuleInitializationLevel level){
 
 		Steam::get_singleton()->run_internal_initialization();
 	}
+	// if (level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
+	// 	ClassDB::register_class<SteamMultiplayerPeer>();
+	// 	ClassDB::register_class<SteamPacketPeer>();
+	// }
 	if (level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 		if (SteamProjectSettings::get_auto_init() && SteamProjectSettings::get_embed_callbacks()) {
 			WARN_PRINT_ONCE("[STEAM] Cannot use auto-initialization and embed callbacks together currently. Embed callbacks ignored; call run_callbacks() manually.");
 			// This just warns until we can fix the inability to link to SceneTree this early.
 			// Steam::get_singleton()->set_internal_callbacks();
 		}
+		ClassDB::register_class<SteamMultiplayerPeer>();
+		ClassDB::register_class<SteamPacketPeer>();
 	}
 }
 

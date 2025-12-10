@@ -1,8 +1,8 @@
-//===========================================================================//
+//================================================================================================//
 // GodotSteam - godotsteam_project_settings.h
-//===========================================================================//
+//================================================================================================//
 //
-// Copyright (c) 2015-Current | GP Garcia and Contributors
+// Copyright (c) 2015-Current | GP Garcia, Chris Ridenour, and Contributors
 //
 // View all contributors at https://godotsteam.com/contribute/contributors/
 //
@@ -24,13 +24,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 //
-//===========================================================================//
+//================================================================================================//
 
 #ifndef GODOTSTEAM_PROJECT_SETTINGS_H
 #define GODOTSTEAM_PROJECT_SETTINGS_H
 
 
 #include <godot_cpp/classes/project_settings.hpp>
+
 
 namespace godot {
 
@@ -44,6 +45,7 @@ public:
 	static int get_app_id();
 	static bool get_auto_init();
 	static bool get_embed_callbacks();
+	static int get_max_channels();
 };
 
 }

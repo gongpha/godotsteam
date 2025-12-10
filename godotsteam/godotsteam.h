@@ -1,6 +1,6 @@
-//===========================================================================//
+//================================================================================================//
 // GodotSteam - godotsteam.h
-//===========================================================================//
+//================================================================================================//
 //
 // Copyright (c) 2015-Current | GP Garcia and Contributors
 //
@@ -24,7 +24,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 //
-//===========================================================================//
+//================================================================================================//
 
 #ifndef GODOTSTEAM_H
 #define GODOTSTEAM_H
@@ -77,7 +77,6 @@ class Steam : public Object,
 
 
 public:
-
 	static Steam *get_singleton();
 	Steam();
 	~Steam();
@@ -169,7 +168,7 @@ public:
 
 	// Friends
 	void activateGameOverlay(const String &type);
-	void activateGameOverlayInviteDialog(uint64_t steam_id);
+	void activateGameOverlayInviteDialog(uint64_t lobby_id);
 	void activateGameOverlayInviteDialogConnectString(const String &connect_string);
 	void activateGameOverlayRemotePlayTogetherInviteDialog(uint64_t lobby_id);
 	void activateGameOverlayToStore(uint32_t app_id, OverlayToStoreFlag store_flag = OVERLAY_TO_STORE_FLAG_NONE);
@@ -249,22 +248,6 @@ public:
 	bool setListenForFriendsMessages(bool intercept_enabled);
 	void setPlayedWith(uint64_t steam_id);
 	bool setRichPresence(const String &key, const String &value);
-
-	// Game Search
-	GameSearchErrorCode addGameSearchParams(const String &key, const String &values);
-	GameSearchErrorCode searchForGameWithLobby(uint64_t lobby_id, int player_min, int player_max);
-	GameSearchErrorCode searchForGameSolo(int player_min, int player_max);
-	GameSearchErrorCode acceptGame();
-	GameSearchErrorCode declineGame();
-	Dictionary retrieveConnectionDetails(uint64_t host_id);
-	GameSearchErrorCode endGameSearch();
-	GameSearchErrorCode setGameHostParams(const String &key, const String &value);
-	GameSearchErrorCode setConnectionDetails(const String &connection_details);
-	GameSearchErrorCode requestPlayersForGame(int player_min, int player_max, int max_team_size);
-	GameSearchErrorCode hostConfirmGameStart(uint64_t game_id);
-	GameSearchErrorCode cancelRequestPlayersForGame();
-	GameSearchErrorCode submitPlayerResult(uint64_t game_id, uint64_t player_id, PlayerResult player_result);
-	GameSearchErrorCode endGame(uint64_t game_id);
 
 	// HTML Surface
 	void addHeader(const String &key, const String &value, uint32_t browser_handle = 0);
@@ -479,40 +462,6 @@ public:
 	void musicPlayPrev();
 	void musicSetVolume(float volume);
 
-	// Music Remote
-	bool activationSuccess(bool activate);
-	bool currentEntryDidChange();
-	bool currentEntryIsAvailable(bool available);
-	bool currentEntryWillChange();
-	bool deregisterSteamMusicRemote();
-	bool enableLooped(bool enable_loop);
-	bool enablePlaylists(bool enable_playlists);
-	bool enablePlayNext(bool enable_next);
-	bool enablePlayPrevious(bool enable_previous);
-	bool enableQueue(bool enable_queue);
-	bool enableShuffled(bool enable_shuffle);
-	bool isCurrentMusicRemote();
-	bool playlistDidChange();
-	bool playlistWillChange();
-	bool queueDidChange();
-	bool queueWillChange();
-	bool registerSteamMusicRemote(const String &name);
-	bool resetPlaylistEntries();
-	bool resetQueueEntries();
-	bool setCurrentPlaylistEntry(int id);
-	bool setCurrentQueueEntry(int id);
-	bool setDisplayName(const String &name);
-	bool setPlaylistEntry(int id, int position, const String &entry_text);
-	bool setPNGIcon64x64(PackedByteArray icon);
-	bool setQueueEntry(int id, int position, const String &entry_text);
-	bool updateCurrentEntryCoverArt(PackedByteArray art);
-	bool updateCurrentEntryElapsedSeconds(int seconds);
-	bool updateCurrentEntryText(const String &text);
-	bool updateLooped(bool looped);
-	bool updatePlaybackStatus(AudioPlaybackStatus status);
-	bool updateShuffled(bool shuffle);
-	bool updateVolume(float volume);
-
 	// Networking
 	bool acceptP2PSessionWithUser(uint64_t remote_steam_id);
 	bool allowP2PPacketRelay(bool allow);
@@ -569,8 +518,8 @@ public:
 //	Dictionary receivedRelayAuthTicket();	<------ Uses datagram relay structs which were removed from base SDK
 	void resetIdentity(uint64_t remote_steam_id);
 	void runNetworkingCallbacks();
-//	Array sendMessages(Array messages, uint32_t connection_handle, int flags);	<------ Currently does not compile on Windows but does on Linux
-	Dictionary sendMessageToConnection(uint32_t connection_handle, const PackedByteArray data, int flags);
+	PackedInt64Array sendMessages(uint32_t connection_handle, Array messages, int flags);
+	Dictionary sendMessageToConnection(uint32_t connection_handle, const PackedByteArray message, int flags);
 	Dictionary setCertificate(const PackedByteArray &certificate);
 	bool setConnectionPollGroup(uint32_t connection_handle, uint32_t poll_group);
 	void setConnectionName(uint32_t connection_handle, const String &name);
@@ -820,7 +769,7 @@ public:
 	void endAuthSession(uint64_t steam_id);
 	Dictionary getAuthSessionTicket(uint64_t remote_steam_id = 0);
 	uint32_t getAuthTicketForWebApi(const String &service_identity = "");
-//	Dictionary getDecompressedVoice(uint32_t buffer_in_size_override = 0, uint32_t buffer_out_size_override = 20480, uint32_t sample_rate_override = 0);
+	Dictionary getDecompressedVoice(uint32_t buffer_in_size_override = 0, uint32_t buffer_out_size_override = 20480, uint32_t sample_rate_override = 0);
 	void getDurationControl();
 	Dictionary getEncryptedAppTicket();
 	int getGameBadgeLevel(int series, bool foil);
@@ -894,7 +843,7 @@ public:
 	bool dismissFloatingGamepadTextInput();
 	bool dismissGamepadTextInput();
 	String filterText(TextFilteringContext context, uint64_t steam_id, const String &message);
-	String getAPICallFailureReason();
+	APICallFailure getAPICallFailureReason();
 	uint32_t getAppID();
 	Universe getConnectedUniverse();
 	int getCurrentBatteryPower();
@@ -907,7 +856,7 @@ public:
 	int getSecondsSinceComputerActive();
 	int getServerRealTime();
 	String getSteamUILanguage();
-	bool initFilterText();
+	bool initFilterText(uint32_t filter_options);
 	Dictionary isAPICallCompleted();
 	bool isOverlayEnabled();
 	bool isSteamChinaLauncher();
@@ -961,8 +910,12 @@ protected:
 
 
 private:
+	void run_callbacks();
+	void run_internal_callbacks();
+	void start_initialization_verbose(uint32_t app_id = 0, bool embed_callbacks = false);
+
 	// Main
-	String godotsteam_version = "4.16.2";
+	String godotsteam_version = "4.17";
 	Dictionary init_result;
 	bool is_init_success;
 	bool were_callbacks_embedded;
@@ -979,7 +932,7 @@ private:
 	String getStringFromSteamIP(SteamNetworkingIPAddr this_address);
 
 	// Matchmaking Servers
-	HServerListRequest server_list_request;
+	HServerListRequest server_list_request = 0;
 	ISteamMatchmakingServerListResponse *server_list_response = this;
 	ISteamMatchmakingPingResponse *ping_response = this;
 	ISteamMatchmakingPlayersResponse *players_response = this;
@@ -995,11 +948,6 @@ private:
 
 	// Utils
 	uint64_t api_handle = 0;
-
-	// Run the Steamworks API callbacks /////
-	void run_callbacks();
-	void run_internal_callbacks();
-	void start_initialization_verbose(uint32_t app_id = 0, bool embed_callbacks = false);
 
 
 	// STEAM CALLBACKS
@@ -1027,15 +975,6 @@ private:
 	STEAM_CALLBACK(Steam, overlay_browser_protocol, OverlayBrowserProtocolNavigation_t, callbackOverlayBrowserProtocol);
 	STEAM_CALLBACK(Steam, unread_chat_messages_changed, UnreadChatMessagesChanged_t, callbackUnreadChatMessagesChanged);
 	STEAM_CALLBACK(Steam, equipped_profile_items_changed, EquippedProfileItemsChanged_t, callbackEquippedProfileItemsChanged);
-
-	// Game Search
-	STEAM_CALLBACK(Steam, search_for_game_progress, SearchForGameProgressCallback_t, callbackSearchForGameProgress);
-	STEAM_CALLBACK(Steam, search_for_game_result, SearchForGameResultCallback_t, callbackSearchForGameResult);
-	STEAM_CALLBACK(Steam, request_players_for_game_progress, RequestPlayersForGameProgressCallback_t, callbackRequestPlayersForGameProgress);
-	STEAM_CALLBACK(Steam, request_players_for_game_result, RequestPlayersForGameResultCallback_t, callbackRequestPlayersForGameResult);
-	STEAM_CALLBACK(Steam, request_players_for_game_final_result, RequestPlayersForGameFinalResultCallback_t, callbackRequestPlayersForGameFinalResult);
-	STEAM_CALLBACK(Steam, submit_player_result, SubmitPlayerResultResultCallback_t, callbackSubmitPlayerResult);
-	STEAM_CALLBACK(Steam, end_game_result, EndGameResultCallback_t, callbackEndGameResult);
 
 	// HTML Surface
 	STEAM_CALLBACK(Steam, html_browser_restarted, HTML_BrowserRestarted_t, callbackHTMLBrowserRestarted);
@@ -1109,22 +1048,6 @@ private:
 	// Music
 	STEAM_CALLBACK(Steam, music_playback_status_has_changed, PlaybackStatusHasChanged_t, callbackMusicPlaybackStatusHasChanged);
 	STEAM_CALLBACK(Steam, music_volume_has_changed, VolumeHasChanged_t, callbackMusicVolumeHasChanged);
-
-	// Music Remote
-	STEAM_CALLBACK(Steam, music_player_remote_to_front, MusicPlayerRemoteToFront_t, callbackMusicPlayerRemoteToFront);
-	STEAM_CALLBACK(Steam, music_player_remote_will_activate, MusicPlayerRemoteWillActivate_t, callbackMusicPlayerRemoteWillActivate);
-	STEAM_CALLBACK(Steam, music_player_remote_will_deactivate, MusicPlayerRemoteWillDeactivate_t, callbackMusicPlayerRemoteWillDeactivate);
-	STEAM_CALLBACK(Steam, music_player_selects_playlist_entry, MusicPlayerSelectsPlaylistEntry_t, callbackMusicPlayerSelectsPlaylistEntry);
-	STEAM_CALLBACK(Steam, music_player_selects_queue_entry, MusicPlayerSelectsQueueEntry_t, callbackMusicPlayerSelectsQueueEntry);
-	STEAM_CALLBACK(Steam, music_player_wants_looped, MusicPlayerWantsLooped_t, callbackMusicPlayerWantsLooped);
-	STEAM_CALLBACK(Steam, music_player_wants_pause, MusicPlayerWantsPause_t, callbackMusicPlayerWantsPause);
-	STEAM_CALLBACK(Steam, music_player_wants_playing_repeat_status, MusicPlayerWantsPlayingRepeatStatus_t, callbackMusicPlayerWantsPlayingRepeatStatus);
-	STEAM_CALLBACK(Steam, music_player_wants_play_next, MusicPlayerWantsPlayNext_t, callbackMusicPlayerWantsPlayNext);
-	STEAM_CALLBACK(Steam, music_player_wants_play_previous, MusicPlayerWantsPlayPrevious_t, callbackMusicPlayerWantsPlayPrevious);
-	STEAM_CALLBACK(Steam, music_player_wants_play, MusicPlayerWantsPlay_t, callbackMusicPlayerWantsPlay);
-	STEAM_CALLBACK(Steam, music_player_wants_shuffled, MusicPlayerWantsShuffled_t, callbackMusicPlayerWantsShuffled);
-	STEAM_CALLBACK(Steam, music_player_wants_volume, MusicPlayerWantsVolume_t, callbackMusicPlayerWantsVolume);
-	STEAM_CALLBACK(Steam, music_player_will_quit, MusicPlayerWillQuit_t, callbackMusicPlayerWillQuit);
 
 	// Networking
 	STEAM_CALLBACK(Steam, p2p_session_connect_fail, P2PSessionConnectFail_t, callbackP2PSessionConnectFail);
@@ -1371,7 +1294,6 @@ VARIANT_ENUM_CAST(FriendRelationship);
 VARIANT_ENUM_CAST(GameIDType);
 VARIANT_ENUM_CAST(GamepadTextInputLineMode);
 VARIANT_ENUM_CAST(GamepadTextInputMode);
-VARIANT_ENUM_CAST(GameSearchErrorCode);
 
 VARIANT_BITFIELD_CAST(HTMLKeyModifiers);
 VARIANT_ENUM_CAST(HTMLMouseButton);
@@ -1430,8 +1352,6 @@ VARIANT_ENUM_CAST(PartyBeaconLocationData);
 VARIANT_ENUM_CAST(PartyBeaconLocationType);
 VARIANT_BITFIELD_CAST(PersonaChange);
 VARIANT_ENUM_CAST(PersonaState);
-VARIANT_ENUM_CAST(PlayerAcceptState);
-VARIANT_ENUM_CAST(PlayerResult);
 
 VARIANT_ENUM_CAST(RemotePlayInputType);
 VARIANT_BITFIELD_CAST(RemotePlayKeyModifier);
