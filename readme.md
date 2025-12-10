@@ -1,36 +1,50 @@
 # GodotSteam for Godot Engine 4.x | Community Edition
 An ecosystem of tools for [Godot Engine](https://godotengine.org) and [Valve's Steam](https://store.steampowered.com). For the Windows, Linux, and Mac platforms.
 
+
 Additional Flavors
 ---
-Pre-Compiles | Plug-ins | Server | Examples
---- | --- | --- | ---
-[Godot 2.x](https://codeberg.org/godotsteam/godotsteam/src/branch/godot2) | [GDNative](https://codeberg.org/godotsteam/godotsteam/src/branch/gdnative) | [Server 3.x](https://codeberg.org/godotsteam/godotsteam-server/src/branch/godot3) | [Skillet](https://codeberg.org/godotsteam/skillet)
-[Godot 3.x](https://codeberg.org/godotsteam/godotsteam/src/branch/godot3) | [GDExtension](https://codeberg.org/godotsteam/godotsteam/src/branch/gdextension) | [Server 4.x](https://codeberg.org/godotsteam/godotsteam-server/src/branch/godot4) | ---
-[Godot 4.x](https://codeberg.org/godotsteam/godotsteam/src/branch/godot4) | --- | [GDNative](https://codeberg.org/godotsteam/godotsteam-server/src/branch/gdnative) | ---
-[MultiplayerPeer](https://codeberg.org/godotsteam/multiplayerpeer)| --- | [GDExtension](https://codeberg.org/godotsteam/godotsteam-server/src/branch/gdextension) | ---
+Standard Module | Standard Plug-ins | Server Module | Server Plug-ins | Examples
+--- | --- | --- | --- | ---
+[Godot 2.x](https://codeberg.org/godotsteam/godotsteam/src/branch/godot2) | [GDNative](https://codeberg.org/godotsteam/godotsteam/src/branch/gdnative) | [Server 3.x](https://codeberg.org/godotsteam/godotsteam-server/src/branch/godot3) | [GDNative](https://codeberg.org/godotsteam/godotsteam-server/src/branch/gdnative) | [Skillet](https://codeberg.org/godotsteam/skillet)
+[Godot 3.x](https://codeberg.org/godotsteam/godotsteam/src/branch/godot3) | [GDExtension](https://codeberg.org/godotsteam/godotsteam/src/branch/gdextension) | [Server 4.x](https://codeberg.org/godotsteam/godotsteam-server/src/branch/godot4) | [GDExtension](https://codeberg.org/godotsteam/godotsteam-server/src/branch/gdextension) | ---
+[Godot 4.x](https://codeberg.org/godotsteam/godotsteam/src/branch/godot4) | --- | --- | --- | ---
+[MultiplayerPeer](https://codeberg.org/godotsteam/multiplayerpeer)| --- | --- | --- | ---
+
 
 Documentation
 ---
-[Documentation is available here](https://godotsteam.com). You can also check out the Search Help section inside Godot Engine.
+[Documentation is available here](https://godotsteam.com).  You can also check out the Search Help section inside Godot Engine.  [To start, try checking out our tutorial on initializing Steam.](https://godotsteam.com/tutorials/initializing/)  There are additional tutorials, with more in the works.  You can also [check out additional Godot and Steam related videos, text, additional tools, plug-ins, etc. here.](https://godotsteam.com/resources/external/)
 
 Feel free to chat with us about GodotSteam or ask for assistance on the [Discord server](https://discord.gg/SJRSq6K).
+
 
 Donate
 ---
 Pull-requests are the best way to help the project out but you can also donate through [Github Sponsors](https://github.com/sponsors/Gramps) or [LiberaPay](https://liberapay.com/godotsteam/donate)! [You can read more about donor perks here.](https://godotsteam.com/contribute/donations/)  [You can also view all our awesome donors here.](https://godotsteam.com/contribute/donors/)
 
+
 Current Build
 ---
 You can [download pre-compiled versions of this repo here](https://codeberg.org/godotsteam/godotsteam/releases).
 
-**Version 4.16.2 Changes**
-- Changed: converted Input, NetworkingUtils and UGC class to Flat API to stop MinGW crashes
-- Changed: int to uint64_t in file_share_result callback which broke the UGC handle
-- Removed: remnant bind for current_stats_received which was removed long ago
-
+**Version 4.17 Changes**
+- Added: new enums to Result, HTTPStatusCode, RemotePlayScanCode, ActionOrigin per Steam SDK 1.63
+- Added: `getDecompressedVoice()` as custom function to wrap up `getVoice()` and `decompressVoice()` in C++
+- Added: missing HTMLMouseCursor enum binds
+- Added: SteamMultiplayerPeer now merged into main project
+- Changed: converted functions entirely over to the Flat API system
+- Changed: `activateGameOverlayInviteDialog()` changed argument name from steam_id to lobby_id for clarity
+- Changed: renamed some minor parameters
+- Changed: `getAPICallFailureReason()` now returns enum instead of string
+- Changed: error messages if Steam is not initialized or classes are missing
+- Fixed: `initFilterText()` now takes filter options
+- Fixed: `sendMessages()` not compiling correctly
+- Fixed: VOICE_RESULT_NO_DATA incorrectly named VOICE_RESULT_NO_DATE
+- Removed: GameSearch and Music Remote classes, constants, enums per Steam SDK 1.63
 
 [You can read more change-logs here](https://godotsteam.com/changelog/godot4/).
+
 
 Compatibility
 ---
@@ -38,7 +52,8 @@ While rare, sometimes Steamworks SDK updates will break compatilibity with older
 
 Steamworks SDK Version | GodotSteam Version
 ---|---
-1.62 or newer | 4.14 or newer
+1.63 or newer | 4.17
+1.62 | 4.14 or 4.16.2
 1.61 | 4.12 to 4.13
 1.60 | 4.6 to 4.11
 1.59 | 4.6 to 4.8
@@ -55,10 +70,11 @@ GodotSteam Version | Broken Compatibility
 4.14 | Removed first argument for stat request in steamInit and steamInitEx, steamInit returns intended bool value
 4.16 | Variety of small break points, refer to [4.16 changelog for details](https://godotsteam.com/changelog/godot4/)
 
+
 Known Issues
 ---
 - Steam overlay may not work when running your game from the editor if you are using Forward+ as the renderer unless you use auto-initialization from the Project Settings menu.  Your exported project should work perfectly fine in the Steam client, however.
-- When self-compiling, **do not** use MinGW without running the extras/mingw_comp.patch first or you will experience crashing.
+
 
 Quick How-To
 ---
@@ -66,7 +82,6 @@ For complete instructions on how to build the Godot 4.x version of GodotSteam fr
 
 Alternatively, you can just [download the pre-compiled versions in our Releases section](https://codeberg.org/godotsteam/godotsteam/releases) and skip compiling it yourself!
 
-[To start, check out our tutorial on initializing Steam.](https://godotsteam.com/tutorials/initializing/)  There are additional tutorials with more in the works.  You can also [check out additional Godot and Steam related videos, text, additional tools, plug-ins, etc. here.](https://godotsteam.com/resources/external/)
 
 License
 ---
