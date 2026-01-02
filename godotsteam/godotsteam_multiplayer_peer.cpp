@@ -28,6 +28,7 @@
 
 
 #include <godot_cpp/core/math.hpp>
+#include <godot_cpp/classes/engine.hpp>
 
 #include "godotsteam_multiplayer_peer.h"
 
@@ -289,7 +290,7 @@ void SteamMultiplayerPeer::network_connection_status_changed(
 							ping_result)
 							);
 				}
-				
+
 				// If we already have their peer ID, upgrade it
 				if (steam_connections[p_status_change->m_hConn]->get_peer_id() > 0) {
 					_upgrade_peer(p_status_change->m_hConn);
@@ -363,7 +364,7 @@ void SteamMultiplayerPeer::_close() {
 	connection_status = CONNECTION_DISCONNECTED;
 	server = false;
 
-	if (Engine::get_singleton()->get_singleton_object("Steam") == nullptr) {
+	if (Engine::get_singleton()->get_singleton("Steam") == nullptr) {
 		return;
 	}
 
@@ -698,7 +699,7 @@ SteamMultiplayerPeer::DebugLevel SteamMultiplayerPeer::get_debug_level() const {
 }
 
 const int SteamMultiplayerPeer::_get_steam_packet_flags() {
-	int32_t flags = (k_nSteamNetworkingSend_NoNagle * no_nagle) | 
+	int32_t flags = (k_nSteamNetworkingSend_NoNagle * no_nagle) |
 			(k_nSteamNetworkingSend_NoDelay * no_delay);
 
 	switch (get_transfer_mode()) {
