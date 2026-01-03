@@ -34,7 +34,7 @@ void SteamProjectSettings::register_settings() {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "steam/initialization/app_id"), 0);
 	GLOBAL_DEF(PropertyInfo(Variant::BOOL, "steam/initialization/initialize_on_startup"), false);
 	GLOBAL_DEF(PropertyInfo(Variant::BOOL, "steam/initialization/embed_callbacks"), false);
-	GLOBAL_DEF(PropertyInfo(Variant::BOOL, "steam/multiplayer_peer/max_channels"), 4);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "steam/multiplayer_peer/max_channels"), 4);
 }
 
 
