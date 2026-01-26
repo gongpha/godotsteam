@@ -61,12 +61,12 @@ GodotSteam Version | Broken Compatibility
 4.13 | getItemDefinitionProperty return a dictionary, html_needs_paint key 'bgra' changed to 'rbga'
 4.14 | Removed first argument for stat request in steamInit and steamInitEx, steamInit returns intended bool value
 4.16 | Variety of small break points, refer to [4.16 changelog for details](https://godotsteam.com/changelog/godot4/)
+4.17 | Windows projects using Steam SDK 1.63 are meant to work with Proton 11 or Experimental on Linux / Steam Deck.
 
 
 Known Issues
 ---
 - Steam overlay may not work when running your game from the editor if you are using Forward+ as the renderer unless you use auto-initialization from the Project Settings menu.  Your exported project should work perfectly fine in the Steam client, however.
-- Windows projects using Steam SDK 1.63 are meant to work with Proton 11 or Experimental on Linux / Steam Deck.
 
 
 Quick How-To
