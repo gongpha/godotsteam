@@ -33,6 +33,7 @@
 
 // Include Godot headers
 #include <godot_cpp/classes/multiplayer_peer_extension.hpp>
+#include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/templates/hash_map.hpp>
 #include <godot_cpp/templates/local_vector.hpp>

@@ -335,6 +335,7 @@ void SteamMultiplayerPeer::lobby_chat_update(LobbyChatUpdate_t *p_chat_update) {
 	} else {
 		// If they didn't enter, it doesn't matter why, they are leaving
 		// Collect connections to remove to avoid iterator invalidation
+		LocalVector<int> peer_ids_to_disconnect;
 		LocalVector<HSteamNetConnection> connections_to_remove;
 		for (KeyValue<HSteamNetConnection, Ref<SteamPacketPeer>> &E :
 				steam_connections) {
@@ -343,7 +344,7 @@ void SteamMultiplayerPeer::lobby_chat_update(LobbyChatUpdate_t *p_chat_update) {
 			} else {
 				if (E.value->get_steam_id() == p_chat_update->m_ulSteamIDUserChanged) {
 					if (E.value->get_peer_id() > 0) {
-						_disconnect_peer(E.value->get_peer_id());
+						peer_ids_to_disconnect.push_back(E.value->get_peer_id());
 					} else {
 						// We have an open connection but no peer
 						E.value->disconnect_peer(true);
@@ -351,6 +352,10 @@ void SteamMultiplayerPeer::lobby_chat_update(LobbyChatUpdate_t *p_chat_update) {
 					}
 				}
 			}
+		}
+		// Disconnect peers outside the iteration
+		for (int peer_id : peer_ids_to_disconnect) {
+			disconnect_peer(peer_id);
 		}
 		// Remove collected connections outside the iteration
 		for (HSteamNetConnection conn : connections_to_remove) {
@@ -363,9 +368,10 @@ void SteamMultiplayerPeer::_close() {
 	connection_status = CONNECTION_DISCONNECTED;
 	server = false;
 
-	if (Engine::get_singleton()->get_singleton_object("Steam") == nullptr) {
-		return;
-	}
+	// This worked find in 4.17 with 4.4 godot-cpp branch but now will no longer compile
+//	if (Engine::get_singleton()->get_singleton_object("Steam") == nullptr) {
+//		return;
+//	}
 
 	for (KeyValue<HSteamNetConnection, Ref<SteamPacketPeer>> &E :
 			steam_connections) {
@@ -376,14 +382,14 @@ void SteamMultiplayerPeer::_close() {
 
 	// Clear any remaining packets
 	if (current_packet != nullptr) {
-		current_packet->Release();
+		SteamAPI_SteamNetworkingMessage_t_Release(current_packet);
 		current_packet = nullptr;
 	}
 
 	while (!incoming_packets.is_empty()) {
 		SteamNetworkingMessage_t *packet = incoming_packets.front()->get();
 		incoming_packets.pop_front();
-		packet->Release();
+		SteamAPI_SteamNetworkingMessage_t_Release(packet);
 	}
 
 	incoming_packets.clear();
