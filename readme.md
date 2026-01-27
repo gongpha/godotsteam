@@ -16,7 +16,7 @@ Documentation
 ---
 [Documentation is available here](https://godotsteam.com/).  You can also check out the Search Help section inside Godot Engine.  [To start, try checking out our tutorial on initializing Steam.](https://godotsteam.com/tutorials/initializing/)  There are additional tutorials, with more in the works.  You can also [check out additional Godot and Steam related videos, text, additional tools, plug-ins, etc. here.](https://godotsteam.com/resources/external/)
 
-Feel free to chat with us about GodotSteam or ask for assistance on the [Matrix server](https://matrix.to/#/#godotsteam:converser.eu) or [IRC on Libera Chat](irc://irc.libera.chat/#godotsteam).
+Feel free to chat with us about GodotSteam or ask for assistance on the [Stoat server](https://stt.gg/9DxQ3Dcd) or [IRC on Libera Chat](irc://irc.libera.chat/#godotsteam).
 
 
 Donate
