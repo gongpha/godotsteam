@@ -2709,12 +2709,16 @@ PackedByteArray Steam::serializeResult(int32 this_inventory_handle) {
 		this_inventory_handle = inventory_handle;
 	}
 
-	uint32_t buffer_size = STEAM_BUFFER_SIZE;
+	uint32_t buffer_size = 0;
 	PackedByteArray buffer;
-	buffer.resize(buffer_size);
+	
+	SteamAPI_ISteamInventory_SerializeResult(SteamAPI_SteamInventory(), (SteamInventoryResult_t)this_inventory_handle, nullptr, &buffer_size); // Query API for buffer size
+
+	buffer.resize(buffer_size); // Resize buffer
+
 	if (SteamAPI_ISteamInventory_SerializeResult(SteamAPI_SteamInventory(), (SteamInventoryResult_t)this_inventory_handle, buffer.ptrw(), &buffer_size)) {
-		buffer.resize(buffer_size);
-		result_serialized = buffer;
+		buffer.resize(buffer_size); // Resize buffer again, incase it shrinks
+		result_serialized = buffer; // Put serialized results into buffer
 	}
 	return result_serialized;
 }
