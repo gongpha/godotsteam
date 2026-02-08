@@ -7521,7 +7521,7 @@
 			</description>
 		</signal>
 		<signal name="lobby_created">
-			<param index="0" name="connect" type="int" />
+			<param index="0" name="result" type="int" />
 			<param index="1" name="lobby_id" type="int" />
 			<description>
 				Result of our request to create a Lobby. At this point, the lobby has been joined and is ready for use.
