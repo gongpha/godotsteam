@@ -385,6 +385,12 @@ void SteamMultiplayerPeer::close() {
 				SteamAPI_SteamNetworkingSockets_SteamAPI(), poll_group);
 		poll_group = k_HSteamNetPollGroup_Invalid;
 	}
+
+	if (link_lobby && tracked_lobby != 0) {
+		SteamAPI_ISteamMatchmaking_LeaveLobby(
+				SteamAPI_SteamMatchmaking(), tracked_lobby);
+	}
+	tracked_lobby = 0;
 }
 
 int SteamMultiplayerPeer::get_unique_id() const {
@@ -665,6 +671,14 @@ bool SteamMultiplayerPeer::get_server_relay() const {
 	return server_relay;
 }
 
+void SteamMultiplayerPeer::set_link_lobby(const bool p_link_lobby) {
+	link_lobby = p_link_lobby;
+}
+
+bool SteamMultiplayerPeer::get_link_lobby() const {
+	return link_lobby;
+}
+
 extern "C" void __cdecl SteamAPIDebugTextHook(int nSeverity, const char *pchDebugText) {
 	WARN_PRINT(pchDebugText);
 }
@@ -761,6 +775,10 @@ void SteamMultiplayerPeer::_bind_methods() {
 			&SteamMultiplayerPeer::get_server_relay);
 	ClassDB::bind_method(D_METHOD("set_server_relay"),
 			&SteamMultiplayerPeer::set_server_relay);
+	ClassDB::bind_method(D_METHOD("get_link_lobby"),
+			&SteamMultiplayerPeer::get_link_lobby);
+	ClassDB::bind_method(D_METHOD("set_link_lobby"),
+			&SteamMultiplayerPeer::set_link_lobby);
 	ClassDB::bind_method(D_METHOD("get_debug_level"),
 			&SteamMultiplayerPeer::get_debug_level);
 	ClassDB::bind_method(D_METHOD("set_debug_level"),
@@ -772,6 +790,8 @@ void SteamMultiplayerPeer::_bind_methods() {
 			"set_no_nagle", "get_no_nagle");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "server_relay"), "set_server_relay",
 			"get_server_relay");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "link_lobby"), "set_link_lobby",
+			"get_link_lobby");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "debug_level", PROPERTY_HINT_ENUM, "None,Peer,Steam"),
 			"set_debug_level", "get_debug_level");
 

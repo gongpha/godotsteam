@@ -67,6 +67,7 @@ private:
 	bool no_nagle = false;
 	bool no_delay = false;
 	bool server_relay = false;
+	bool link_lobby = false;
 
 	HSteamListenSocket listen_socket = k_HSteamListenSocket_Invalid;
 	HSteamNetPollGroup poll_group = k_HSteamNetPollGroup_Invalid;
@@ -126,6 +127,8 @@ public:
 	bool get_no_delay() const;
 	void set_server_relay(const bool p_server_relay);
 	bool get_server_relay() const;
+	void set_link_lobby(const bool p_link_lobby);
+	bool get_link_lobby() const;
 	void set_debug_level(DebugLevel p_debug_level);
 	DebugLevel get_debug_level() const;
 

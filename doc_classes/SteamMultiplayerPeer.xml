@@ -87,6 +87,9 @@
 		<member name="debug_level" type="int" setter="set_debug_level" getter="get_debug_level" enum="SteamMultiplayerPeer.DebugLevel" default="0">
 			The debug level.
 		</member>
+		<member name="link_lobby" type="bool" setter="set_link_lobby" getter="get_link_lobby" default="false">
+			If this is [code]true[/code] and a lobby is associated with this peer using [method SteamMultiplayerPeer.host_with_lobby] or [method SteamMultiplayerPeer.connect_to_lobby], upon closing this peer the current steam user will automatically leave the lobby.
+		</member>
 		<member name="no_delay" type="bool" setter="set_no_delay" getter="get_no_delay" default="false">
 			Whether or not to use [constant Steam.NETWORKING_SEND_NO_NAGLE] flag.
 		</member>
