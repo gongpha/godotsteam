@@ -368,10 +368,9 @@ void SteamMultiplayerPeer::_close() {
 	connection_status = CONNECTION_DISCONNECTED;
 	server = false;
 
-	// This worked find in 4.17 with 4.4 godot-cpp branch but now will no longer compile
-//	if (Engine::get_singleton()->get_singleton_object("Steam") == nullptr) {
-//		return;
-//	}
+	if (!Engine::get_singleton()->has_singleton("Steam")) {
+		return;
+	}
 
 	for (KeyValue<HSteamNetConnection, Ref<SteamPacketPeer>> &E :
 			steam_connections) {
