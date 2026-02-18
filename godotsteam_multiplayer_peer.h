@@ -64,9 +64,9 @@ private:
 	bool server = false;
 	int connection_retries = 0;
 
+	bool mesh_mode = true;
 	bool no_nagle = false;
 	bool no_delay = false;
-	bool server_relay = false;
 
 	HSteamListenSocket listen_socket = k_HSteamListenSocket_Invalid;
 	HSteamNetPollGroup poll_group = k_HSteamNetPollGroup_Invalid;
@@ -124,14 +124,18 @@ public:
 	bool get_no_nagle() const;
 	void set_no_delay(const bool p_no_delay);
 	bool get_no_delay() const;
-	void set_server_relay(const bool p_server_relay);
-	bool get_server_relay() const;
+	void set_mesh_mode(const bool p_mesh_mode);
+	bool get_mesh_mode() const;
 	void set_debug_level(DebugLevel p_debug_level);
 	DebugLevel get_debug_level() const;
 
 
 protected:
 	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+#endif
 
 	const int _get_steam_packet_flags();
 	Error _create_listen_socket(int p_virtual_port);

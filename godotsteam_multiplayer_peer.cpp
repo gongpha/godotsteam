@@ -94,7 +94,7 @@ bool SteamMultiplayerPeer::is_server() const {
 }
 
 bool SteamMultiplayerPeer::is_server_relay_supported() const {
-	return server_relay;
+	return !mesh_mode;
 }
 
 void SteamMultiplayerPeer::poll() {
@@ -311,7 +311,9 @@ void SteamMultiplayerPeer::lobby_chat_update(LobbyChatUpdate_t *p_chat_update) {
 
 	if (p_chat_update->m_rgfChatMemberStateChange &
 			k_EChatMemberStateChangeEntered) {
-		add_peer(p_chat_update->m_ulSteamIDUserChanged);
+		if (server || mesh_mode) {
+			add_peer(p_chat_update->m_ulSteamIDUserChanged);
+		}
 	} else {
 		// If they didn't enter, it doesn't matter why, they are leaving
 		// Collect connections to remove to avoid iterator invalidation
@@ -623,6 +625,10 @@ Error SteamMultiplayerPeer::connect_to_lobby(uint64_t p_lobby_id) {
 			);
 	ERR_FAIL_COND_V(client_created != OK, client_created);
 
+	if (!mesh_mode) {
+		return OK;
+	}
+
 	// Connect to the rest of the members
 	int count = SteamAPI_ISteamMatchmaking_GetNumLobbyMembers(
 			SteamAPI_SteamMatchmaking(), p_lobby_id
@@ -657,12 +663,13 @@ bool SteamMultiplayerPeer::get_no_delay() const {
 	return no_delay;
 }
 
-void SteamMultiplayerPeer::set_server_relay(const bool p_server_relay) {
-	server_relay = p_server_relay;
+void SteamMultiplayerPeer::set_mesh_mode(const bool p_mesh_mode) {
+	ERR_FAIL_COND_MSG(connection_status != CONNECTION_DISCONNECTED, "Cannot set mesh_mode while peer is active.");
+	mesh_mode = p_mesh_mode;
 }
 
-bool SteamMultiplayerPeer::get_server_relay() const {
-	return server_relay;
+bool SteamMultiplayerPeer::get_mesh_mode() const {
+	return mesh_mode;
 }
 
 extern "C" void __cdecl SteamAPIDebugTextHook(int nSeverity, const char *pchDebugText) {
@@ -729,6 +736,31 @@ int SteamMultiplayerPeer::get_peer_id_for_steam_id(uint64_t p_steam_id) {
 }
 
 
+#ifndef DISABLE_DEPRECATED
+bool SteamMultiplayerPeer::_set(const StringName &p_name, const Variant &p_value) {
+	String name = p_name;
+	if (name != "server_relay") {
+		return false;
+	}
+
+	mesh_mode = !p_value;
+
+	return true;
+}
+
+
+bool SteamMultiplayerPeer::_get(const StringName &p_name, Variant &r_ret) const {
+	String name = p_name;
+	if (name != "server_relay") {
+		return false;
+	}
+
+	r_ret = !mesh_mode;
+
+	return true;
+}
+#endif
+
 void SteamMultiplayerPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_host", "virtual_port"),
 			&SteamMultiplayerPeer::create_host, DEFVAL(0));
@@ -757,10 +789,10 @@ void SteamMultiplayerPeer::_bind_methods() {
 			&SteamMultiplayerPeer::get_no_nagle);
 	ClassDB::bind_method(D_METHOD("set_no_nagle"),
 			&SteamMultiplayerPeer::set_no_nagle);
-	ClassDB::bind_method(D_METHOD("get_server_relay"),
-			&SteamMultiplayerPeer::get_server_relay);
-	ClassDB::bind_method(D_METHOD("set_server_relay"),
-			&SteamMultiplayerPeer::set_server_relay);
+	ClassDB::bind_method(D_METHOD("get_mesh_mode"),
+			&SteamMultiplayerPeer::get_mesh_mode);
+	ClassDB::bind_method(D_METHOD("set_mesh_mode"),
+			&SteamMultiplayerPeer::set_mesh_mode);
 	ClassDB::bind_method(D_METHOD("get_debug_level"),
 			&SteamMultiplayerPeer::get_debug_level);
 	ClassDB::bind_method(D_METHOD("set_debug_level"),
@@ -770,8 +802,8 @@ void SteamMultiplayerPeer::_bind_methods() {
 			"set_no_delay", "get_no_delay");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "no_nagle"),
 			"set_no_nagle", "get_no_nagle");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "server_relay"), "set_server_relay",
-			"get_server_relay");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "mesh_mode"), "set_mesh_mode",
+			"get_mesh_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "debug_level", PROPERTY_HINT_ENUM, "None,Peer,Steam"),
 			"set_debug_level", "get_debug_level");
 

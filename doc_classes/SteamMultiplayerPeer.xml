@@ -27,7 +27,7 @@
 			<description>
 				Checks you are in the lobby by calling [method Steam.getLobbyOwner] or prints an error [constant ERR_CANT_CREATE].
 				It then calls [method SteamMultiplayerPeer.create_client] for the host or prints an [enum Error] enum if there is no host found.
-				Finally it connects to the rest of the members of the lobby, calling add_peer for each.
+				Finally, if [b]mesh_mode[/b] is [code]true[/code], it connects to the rest of the members of the lobby, calling add_peer for each.
 				Returns [constant OK] upon success; otherwise, [constant ERR_ALREADY_IN_USE] if [b]connection_status[/b] is not [constant MultiplayerPeer.CONNECTION_DISCONNECTED].
 			</description>
 		</method>
@@ -86,6 +86,9 @@
 	<members>
 		<member name="debug_level" type="int" setter="set_debug_level" getter="get_debug_level" enum="SteamMultiplayerPeer.DebugLevel" default="0">
 			The debug level.
+		</member>
+		<member name="mesh_mode" type="bool" setter="set_mesh_mode" getter="get_mesh_mode" default="true">
+			If [code]true[/code], calling [method SteamMultiplayerPeer.connect_to_lobby] will create direct connections to all lobby members and [method MultiplayerPeer.is_server_relay_supported] will return [b]false[/b].
 		</member>
 		<member name="no_delay" type="bool" setter="set_no_delay" getter="get_no_delay" default="false">
 			Whether or not to use [constant Steam.NETWORKING_SEND_NO_NAGLE] flag.
