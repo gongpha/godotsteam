@@ -38,6 +38,9 @@
 // Include GodotSteam header
 #include "godotsteam.h"
 
+// !!!
+#include "core/object/class_db.h"
+
 // Include some system headers
 #include "fstream"
 #include "vector"
