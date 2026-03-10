@@ -40,6 +40,7 @@
 
 // !!!
 #include "core/object/class_db.h"
+#include "core/object/callable_mp.h"
 
 // Include some system headers
 #include "fstream"

@@ -30,6 +30,8 @@
 #include "godotsteam_multiplayer_peer.h"
 #include "core/math/math_funcs.h"
 
+#include "core/object/class_db.h"
+
 
 #define MAX_MESSAGE_COUNT 255
 
