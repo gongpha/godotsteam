@@ -202,11 +202,26 @@ void SteamPacketPeer::disconnect_peer(bool p_force) {
 	}
 }
 
+int SteamPacketPeer::get_ping() const {
+    if (connection_handle == k_HSteamNetConnection_Invalid) {
+        return -1;
+    }
+    SteamNetConnectionRealTimeStatus_t status;
+    if (SteamAPI_ISteamNetworkingSockets_GetConnectionRealTimeStatus(
+            SteamAPI_SteamNetworkingSockets_SteamAPI(),
+            connection_handle, &status, 0, nullptr) != k_EResultOK) {
+        return -1;
+    }
+    return status.m_nPing;
+}
+
 void SteamPacketPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_steam_id"),
 			&SteamPacketPeer::get_steam_id);
 	ClassDB::bind_method(D_METHOD("get_peer_id"),
 			&SteamPacketPeer::get_peer_id);
+	ClassDB::bind_method(D_METHOD("get_ping"),
+			&SteamPacketPeer::get_ping);
 	ClassDB::bind_method(D_METHOD("disconnect_peer", "force"),
 			&SteamPacketPeer::disconnect_peer, DEFVAL(false));
 

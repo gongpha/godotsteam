@@ -95,6 +95,8 @@ public:
 	virtual int get_max_packet_size() const override;
 
 	Error send(int p_channel, const uint8_t *p_data, int p_size, int p_flags);
+	int get_ping() const;
+
 	Error ping(uint32_t p_peer_id);
 	Error process_ping(SteamNetworkingMessage_t *p_packet);
 
