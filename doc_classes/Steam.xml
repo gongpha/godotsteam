@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Steam" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="Steam" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		An ecosystem of tools for Godot Engine and Valve's Steam.
 	</brief_description>
@@ -7532,7 +7532,6 @@
 				RESULT_LIMIT_EXCEEDED - Your game client has created too many lobbies and is being rate limited.
 				RESULT_ACCESS_DENIED - Your game isn't set to allow lobbies, or your client does haven't rights to play the game
 				RESULT_NO_CONNECTION - Your Steam client doesn't have a connection to the back-end.
-
 			</description>
 		</signal>
 		<signal name="lobby_data_update">

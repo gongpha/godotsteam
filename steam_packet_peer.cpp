@@ -36,7 +36,6 @@ SteamPacketPeer::SteamPacketPeer() {
 	connection_handle = k_HSteamNetConnection_Invalid;
 	peer_id = 0;
 	last_packet = nullptr;
-	configured_lanes = SteamProjectSettings::get_max_channels();
 }
 
 SteamPacketPeer::~SteamPacketPeer() {
@@ -58,9 +57,13 @@ uint64_t SteamPacketPeer::get_steam_id() const { return steam_id; }
 
 void SteamPacketPeer::set_connection_handle(HSteamNetConnection p_handle) {
 	connection_handle = p_handle;
+
+	const int *lane_priorities = lanes ? lanes->lane_priority_list.ptr() : nullptr;
+	const uint16_t *lane_bandwidths = lanes ? lanes->lane_bandwidth_list.ptr() : nullptr;
+
 	SteamAPI_ISteamNetworkingSockets_ConfigureConnectionLanes(
 			SteamAPI_SteamNetworkingSockets_SteamAPI(), 
-			connection_handle, configured_lanes, nullptr, nullptr
+			connection_handle, lanes->lane_priority_list.size(), lane_priorities, lane_bandwidths
 			);
 }
 
@@ -87,23 +90,42 @@ Error SteamPacketPeer::send(int p_channel, const uint8_t *p_data, int p_size, in
 
 	ERR_FAIL_COND_V(p_data == nullptr || p_size <= 0, ERR_INVALID_PARAMETER);
 
+	ERR_FAIL_COND_V(p_channel > 255 || p_channel < 0, ERR_INVALID_PARAMETER);
+
+	int configured_lanes = lanes ? lanes->lane_priority_list.size() : 1;
+
 	if (unlikely(p_channel >= (configured_lanes - 1))) {
-		WARN_PRINT(vformat("Peer is only set up to use %d channels (0-%d). Please explicitly set"
-				"the number of channels in your Project Settings. Defaulting to channel 0.",
+		WARN_PRINT(vformat("Peer is only set up to use %d channels (0-%d).",
 				configured_lanes, configured_lanes - 1)
 				);
 		p_channel = 0;
 	}
 
+	uint16 lane;
+	if (lanes) {
+		const int *c = lanes->channel_to_lane.getptr(p_channel);
+		if (c) {
+			lane = (uint16)*c;
+		} else {
+			WARN_PRINT(vformat("Channel %d is not mapped to a lane. Defaulting to lane 0.", p_channel));
+			lane = 0;
+		}
+	} else {
+		lane = (uint16)p_channel;
+	}
+
 	SteamNetworkingMessage_t *packet = SteamAPI_ISteamNetworkingUtils_AllocateMessage(
-			SteamAPI_SteamNetworkingUtils_SteamAPI(), p_size
+			SteamAPI_SteamNetworkingUtils_SteamAPI(), sizeof(uint8) + p_size
 			);
 	ERR_FAIL_COND_V(!packet, ERR_CANT_CREATE);
 
 	packet->m_conn = connection_handle;
 	packet->m_nFlags = p_flags;
-	packet->m_idxLane = (uint16)p_channel;
-	memcpy(packet->m_pData, p_data, p_size);
+	packet->m_idxLane = lane;
+
+	uint8_t *data = reinterpret_cast<uint8_t *>(packet->m_pData);
+	data[0] = (uint8)p_channel; // Store the channel in the first byte of the message data for retrieval on the receiving end
+	memcpy(data + sizeof(uint8), p_data, p_size);
 
 	SteamNetworkingMessage_t *const messages[1] = {packet};
 	SteamAPI_ISteamNetworkingSockets_SendMessages(
@@ -161,8 +183,14 @@ Error SteamPacketPeer::get_packet(const uint8_t **r_buffer, int &r_buffer_size) 
 	last_packet = packet_queue.front()->get();
 	packet_queue.pop_front();
 
-	*r_buffer = (uint8_t *)last_packet->GetData();
-	r_buffer_size = last_packet->GetSize();
+	int packet_size = last_packet->GetSize();
+	if (packet_size > 0) {
+		*r_buffer = ((uint8_t *)last_packet->GetData()) + 1; // Skip the channel byte
+		r_buffer_size = packet_size - 1;
+	} else {
+		*r_buffer = (uint8_t *)last_packet->GetData();
+		r_buffer_size = 0;
+	}
 
 	return OK;
 }
@@ -203,16 +231,16 @@ void SteamPacketPeer::disconnect_peer(bool p_force) {
 }
 
 int SteamPacketPeer::get_ping() const {
-    if (connection_handle == k_HSteamNetConnection_Invalid) {
-        return -1;
-    }
-    SteamNetConnectionRealTimeStatus_t status;
-    if (SteamAPI_ISteamNetworkingSockets_GetConnectionRealTimeStatus(
-            SteamAPI_SteamNetworkingSockets_SteamAPI(),
-            connection_handle, &status, 0, nullptr) != k_EResultOK) {
-        return -1;
-    }
-    return status.m_nPing;
+	if (connection_handle == k_HSteamNetConnection_Invalid) {
+		return -1;
+	}
+	SteamNetConnectionRealTimeStatus_t status;
+	if (SteamAPI_ISteamNetworkingSockets_GetConnectionRealTimeStatus(
+			SteamAPI_SteamNetworkingSockets_SteamAPI(),
+			connection_handle, &status, 0, nullptr) != k_EResultOK) {
+		return -1;
+	}
+	return status.m_nPing;
 }
 
 void SteamPacketPeer::_bind_methods() {

@@ -41,7 +41,7 @@ public:
 	static int get_app_id();
 	static bool get_auto_init();
 	static bool get_embed_callbacks();
-	static int get_max_channels();
+	//static int get_max_channels();
 };
 
 

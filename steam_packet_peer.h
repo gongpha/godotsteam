@@ -61,13 +61,18 @@ public:
 		uint32_t peer_id = 0;
 	};
 
+	struct Lanes {
+		Vector<int> lane_priority_list;
+		Vector<uint16_t> lane_bandwidth_list;
+		HashMap<int, int> channel_to_lane;
+	};
+	Lanes *lanes = nullptr;
 
 private:
 	PeerState state = STATE_NONE;
 	uint64_t steam_id = 0;
 	HSteamNetConnection connection_handle = k_HSteamNetConnection_Invalid;
 	uint32_t peer_id = 0;
-	int configured_lanes = 1;
 
 	List<SteamNetworkingMessage_t *> packet_queue;
 	SteamNetworkingMessage_t *last_packet = nullptr;
@@ -88,6 +93,8 @@ public:
 
 	void set_state(PeerState p_state);
 	PeerState get_state() const;
+
+	void set_lanes(Lanes *p_lanes) { lanes = p_lanes; }
 
 	virtual int get_available_packet_count() const override;
 	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) override;

@@ -28,6 +28,7 @@
 
 
 #include "godotsteam_multiplayer_peer.h"
+#include "core/error/error_macros.h"
 #include "core/math/math_funcs.h"
 
 #include "core/object/class_db.h"
@@ -62,7 +63,7 @@ int SteamMultiplayerPeer::get_packet_peer() const {
 
 MultiplayerPeer::TransferMode SteamMultiplayerPeer::get_packet_mode() const {
 	ERR_FAIL_COND_V(incoming_packets.is_empty(), TRANSFER_MODE_RELIABLE);
-	if (incoming_packets.front()->get()->m_nFlags && k_nSteamNetworkingSend_Reliable) {
+	if (incoming_packets.front()->get()->m_nFlags & k_nSteamNetworkingSend_Reliable) {
 		return TRANSFER_MODE_RELIABLE;
 	} else {
 		return TRANSFER_MODE_UNRELIABLE;
@@ -71,7 +72,11 @@ MultiplayerPeer::TransferMode SteamMultiplayerPeer::get_packet_mode() const {
 
 int SteamMultiplayerPeer::get_packet_channel() const {
 	ERR_FAIL_COND_V(incoming_packets.is_empty(), 1);
-	return incoming_packets.front()->get()->m_idxLane;
+	SteamNetworkingMessage_t *packet = incoming_packets.front()->get();
+	ERR_FAIL_COND_V(packet->m_cbSize == 0, 1);
+
+	uint16 lane = packet->m_idxLane;
+	return ((uint8*)packet->m_pData)[0];
 }
 
 void SteamMultiplayerPeer::disconnect_peer(int p_peer_id, bool p_force) {
@@ -244,7 +249,8 @@ void SteamMultiplayerPeer::network_connection_status_changed(
 			_add_pending_peer(SteamAPI_SteamNetworkingIdentity_GetSteamID64(
 					&p_status_change->m_info.m_identityRemote),
 					p_status_change->m_hConn,
-					SteamPacketPeer::PeerState::STATE_CONNECTING
+					SteamPacketPeer::PeerState::STATE_CONNECTING,
+					&lanes
 					);
 			break;
 		}
@@ -415,8 +421,14 @@ Error SteamMultiplayerPeer::get_packet(const uint8_t **r_buffer, int &r_buffer_s
 	current_packet = incoming_packets.front()->get();
 	incoming_packets.pop_front();
 
-	*r_buffer = (uint8_t *)current_packet->GetData();
-	r_buffer_size = current_packet->GetSize();
+	int packet_size = current_packet->GetSize();
+	if (packet_size > 0) {
+		*r_buffer = ((uint8_t *)current_packet->GetData()) + 1; // Skip the first byte which is the channel
+		r_buffer_size = packet_size - 1; // Adjust size to exclude the channel byte
+	} else {
+		*r_buffer = (uint8_t *)current_packet->GetData();
+		r_buffer_size = 0;
+	}
 
 	return OK;
 }
@@ -541,11 +553,12 @@ Error SteamMultiplayerPeer::add_peer(uint64_t p_steam_id, int p_virtual_port) {
 
 void SteamMultiplayerPeer::_add_pending_peer(
 		uint64_t p_steam_id, HSteamNetConnection p_connection_handle,
-		SteamPacketPeer::PeerState p_peer_state) {
+		SteamPacketPeer::PeerState p_peer_state, SteamPacketPeer::Lanes *p_lanes) {
 	Ref<SteamPacketPeer> peer = memnew(SteamPacketPeer);
 	peer->set_steam_id(p_steam_id);
 	peer->set_connection_handle(p_connection_handle);
 	peer->set_state(p_peer_state);
+	peer->set_lanes(p_lanes);
 
 	steam_connections[p_connection_handle] = peer;
 }
@@ -684,6 +697,22 @@ SteamMultiplayerPeer::DebugLevel SteamMultiplayerPeer::get_debug_level() const {
 	return debug_level;
 }
 
+void SteamMultiplayerPeer::add_lane(int p_priority, int p_bandwidth, const PackedInt32Array &p_associated_channels) {
+	// max to uint16_t
+	if (p_bandwidth > 65535) {
+		WARN_PRINT("Bandwidth exceeds maximum of 65535, capping to maximum.");
+		p_bandwidth = 65535;
+	}
+	
+	lanes.lane_priority_list.push_back(p_priority);
+	lanes.lane_bandwidth_list.push_back(p_bandwidth);
+
+	int lane = lanes.lane_priority_list.size() - 1;
+	for (int i = 0; i < p_associated_channels.size(); i++) {
+		lanes.channel_to_lane[p_associated_channels[i]] = lane;
+	}
+}
+
 const int SteamMultiplayerPeer::_get_steam_packet_flags() {
 	int32_t flags = (k_nSteamNetworkingSend_NoNagle * no_nagle) | 
 			(k_nSteamNetworkingSend_NoDelay * no_delay);
@@ -767,6 +796,9 @@ void SteamMultiplayerPeer::_bind_methods() {
 			&SteamMultiplayerPeer::get_debug_level);
 	ClassDB::bind_method(D_METHOD("set_debug_level"),
 			&SteamMultiplayerPeer::set_debug_level);
+
+	ClassDB::bind_method(D_METHOD("add_lane", "priority", "bandwidth", "associated_channels"),
+			&SteamMultiplayerPeer::add_lane);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "no_delay"),
 			"set_no_delay", "get_no_delay");

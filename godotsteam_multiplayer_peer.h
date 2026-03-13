@@ -34,6 +34,7 @@
 // Include Godot headers
 #include "core/os/os.h"
 #include "core/templates/hash_map.h"
+#include "core/variant/variant.h"
 #include "scene/main/multiplayer_peer.h"
 
 // Include GodotSteam headers
@@ -84,6 +85,7 @@ private:
 			callback_lobby_chat_update
 			);
 
+	SteamPacketPeer::Lanes lanes;
 
 public:
 	SteamMultiplayerPeer();
@@ -129,6 +131,8 @@ public:
 	void set_debug_level(DebugLevel p_debug_level);
 	DebugLevel get_debug_level() const;
 
+	//
+	void add_lane(int p_priority, int p_bandwidth, const PackedInt32Array &p_associated_channels);
 
 protected:
 	static void _bind_methods();
@@ -137,8 +141,7 @@ protected:
 	Error _create_listen_socket(int p_virtual_port);
 	Error _create_poll_group();
 	void _add_pending_peer(uint64_t p_steam_id, HSteamNetConnection p_connection_handle,
-			SteamPacketPeer::PeerState p_peer_state
-			);
+			SteamPacketPeer::PeerState p_peer_state, SteamPacketPeer::Lanes *p_lanes);
 	void upgrade_peer(HSteamNetConnection p_connection_handle);
 };
 

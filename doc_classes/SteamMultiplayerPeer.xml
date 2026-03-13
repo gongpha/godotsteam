@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SteamMultiplayerPeer" inherits="MultiplayerPeer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="SteamMultiplayerPeer" inherits="MultiplayerPeer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Provides a bridge between Steam Networking Sockets and Godot's high level [MultiplayerAPI].
 	</brief_description>
@@ -12,6 +12,14 @@
 		<link title="Changelog">https://godotsteam.com/changelog/multiplayer_peer/</link>
 	</tutorials>
 	<methods>
+		<method name="add_lane">
+			<return type="void" />
+			<param index="0" name="priority" type="int" />
+			<param index="1" name="bandwidth" type="int" />
+			<param index="2" name="associated_channels" type="PackedInt32Array" />
+			<description>
+			</description>
+		</method>
 		<method name="add_peer">
 			<return type="int" enum="Error" />
 			<param index="0" name="steam_id" type="int" />
@@ -92,6 +100,8 @@
 		</member>
 		<member name="no_nagle" type="bool" setter="set_no_nagle" getter="get_no_nagle" default="false">
 			Whether or not to use [constant Steam.NETWORKING_SEND_NO_DELAY] flag.
+		</member>
+		<member name="server_relay" type="bool" setter="set_server_relay" getter="get_server_relay" default="false">
 		</member>
 	</members>
 	<constants>
