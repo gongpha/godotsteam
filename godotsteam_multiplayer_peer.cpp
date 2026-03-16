@@ -556,9 +556,9 @@ void SteamMultiplayerPeer::_add_pending_peer(
 		SteamPacketPeer::PeerState p_peer_state, SteamPacketPeer::Lanes *p_lanes) {
 	Ref<SteamPacketPeer> peer = memnew(SteamPacketPeer);
 	peer->set_steam_id(p_steam_id);
+	peer->set_lanes(p_lanes);
 	peer->set_connection_handle(p_connection_handle);
 	peer->set_state(p_peer_state);
-	peer->set_lanes(p_lanes);
 
 	steam_connections[p_connection_handle] = peer;
 }

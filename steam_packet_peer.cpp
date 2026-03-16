@@ -60,10 +60,11 @@ void SteamPacketPeer::set_connection_handle(HSteamNetConnection p_handle) {
 
 	const int *lane_priorities = lanes ? lanes->lane_priority_list.ptr() : nullptr;
 	const uint16_t *lane_bandwidths = lanes ? lanes->lane_bandwidth_list.ptr() : nullptr;
+	int num_lanes = lanes ? lanes->lane_priority_list.size() : 1;
 
 	SteamAPI_ISteamNetworkingSockets_ConfigureConnectionLanes(
 			SteamAPI_SteamNetworkingSockets_SteamAPI(), 
-			connection_handle, lanes->lane_priority_list.size(), lane_priorities, lane_bandwidths
+			connection_handle, num_lanes, lane_priorities, lane_bandwidths
 			);
 }
 
