@@ -95,13 +95,6 @@ Error SteamPacketPeer::send(int p_channel, const uint8_t *p_data, int p_size, in
 
 	int configured_lanes = lanes ? lanes->lane_priority_list.size() : 1;
 
-	if (unlikely(p_channel >= (configured_lanes - 1))) {
-		WARN_PRINT(vformat("Peer is only set up to use %d channels (0-%d).",
-				configured_lanes, configured_lanes - 1)
-				);
-		p_channel = 0;
-	}
-
 	uint16 lane;
 	if (lanes) {
 		const int *c = lanes->channel_to_lane.getptr(p_channel);
