@@ -228,7 +228,7 @@ const SteamNetworkingConfigValue_t *Steam::convert_config_options(Dictionary con
 			if (value_type == Variant::INT) {
 				if (sent_option == NETWORKING_CONFIG_CONNECTION_USER_DATA) {
 					SteamAPI_SteamNetworkingConfigValue_t_SetInt64(&this_option, this_value, config_options[sent_option]);
-				} 
+				}
 				else {
 					SteamAPI_SteamNetworkingConfigValue_t_SetInt32(&this_option, this_value, config_options[sent_option]);
 				}
@@ -305,7 +305,7 @@ uint32_t Steam::getIPFromString(String ip_string) {
 
 	SteamNetworkingIPAddr this_address;
 	this_address.Clear();
-	
+
 	if (SteamAPI_SteamNetworkingIPAddr_ParseString(&this_address, ip_string.utf8().get_data())) {
 		ip_address = this_address.GetIPv4();
 	}
@@ -339,7 +339,7 @@ SteamNetworkingIPAddr Steam::getSteamIPFromInt(uint32_t ip_integer) {
 SteamNetworkingIPAddr Steam::getSteamIPFromString(String ip_string) {
 	SteamNetworkingIPAddr this_address;
 	SteamAPI_SteamNetworkingIPAddr_Clear(&this_address);
-	
+
 	if (SteamAPI_SteamNetworkingIPAddr_ParseString(&this_address, ip_string.utf8().get_data())) {
 		SteamAPI_SteamNetworkingIPAddr_GetIPv4(&this_address);
 	}
@@ -1079,13 +1079,13 @@ String Steam::getFriendPersonaNameHistory(uint64_t steam_id, int name_history) {
 }
 
 // Returns the current status of the specified user.
-PersonaState Steam::getFriendPersonaState(uint64_t steam_id) {
+Steam::PersonaState Steam::getFriendPersonaState(uint64_t steam_id) {
 	ERR_FAIL_COND_V_MSG(SteamAPI_SteamFriends() == nullptr, PERSONA_STATE_OFFLINE, "Friends class not found, Steam may not be initialized: getFriendPersonaState");
 	return PersonaState(SteamAPI_ISteamFriends_GetFriendPersonaState(SteamAPI_SteamFriends(), steam_id));
 }
 
 // Returns a relationship to a user.
-FriendRelationship Steam::getFriendRelationship(uint64_t steam_id) {
+Steam::FriendRelationship Steam::getFriendRelationship(uint64_t steam_id) {
 	ERR_FAIL_COND_V_MSG(SteamAPI_SteamFriends() == nullptr, FRIEND_RELATION_NONE, "Friends class not found, Steam may not be initialized: getFriendRelationship");
 	return FriendRelationship(SteamAPI_ISteamFriends_GetFriendRelationship(SteamAPI_SteamFriends(), steam_id));
 }
@@ -1180,7 +1180,7 @@ String Steam::getPersonaName() {
 }
 
 // Gets the status of the current user.
-PersonaState Steam::getPersonaState() {
+Steam::PersonaState Steam::getPersonaState() {
 	ERR_FAIL_COND_V_MSG(SteamAPI_SteamFriends() == nullptr, PERSONA_STATE_OFFLINE, "Friends class not found, Steam may not be initialized: getPersonaState");
 	return PersonaState(SteamAPI_ISteamFriends_GetPersonaState(SteamAPI_SteamFriends()));
 }
@@ -1266,7 +1266,7 @@ Array Steam::getUserFriendsGroups() {
 	Array friends_groups;
 	ERR_FAIL_COND_V_MSG(SteamAPI_SteamFriends() == nullptr, friends_groups, "Friends class not found, Steam may not be initialized: getUserFriendsGroups");
 	int tag_count = SteamAPI_ISteamFriends_GetFriendsGroupCount(SteamAPI_SteamFriends());
-	
+
 	for (int i = 0; i < tag_count; i++) {
 		Dictionary tags;
 		int16_t friends_group_id = SteamAPI_ISteamFriends_GetFriendsGroupIDByIndex(SteamAPI_SteamFriends(), i);
@@ -2048,7 +2048,7 @@ uint64_t Steam::getActionSetHandle(const String &action_set_name) {
 
 // Get an action origin that you can use in your glyph look up table or passed into GetGlyphForActionOrigin or
 // GetStringForActionOrigin.
-InputActionOrigin Steam::getActionOriginFromXboxOrigin(uint64_t input_handle, XboxOrigin origin) {
+Steam::InputActionOrigin Steam::getActionOriginFromXboxOrigin(uint64_t input_handle, XboxOrigin origin) {
 	ERR_FAIL_COND_V_MSG(SteamAPI_SteamInput() == nullptr, INPUT_ACTION_ORIGIN_NONE, "Input not found, Steam may not be initialized: getActionOriginFromXboxOrigin");
 	return InputActionOrigin(SteamAPI_ISteamInput_GetActionOriginFromXboxOrigin(SteamAPI_SteamInput(), (InputHandle_t)input_handle, (EXboxOrigin)origin));
 }
@@ -2208,7 +2208,7 @@ String Steam::getGlyphSVGForActionOrigin(InputActionOrigin origin, uint32_t flag
 }
 
 // Get the input type (device model) for the specified controller.
-InputType Steam::getInputTypeForHandle(uint64_t input_handle) {
+Steam::InputType Steam::getInputTypeForHandle(uint64_t input_handle) {
 	ERR_FAIL_COND_V_MSG(SteamAPI_SteamInput() == nullptr, INPUT_TYPE_UNKNOWN, "Input not found, Steam may not be initialized: getInputTypeForHandle");
 	ESteamInputType this_input_type = SteamAPI_ISteamInput_GetInputTypeForHandle(SteamAPI_SteamInput(), (InputHandle_t)input_handle);
 	return (InputType)this_input_type;
@@ -2342,7 +2342,7 @@ void Steam::stopAnalogActionMomentum(uint64_t input_handle, uint64_t action) {
 // Get the equivalent origin for a given controller type or the closest controller type that existed in the SDK you
 // built into your game if eDestinationInputType is INPUT_TYPE_UNKNOWN. This action origin can be used in your glyph
 // look up table or passed into getGlyphForActionOrigin or getStringForActionOrigin.
-InputActionOrigin Steam::translateActionOrigin(InputType destination_input, InputActionOrigin source_origin) {
+Steam::InputActionOrigin Steam::translateActionOrigin(InputType destination_input, InputActionOrigin source_origin) {
 	ERR_FAIL_COND_V_MSG(SteamAPI_SteamInput() == nullptr, INPUT_ACTION_ORIGIN_NONE, "Input not found, Steam may not be initialized: translateActionOrigin");
 	return (InputActionOrigin)SteamAPI_ISteamInput_TranslateActionOrigin(SteamAPI_SteamInput(), (ESteamInputType)destination_input, (EInputActionOrigin)source_origin);
 }
@@ -2414,7 +2414,7 @@ int32_t Steam::addPromoItems(PackedInt64Array items) {
 	for (int i = 0; i < count; i++) {
 		new_items[i] = items[i];
 	}
-		
+
 	if (SteamAPI_ISteamInventory_AddPromoItems(SteamAPI_SteamInventory(), &new_inventory_handle, new_items, count)) {
 		inventory_handle = new_inventory_handle;
 	}
@@ -2642,7 +2642,7 @@ Array Steam::getResultItems(int32 this_inventory_handle) {
 }
 
 // Find out the status of an asynchronous inventory result handle.
-Result Steam::getResultStatus(int32 this_inventory_handle) {
+Steam::Result Steam::getResultStatus(int32 this_inventory_handle) {
 	ERR_FAIL_COND_V_MSG(SteamAPI_SteamInventory() == nullptr, RESULT_FAIL, "Inventory class not found, Steam may not be initialized: getResultStatus");
 	if (this_inventory_handle == 0) {
 		this_inventory_handle = inventory_handle;
@@ -3260,7 +3260,7 @@ bool Steam::musicIsPlaying() {
 }
 
 // Gets the current status of the Steam Music player
-AudioPlaybackStatus Steam::getPlaybackStatus() {
+Steam::AudioPlaybackStatus Steam::getPlaybackStatus() {
 	ERR_FAIL_COND_V_MSG(SteamAPI_SteamMusic() == nullptr, AUDIO_PLAYBACK_UNDEFINED, "Music class not found, Steam may not be initialized: getPlaybackStatus");
 	return AudioPlaybackStatus(SteamAPI_ISteamMusic_GetPlaybackStatus(SteamAPI_SteamMusic()));
 }
@@ -3589,7 +3589,7 @@ PackedInt64Array Steam::sendMessages(uint32_t connection_handle, Array messages,
 
 	int64 *messages_output = new int64[total_messages];
 	SteamAPI_ISteamNetworkingSockets_SendMessages(SteamAPI_SteamNetworkingSockets_SteamAPI(), total_messages, sent_messages, messages_output);
-	
+
 	for (size_t i = 0; i < total_messages; i++) {
 		message_results.append((int64_t)messages_output[i]);
 	}
@@ -3783,14 +3783,14 @@ String Steam::getListenSocketAddress(uint32_t socket, bool with_port) {
 // Indicate our desire to be ready participate in authenticated communications. If we are currently not ready, then
 // steps will be taken to obtain the necessary certificates. This includes a certificate for us, as well as any CA
 // certificates needed to authenticate peers.
-NetworkingAvailability Steam::initAuthentication() {
+Steam::NetworkingAvailability Steam::initAuthentication() {
 	ERR_FAIL_COND_V_MSG(SteamAPI_SteamNetworkingSockets_SteamAPI() == nullptr, NETWORKING_AVAILABILITY_UNKNOWN, "Networking Sockets class not found, Steam may not be initialized: initAuthentication");
 	return NetworkingAvailability(SteamAPI_ISteamNetworkingSockets_InitAuthentication(SteamAPI_SteamNetworkingSockets_SteamAPI()));
 }
 
 // Query our readiness to participate in authenticated communications. A SteamNetAuthenticationStatus_t callback is
 // posted any time this status changes, but you can use this function to query it at any time.
-NetworkingAvailability Steam::getAuthenticationStatus() {
+Steam::NetworkingAvailability Steam::getAuthenticationStatus() {
 	ERR_FAIL_COND_V_MSG(SteamAPI_SteamNetworkingSockets_SteamAPI() == nullptr, NETWORKING_AVAILABILITY_UNKNOWN, "Networking Sockets class not found, Steam may not be initialized: getAuthenticationStatus");
 	return NetworkingAvailability(SteamAPI_ISteamNetworkingSockets_GetAuthenticationStatus(SteamAPI_SteamNetworkingSockets_SteamAPI(), NULL));
 }
@@ -3875,7 +3875,7 @@ Dictionary Steam::getConnectionRealTimeStatus(uint32_t connection, int lanes, bo
 	SteamNetConnectionRealTimeStatus_t this_status;
 	SteamNetConnectionRealTimeLaneStatus_t *lanes_array = new SteamNetConnectionRealTimeLaneStatus_t[lanes];
 	int result = SteamAPI_ISteamNetworkingSockets_GetConnectionRealTimeStatus(SteamAPI_SteamNetworkingSockets_SteamAPI(), (HSteamNetConnection)connection, &this_status, lanes, lanes_array);
-	
+
 	real_time_status["response"] = result;
 	if (result == RESULT_OK) {
 		Dictionary connection_status;
@@ -3997,11 +3997,11 @@ Dictionary Steam::getFakeIP(int first_port) {
 	ERR_FAIL_COND_V_MSG(SteamAPI_SteamNetworkingSockets_SteamAPI() == nullptr, fake_ip, "Networking Sockets class not found, Steam may not be initialized: getFakeIP");
 	SteamNetworkingFakeIPResult_t fake_ip_result;
 	SteamAPI_ISteamNetworkingSockets_GetFakeIP(SteamAPI_SteamNetworkingSockets_SteamAPI(), first_port, &fake_ip_result);
-	
+
 	fake_ip["result"] = fake_ip_result.m_eResult;
 	fake_ip["identity_type"] = fake_ip_result.m_identity.m_eType;
 	fake_ip["ip"] = getStringFromIP(fake_ip_result.m_unIP);
-		
+
 	PackedInt32Array ports;
 	ports.resize(SteamNetworkingFakeIPResult_t::k_nMaxReturnPorts);
 	for (size_t i = 0; i < SteamNetworkingFakeIPResult_t::k_nMaxReturnPorts; i++) {
@@ -4028,7 +4028,7 @@ Dictionary Steam::getRemoteFakeIPForConnection(uint32_t connection) {
 	ERR_FAIL_COND_V_MSG(SteamAPI_SteamNetworkingSockets_SteamAPI() == nullptr, this_fake_address, "Networking Sockets class not found, Steam may not be initialized: getRemoteFakeIPForConnection");
 	SteamNetworkingIPAddr fake_address;
 	int result = SteamAPI_ISteamNetworkingSockets_GetRemoteFakeIPForConnection(SteamAPI_SteamNetworkingSockets_SteamAPI(), (HSteamNetConnection)connection, &fake_address);
-	
+
 	this_fake_address["result"] = result;
 	this_fake_address["ip_address"] = getStringFromSteamIP(fake_address);
 	this_fake_address["port"] = fake_address.m_port;
@@ -4073,7 +4073,7 @@ Dictionary Steam::getRealIdentityForFakeIP(const String &fake_ip) {
 }
 
 // Fetch current status of the relay network.  If you want more details, you can pass a non-NULL value.
-NetworkingAvailability Steam::getRelayNetworkStatus() {
+Steam::NetworkingAvailability Steam::getRelayNetworkStatus() {
 	ERR_FAIL_COND_V_MSG(SteamAPI_SteamNetworkingUtils_SteamAPI() == nullptr, NETWORKING_AVAILABILITY_UNKNOWN, "Networking Utils class not found, Steam may not be initialized: getRelayNetworkStatus");
 	return NetworkingAvailability(SteamAPI_ISteamNetworkingUtils_GetRelayNetworkStatus(SteamAPI_SteamNetworkingUtils_SteamAPI(), NULL));
 }
@@ -4149,7 +4149,7 @@ String Steam::convertPingLocationToString(PackedByteArray location) {
 // Iterate the list of all configuration values in the current environment that it might be possible to display or edit
 // using a generic UI. To get the first iterable value, pass NETWORKING_CONFIG_INVALID. Returns
 // NETWORKING_CONFIG_INVALID to signal end of list.
-NetworkingConfigValue Steam::iterateGenericEditableConfigValues(NetworkingConfigValue current_value, bool enumerate_dev_vars) {
+Steam::NetworkingConfigValue Steam::iterateGenericEditableConfigValues(NetworkingConfigValue current_value, bool enumerate_dev_vars) {
 	ERR_FAIL_COND_V_MSG(SteamAPI_SteamNetworkingUtils_SteamAPI() == nullptr, NETWORKING_CONFIG_INVALID, "Networking Utils class not found, Steam may not be initialized: iterateGenericEditableConfigValues");
 	return (NetworkingConfigValue)SteamAPI_ISteamNetworkingUtils_IterateGenericEditableConfigValues(SteamAPI_SteamNetworkingUtils_SteamAPI(), (ESteamNetworkingConfigValue)current_value, enumerate_dev_vars);
 }
@@ -4160,7 +4160,7 @@ Dictionary Steam::parsePingLocationString(const String &location_string) {
 	ERR_FAIL_COND_V_MSG(SteamAPI_SteamNetworkingUtils_SteamAPI() == nullptr, parse_string, "Networking Utils class not found, Steam may not be initialized: parsePingLocationString");
 	SteamNetworkPingLocation_t result;
 	bool success = SteamAPI_ISteamNetworkingUtils_ParsePingLocationString(SteamAPI_SteamNetworkingUtils_SteamAPI(), location_string.utf8().get_data(), result);
-	
+
 	PackedByteArray data;
 	data.resize(512);
 	uint8_t *output_data = data.ptrw();
@@ -4197,7 +4197,7 @@ int Steam::getDirectPingToPOP(uint32_t pop_id) {
 }
 
 // Get the FakeIP type for the given IPv4 address.
-NetworkingFakeIPType Steam::getIPv4FakeIPType(const String &ipv4) {
+Steam::NetworkingFakeIPType Steam::getIPv4FakeIPType(const String &ipv4) {
 	ERR_FAIL_COND_V_MSG(SteamAPI_SteamNetworkingUtils_SteamAPI() == nullptr, FAKE_IP_TYPE_INVALID, "Networking Utils class not found, Steam may not be initialized: getIPv4FakeIPType");
 	return (NetworkingFakeIPType)SteamAPI_ISteamNetworkingUtils_GetIPv4FakeIPType(SteamAPI_SteamNetworkingUtils_SteamAPI(), getIPFromString(ipv4));
 }
@@ -4214,7 +4214,7 @@ Array Steam::getPOPList() {
 	ERR_FAIL_COND_V_MSG(SteamAPI_SteamNetworkingUtils_SteamAPI() == nullptr, pop_list, "Networking Utils class not found, Steam may not be initialized: getPOPList");
 	SteamNetworkingPOPID list[256];
 	int pops = SteamAPI_ISteamNetworkingUtils_GetPOPList(SteamAPI_SteamNetworkingUtils_SteamAPI(), list, 256);
-	
+
 	for (int i = 0; i < pops; i++) {
 		int pop_id = list[i];
 		pop_list.append(pop_id);
@@ -4236,7 +4236,7 @@ Dictionary Steam::getConfigValue(NetworkingConfigValue config_value, NetworkingC
 	size_t buffer_size;
 	PackedByteArray config_result;
 	NetworkingGetConfigValueResult result = (NetworkingGetConfigValueResult)SteamAPI_ISteamNetworkingUtils_GetConfigValue(SteamAPI_SteamNetworkingUtils_SteamAPI(), (ESteamNetworkingConfigValue)config_value, (ESteamNetworkingConfigScope)scope_type, connection_handle, &data_type, &config_result, &buffer_size);
-	
+
 	config_info["result"] = result;
 	config_info["type"] = data_type;
 	config_info["value"] = config_result;
@@ -4527,12 +4527,12 @@ void Steam::onReservationCompleted(uint64_t beacon_id, uint64_t steam_id) {
 // height - The height of the cursor, in pixels
 // hot_x - The X coordinate of the cursor hot spot in pixels, offset from the left of the cursor
 // hot_y - The Y coordinate of the cursor hot spot in pixels, offset from the top of the cursor
-// pitch - The distance between pixel rows in bytes, defaults to nWidth * 4 
+// pitch - The distance between pixel rows in bytes, defaults to nWidth * 4
 Dictionary Steam::createMouseCursor(int width, int height, int hot_x, int hot_y, int pitch) {
 	Dictionary mouse_cursor;
 	ERR_FAIL_COND_V_MSG(SteamAPI_SteamRemotePlay() == nullptr, mouse_cursor, "Remote Play class not found, Steam may not be initialized: createMouseCursor");
 	const void *cursor_pixels = nullptr;
-	uint32_t mouse_cursor_id = SteamAPI_ISteamRemotePlay_CreateMouseCursor(SteamAPI_SteamRemotePlay(), width, height, hot_x, hot_y, &cursor_pixels, pitch); 
+	uint32_t mouse_cursor_id = SteamAPI_ISteamRemotePlay_CreateMouseCursor(SteamAPI_SteamRemotePlay(), width, height, hot_x, hot_y, &cursor_pixels, pitch);
 	mouse_cursor["id"] = mouse_cursor_id;
 
 	unsigned int pixel_count = width * height;
@@ -4540,7 +4540,7 @@ Dictionary Steam::createMouseCursor(int width, int height, int hot_x, int hot_y,
 	rgba_data.resize(pixel_count * 4);
 	const uint8_t *bgra = (const uint8_t *)cursor_pixels;
 	uint8_t *rgba = rgba_data.ptrw();
-	
+
 	// Loop to swap B and R channels for the image
 	for (unsigned int i = 0; i < pixel_count; i++) {
 		rgba[i * 4 + 0] = bgra[i * 4 + 2]; // R = B
@@ -4614,7 +4614,7 @@ Array Steam::getInput(uint32_t max_events) {
 }
 
 // Get the form factor of the session client device.
-DeviceFormFactor Steam::getSessionClientFormFactor(uint32_t session_id) {
+Steam::DeviceFormFactor Steam::getSessionClientFormFactor(uint32_t session_id) {
 	ERR_FAIL_COND_V_MSG(SteamAPI_SteamRemotePlay() == nullptr, FORM_FACTOR_UNKNOWN, "Remote Play class not found, Steam may not be initialized: getSessionClientFormFactor");
 	return (DeviceFormFactor)SteamAPI_ISteamRemotePlay_GetSessionClientFormFactor(SteamAPI_SteamRemotePlay(), session_id);
 }
@@ -4692,7 +4692,7 @@ void Steam::setMouseVisibility(uint32_t session_id, bool visible) {
 // Play Together.
 bool Steam::showRemotePlayTogetherUI() {
 	ERR_FAIL_COND_V_MSG(SteamAPI_SteamRemotePlay() == nullptr, false, "Remote Play class not found, Steam may not be initialized: showRemotePlayTogetherUI");
-	return SteamAPI_ISteamRemotePlay_ShowRemotePlayTogetherUI(SteamAPI_SteamRemotePlay());	
+	return SteamAPI_ISteamRemotePlay_ShowRemotePlayTogetherUI(SteamAPI_SteamRemotePlay());
 }
 
 
@@ -4861,7 +4861,7 @@ Dictionary Steam::getLocalFileChange(int file) {
 	ERemoteStorageLocalFileChange change_type;
 	ERemoteStorageFilePathType file_path_type;
 	String changed_file = SteamAPI_ISteamRemoteStorage_GetLocalFileChange(SteamAPI_SteamRemoteStorage(), file, &change_type, &file_path_type);
-	
+
 	file_change["file"] = changed_file;
 	file_change["change_type"] = change_type;
 	file_change["path_type"] = file_path_type;
@@ -4889,7 +4889,7 @@ Dictionary Steam::getQuota() {
 }
 
 // Obtains the platforms that the specified file will syncronize to.
-BitField<RemoteStoragePlatform> Steam::getSyncPlatforms(const String &file) {
+BitField<Steam::RemoteStoragePlatform> Steam::getSyncPlatforms(const String &file) {
 	ERR_FAIL_COND_V_MSG(SteamAPI_SteamRemoteStorage() == nullptr, REMOTE_STORAGE_PLATFORM_NONE, "Remote Storage class not found, Steam may not be initialized: getSyncPlatforms");
 	return (BitField<RemoteStoragePlatform>)(RemoteStoragePlatform)SteamAPI_ISteamRemoteStorage_GetSyncPlatforms(SteamAPI_SteamRemoteStorage(), file.utf8().get_data());
 }
@@ -5065,7 +5065,7 @@ uint64_t Steam::addRangeTimelineEvent(const String &title, const String &descrip
 // Removes the description set for the specific clip.
 void Steam::clearTimelineTooltip(float time_delta) {
 	ERR_FAIL_COND_MSG(SteamAPI_SteamTimeline() == nullptr, "Timeline class not found, Steam may not be initialized: clearTimelineTooltip");
-	SteamAPI_ISteamTimeline_ClearTimelineTooltip(SteamAPI_SteamTimeline(), time_delta);		
+	SteamAPI_ISteamTimeline_ClearTimelineTooltip(SteamAPI_SteamTimeline(), time_delta);
 }
 
 // Add a tag to whatever time range is represented by the event.
@@ -5657,7 +5657,7 @@ Array Steam::getUserContentDescriptorPreferences(uint32_t max_entries) {
 
 // Gets the users vote status on a workshop item.
 void Steam::getUserItemVote(uint64_t published_file_id) {
-	ERR_FAIL_COND_MSG(SteamAPI_SteamUGC() == nullptr, "UGC class not found, Steam may not be initialized: getUserItemVote");	
+	ERR_FAIL_COND_MSG(SteamAPI_SteamUGC() == nullptr, "UGC class not found, Steam may not be initialized: getUserItemVote");
 	PublishedFileId_t file_id = (uint64_t)published_file_id;
 	SteamAPICall_t api_call = SteamAPI_ISteamUGC_GetUserItemVote(SteamAPI_SteamUGC(), file_id);
 	callResultGetUserItemVote.Set(api_call, this, &Steam::get_item_vote_result);
@@ -5685,7 +5685,7 @@ bool Steam::removeAllItemKeyValueTags(uint64_t update_handle) {
 // Removes the dependency between the given item and the appid. This list of dependencies can be retrieved by calling
 // getAppDependencies.
 void Steam::removeAppDependency(uint64_t published_file_id, uint32_t app_id) {
-	ERR_FAIL_COND_MSG(SteamAPI_SteamUGC() == nullptr, "UGC class not found, Steam may not be initialized: removeAppDependency");	
+	ERR_FAIL_COND_MSG(SteamAPI_SteamUGC() == nullptr, "UGC class not found, Steam may not be initialized: removeAppDependency");
 	PublishedFileId_t file_id = (uint64_t)published_file_id;
 	AppId_t app = (uint32_t)app_id;
 	SteamAPICall_t api_call = SteamAPI_ISteamUGC_RemoveAppDependency(SteamAPI_SteamUGC(), file_id, app);
@@ -5699,7 +5699,7 @@ bool Steam::removeContentDescriptor(uint64_t update_handle, UGCContentDescriptor
 
 // Removes a workshop item as a dependency from the specified item.
 void Steam::removeDependency(uint64_t published_file_id, uint64_t child_published_file_id) {
-	ERR_FAIL_COND_MSG(SteamAPI_SteamUGC() == nullptr, "UGC class not found, Steam may not be initialized: removeDependency");	
+	ERR_FAIL_COND_MSG(SteamAPI_SteamUGC() == nullptr, "UGC class not found, Steam may not be initialized: removeDependency");
 	PublishedFileId_t file_id = (uint64_t)published_file_id;
 	PublishedFileId_t child_id = (uint64_t)child_published_file_id;
 	SteamAPICall_t api_call = SteamAPI_ISteamUGC_RemoveDependency(SteamAPI_SteamUGC(), file_id, child_id);
@@ -5708,7 +5708,7 @@ void Steam::removeDependency(uint64_t published_file_id, uint64_t child_publishe
 
 // Removes a workshop item from the users favorites list.
 void Steam::removeItemFromFavorites(uint32_t app_id, uint64_t published_file_id) {
-	ERR_FAIL_COND_MSG(SteamAPI_SteamUGC() == nullptr, "UGC class not found, Steam may not be initialized: removeItemFromFavorites");	
+	ERR_FAIL_COND_MSG(SteamAPI_SteamUGC() == nullptr, "UGC class not found, Steam may not be initialized: removeItemFromFavorites");
 	PublishedFileId_t file_id = (uint64_t)published_file_id;
 	AppId_t app = (uint32_t)app_id;
 	SteamAPICall_t api_call = SteamAPI_ISteamUGC_RemoveItemFromFavorites(SteamAPI_SteamUGC(), app, file_id);
@@ -5729,7 +5729,7 @@ bool Steam::removeItemPreview(uint64_t update_handle, uint32_t index) {
 
 // Send a UGC query to Steam.
 void Steam::sendQueryUGCRequest(uint64_t query_handle) {
-	ERR_FAIL_COND_MSG(SteamAPI_SteamUGC() == nullptr, "UGC class not found, Steam may not be initialized: sendQueryUGCRequest");	
+	ERR_FAIL_COND_MSG(SteamAPI_SteamUGC() == nullptr, "UGC class not found, Steam may not be initialized: sendQueryUGCRequest");
 	SteamAPICall_t api_call = SteamAPI_ISteamUGC_SendQueryUGCRequest(SteamAPI_SteamUGC(), (UGCQueryHandle_t)query_handle);
 	callResultUGCQueryCompleted.Set(api_call, this, &Steam::ugc_query_completed);
 }
@@ -5749,7 +5749,7 @@ bool Steam::setAllowCachedResponse(uint64_t query_handle, uint32_t max_age_secon
 // Use legacy upload for a single small file. The parameter to setItemContent should either be a directory with one file
 // or the full path to the file.  The file must also be less than 10MB in size.
 bool Steam::setAllowLegacyUpload(uint64_t update_handle, bool allow_legacy_upload) {
-	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == nullptr, false, "UGC class not found, Steam may not be initialized: setAllowLegacyUpload");	
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == nullptr, false, "UGC class not found, Steam may not be initialized: setAllowLegacyUpload");
 	return SteamAPI_ISteamUGC_SetAllowLegacyUpload(SteamAPI_SteamUGC(), (UGCUpdateHandle_t)update_handle, allow_legacy_upload);
 }
 
@@ -6063,15 +6063,15 @@ bool Steam::updateItemPreviewVideo(uint64_t update_handle, uint32_t index, const
 void Steam::advertiseGame(const String &server_ip, int port) {
 	ERR_FAIL_COND_MSG(SteamAPI_SteamUser() == nullptr, "User class not found, Steam may not be initialized: advertiseGame");
 	if (server_ip.is_empty() || port == 0) {
-		SteamAPI_ISteamUser_AdvertiseGame(SteamAPI_SteamUser(), STEAM_ID_NIL.ConvertToUint64(), getIPFromString(server_ip), port);	
+		SteamAPI_ISteamUser_AdvertiseGame(SteamAPI_SteamUser(), STEAM_ID_NIL.ConvertToUint64(), getIPFromString(server_ip), port);
 	}
 	else {
-		SteamAPI_ISteamUser_AdvertiseGame(SteamAPI_SteamUser(), STEAM_ID_NON_GAME_SERVER.ConvertToUint64(), getIPFromString(server_ip), port);	
+		SteamAPI_ISteamUser_AdvertiseGame(SteamAPI_SteamUser(), STEAM_ID_NON_GAME_SERVER.ConvertToUint64(), getIPFromString(server_ip), port);
 	}
 }
 
 // Authenticate the ticket from the entity Steam ID to be sure it is valid and isn't reused.
-BeginAuthSessionResult Steam::beginAuthSession(PackedByteArray ticket, int ticket_size, uint64_t steam_id) {
+Steam::BeginAuthSessionResult Steam::beginAuthSession(PackedByteArray ticket, int ticket_size, uint64_t steam_id) {
 	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUser() == nullptr, BeginAuthSessionResult(-1), "User class not found, Steam may not be initialized: beginAuthSession");
 	return (BeginAuthSessionResult)SteamAPI_ISteamUser_BeginAuthSession(SteamAPI_SteamUser(), ticket.ptr(), ticket_size, steam_id);
 }
@@ -6158,7 +6158,7 @@ Dictionary Steam::getDecompressedVoice(uint32_t buffer_in_size_override, uint32_
 	PackedByteArray output_buffer;
 	output_buffer.resize(buffer_out_size_override);
 
-	uint32_t output_written = 0;		
+	uint32_t output_written = 0;
 	EVoiceResult result = SteamAPI_ISteamUser_DecompressVoice(SteamAPI_SteamUser(), buffer, compressed_written, output_buffer.ptrw(), output_buffer.size(), &output_written, sample_rate);
 	if (result == k_EVoiceResultBufferTooSmall) {
 		output_buffer.resize(output_written);
@@ -6227,7 +6227,7 @@ Dictionary Steam::getVoice(uint32_t buffer_size_override) {
 	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUser() == nullptr, voice_data, "User class not found, Steam may not be initialized: getVoice");
 	uint32_t buffer_size = buffer_size_override;
 	if (buffer_size == 0) {
-		SteamAPI_ISteamUser_GetAvailableVoice(SteamAPI_SteamUser(), &buffer_size, 0, 0);			
+		SteamAPI_ISteamUser_GetAvailableVoice(SteamAPI_SteamUser(), &buffer_size, 0, 0);
 	}
 
 	PackedByteArray buffer = PackedByteArray();
@@ -6344,7 +6344,7 @@ void Steam::terminateGameConnection(String server_ip, uint16_t server_port) {
 
 // Checks if the user owns a specific piece of Downloadable Content (DLC). This can only be called after sending the
 // users auth ticket to beginAuthSession.
-UserHasLicenseForAppResult Steam::userHasLicenseForApp(uint64_t steam_id, uint32_t app_id) {
+Steam::UserHasLicenseForAppResult Steam::userHasLicenseForApp(uint64_t steam_id, uint32_t app_id) {
 	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUser() == nullptr, USER_HAS_LICENSE_RESULT_NO_AUTH, "User class not found, Steam may not be initialized: userHasLicenseForApp");
 	return (UserHasLicenseForAppResult)SteamAPI_ISteamUser_UserHasLicenseForApp(SteamAPI_SteamUser(), steam_id, (AppId_t)app_id);
 }
@@ -6405,7 +6405,7 @@ void Steam::findLeaderboard(const String &leaderboard_name) {
 }
 
 // Gets a leaderboard by name, it will create it if it's not yet created.
-void Steam::findOrCreateLeaderboard(const String &leaderboard_name, LeaderboardSortMethod sort_method, LeaderboardDisplayType display_type) {
+void Steam::findOrCreateLeaderboard(const String &leaderboard_name, Steam::LeaderboardSortMethod sort_method, Steam::LeaderboardDisplayType display_type) {
 	ERR_FAIL_COND_MSG(SteamAPI_SteamUserStats() == nullptr, "User Stats class not found, Steam may not be initialized: findOrCreateLeaderboard");
 	SteamAPICall_t api_call = SteamAPI_ISteamUserStats_FindOrCreateLeaderboard(SteamAPI_SteamUserStats(), leaderboard_name.utf8().get_data(), (ELeaderboardSortMethod)sort_method, (ELeaderboardDisplayType)display_type);
 	callResultFindLeaderboard.Set(api_call, this, &Steam::leaderboard_find_result);
@@ -6537,12 +6537,12 @@ PackedFloat64Array Steam::getGlobalStatFloatHistory(const String &stat_name) {
 }
 
 // Returns the display type of a leaderboard handle.
-LeaderboardDisplayType Steam::getLeaderboardDisplayType(uint64_t this_leaderboard) {
+Steam::LeaderboardDisplayType Steam::getLeaderboardDisplayType(uint64_t this_leaderboard) {
 	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUserStats() == nullptr, LEADERBOARD_DISPLAY_TYPE_NONE, "User Stats class not found, Steam may not be initialized: getLeaderboardDisplayType");
 	if (this_leaderboard == 0) {
 		this_leaderboard = leaderboard_handle;
 	}
-	return (LeaderboardDisplayType)SteamAPI_ISteamUserStats_GetLeaderboardDisplayType(SteamAPI_SteamUserStats(), (SteamLeaderboard_t)this_leaderboard);
+	return (Steam::LeaderboardDisplayType)SteamAPI_ISteamUserStats_GetLeaderboardDisplayType(SteamAPI_SteamUserStats(), (SteamLeaderboard_t)this_leaderboard);
 }
 
 // Get the total number of entries in a leaderboard, as of the last request.
@@ -6564,13 +6564,13 @@ String Steam::getLeaderboardName(uint64_t this_leaderboard) {
 }
 
 // Returns the sort order of a leaderboard handle.
-LeaderboardSortMethod Steam::getLeaderboardSortMethod(uint64_t this_leaderboard) {
+Steam::LeaderboardSortMethod Steam::getLeaderboardSortMethod(uint64_t this_leaderboard) {
 	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUserStats() == nullptr, LEADERBOARD_SORT_METHOD_NONE, "User Stats class not found, Steam may not be initialized: getLeaderboardSortMethod");
 	if (this_leaderboard == 0) {
 		this_leaderboard = leaderboard_handle;
 	}
-	
-	return (LeaderboardSortMethod)SteamAPI_ISteamUserStats_GetLeaderboardSortMethod(SteamAPI_SteamUserStats(), (SteamLeaderboard_t)this_leaderboard);
+
+	return (Steam::LeaderboardSortMethod)SteamAPI_ISteamUserStats_GetLeaderboardSortMethod(SteamAPI_SteamUserStats(), (SteamLeaderboard_t)this_leaderboard);
 }
 
 // Gets the info on the most achieved achievement for the game.
@@ -6805,7 +6805,7 @@ String Steam::filterText(TextFilteringContext context, uint64_t steam_id, const 
 // Used to get the failure reason of a call result. The primary usage for this function is debugging. The failure
 // reasons are typically out of your control and tend to not be very important. Just keep retrying your API Call until
 // it works.
-APICallFailure Steam::getAPICallFailureReason() {
+Steam::APICallFailure Steam::getAPICallFailureReason() {
 	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUtils() == nullptr, STEAM_API_CALL_FAILURE_NONE, "Utils class not found, Steam may not be initialized: getAPICallFailureReason");
 	return (APICallFailure)SteamAPI_ISteamUtils_GetAPICallFailureReason(SteamAPI_SteamUtils(), api_handle);
 }
@@ -6817,7 +6817,7 @@ uint32_t Steam::getAppID() {
 }
 
 // The universe this client is connecting to.
-Universe Steam::getConnectedUniverse() {
+Steam::Universe Steam::getConnectedUniverse() {
 	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUtils() == nullptr, UNIVERSE_INVALID,"Utils class not found, Steam may not be initialized: getConnectedUniverse");
 	return (Universe)SteamAPI_ISteamUtils_GetConnectedUniverse(SteamAPI_SteamUtils());
 }
@@ -6873,7 +6873,7 @@ String Steam::getIPCountry() {
 
 // Return what we believe your current ipv6 connectivity to "the internet" is on the specified protocol.
 // This does NOT tell you if the Steam client is currently connected to Steam via ipv6.
-IPv6ConnectivityState Steam::getIPv6ConnectivityState(IPv6ConnectivityProtocol protocol) {
+Steam::IPv6ConnectivityState Steam::getIPv6ConnectivityState(IPv6ConnectivityProtocol protocol) {
 	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUtils() == nullptr, IPV6_CONNECTIVITY_STATE_BAD, "Utils class not found, Steam may not be initialized: getIPv6ConnectivityState");
 	return (IPv6ConnectivityState)SteamAPI_ISteamUtils_GetIPv6ConnectivityState(SteamAPI_SteamUtils(), (ESteamIPv6ConnectivityProtocol)protocol);
 }
@@ -7041,7 +7041,7 @@ Dictionary Steam::isBroadcasting() {
 	ERR_FAIL_COND_V_MSG(SteamAPI_SteamVideo() == nullptr, broadcast, "Utils class not found, Steam may not be initialized: isBroadcasting");
 	int viewers = 0;
 	bool broadcasting = SteamAPI_ISteamVideo_IsBroadcasting(SteamAPI_SteamVideo(), &viewers);
-	
+
 	broadcast["broadcasting"] = broadcasting;
 	broadcast["viewers"] = viewers;
 	return broadcast;
@@ -7859,7 +7859,7 @@ void Steam::network_authentication_status(SteamNetAuthenticationStatus_t *call_d
 void Steam::network_connection_status_changed(SteamNetConnectionStatusChangedCallback_t *call_data) {
 	uint32_t connection_handle = call_data->m_hConn;
 	SteamNetConnectionInfo_t connection_info = call_data->m_info;
-	
+
 	Dictionary connection;
 	connection["identity"] = getSteamIDFromIdentity(connection_info.m_identityRemote);
 	connection["user_data"] = (uint64_t)connection_info.m_nUserData;
@@ -8916,7 +8916,7 @@ void Steam::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_leaderboard_details_max", "new_leaderboard_details_max"), &Steam::set_leaderboard_details_max);
 	ClassDB::bind_method(D_METHOD("set_leaderboard_entries", "new_leaderboard_entries"), &Steam::set_leaderboard_entries);
 	ClassDB::bind_method(D_METHOD("set_leaderboard_handle", "new_leaderboard_handle"), &Steam::set_leaderboard_handle);
-	ClassDB::bind_method(D_METHOD("set_leaderboard_ugc_handle", "new_leaderboard_ugc_handle"), &Steam::set_leaderboard_ugc_handle);	
+	ClassDB::bind_method(D_METHOD("set_leaderboard_ugc_handle", "new_leaderboard_ugc_handle"), &Steam::set_leaderboard_ugc_handle);
 	ClassDB::bind_method(D_METHOD("set_server_list_request", "new_server_list_request"), &Steam::set_server_list_request);
 
 	// APPS
@@ -10037,7 +10037,7 @@ void Steam::_bind_methods() {
 	BIND_CONSTANT(SCREENSHOT_THUMB_WIDTH);
 	BIND_CONSTANT(UFS_TAG_TYPE_MAX);
 	BIND_CONSTANT(UFS_TAG_VALUE_MAX);
-	
+
 	// UGC
 	BIND_CONSTANT(DEVELOPER_METADATA_MAX);
 	BIND_CONSTANT(NUM_UGC_RESULTS_PER_PAGE);
