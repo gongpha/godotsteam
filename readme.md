@@ -28,12 +28,16 @@ Current Build
 ---
 You can [download pre-compiled versions of this repo here](https://codeberg.org/godotsteam/godotsteam/releases).
 
-**Version 4.17.1 Changes**
+**Version 4.18 Changes**
 
-- Changed: SCsub and config.py for ARM64 and Android
-- Fixed: && to & in bitwise check for MP
-- Fixed: potential crash in disconnect_peer; thanks to ***bearlikelion***
-- Fixed: wrong variant for max_channels in godotsteam_project_settings.cpp
+- Added: new functions and enums from Steamworks SDK 1.64
+- Added: GodotSteam icon to Windows builds for precompiled editors
+- Changed: part one of in-editor doc updates, adding text for constants and enums
+- Changed: `getBetaInfo` now returns **last_updated** timestamp
+- Changed: **changed_id** to **user_changed_id** in `lobby_chat_update` callback
+- Changed: updated in-editor docs for SDK 1.64
+- Changed: `receiveMessageOnPollGroup` and `receiveMessagesOnChannel` message releasing to Flat API version
+- Fixed: enum namespace qualification for proper extension_api.json generation, thanks to ***leetleaf***
 
 [You can read more change-logs here](https://godotsteam.com/changelog/godot4/).
 
@@ -74,6 +78,11 @@ Quick How-To
 For complete instructions on how to build the Godot 4.x version of GodotSteam from scratch, [please refer to our documentation's 'How-To Modules' section.](https://godotsteam.com/howto/modules/) It will have the most up-to-date information.
 
 Alternatively, you can just [download the pre-compiled versions in our Releases section](https://codeberg.org/godotsteam/godotsteam/releases) and skip compiling it yourself!
+
+
+No LLM Policy / No "AI" Policy
+---
+No LLMs are allowed to be used for issues, patches, or pull-requests.  They will be closed or rejected and the submitter may be blocked from future submissions.
 
 
 License

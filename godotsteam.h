@@ -582,13 +582,18 @@ public:
 	bool enableRemotePlayTogetherDirectInput();
 	void disableRemotePlayTogetherDirectInput();
 	Array getInput(uint32_t max_events);
+	int getLargeSessionAvatar(uint32_t session_id);
+	int getMediumSessionAvatar(uint32_t session_id);
 	DeviceFormFactor getSessionClientFormFactor(uint32_t session_id);
 	String getSessionClientName(uint32_t session_id);
 	Dictionary getSessionClientResolution(uint32_t session_id);
 	uint32_t getSessionCount();
+	uint32_t getSessionGuestID(uint32_t session_id);
 	uint32_t getSessionID(uint32_t index);
 	uint64_t getSessionSteamID(uint32_t session_id);
+	int getSmallSessionAvatar(uint32_t session_id);
 	bool sendRemotePlayTogetherInvite(uint64_t friend_id);
+	bool sessionRemotePlayTogether(uint32_t session_id);
 	void setMouseCursor(uint32_t session_id, uint32_t cursor_id);
 	void setMousePosition(uint32_t session_id, float normalized_x, float normalized_y);
 	void setMouseVisibility(uint32_t session_id, bool visible);
@@ -681,10 +686,12 @@ public:
 	void deleteItem(uint64_t published_file_id);
 	bool downloadItem(uint64_t published_file_id, bool high_priority);
 	void getAppDependencies(uint64_t published_file_id);
+	PackedInt64Array getDownloadedItems(uint32_t max_entries);
 	Dictionary getItemDownloadInfo(uint64_t published_file_id);
 	Dictionary getItemInstallInfo(uint64_t published_file_id);
 	uint32_t getItemState(uint64_t published_file_id);
 	Dictionary getItemUpdateProgress(uint64_t update_handle);
+	uint32_t getNumDownloadedItems();
 	uint32_t getNumSubscribedItems(bool include_locally_disabled = false);
 	uint32_t getNumSupportedGameVersions(uint64_t query_handle, uint32_t index);
 	Dictionary getQueryUGCAdditionalPreview(uint64_t query_handle, uint32_t index, uint32_t preview_index);
@@ -706,6 +713,7 @@ public:
 	void getUserItemVote(uint64_t published_file_id);
 	void getWorkshopEULAStatus();
 	bool initWorkshopForGameServer(uint32_t workshop_depot_id, String folder);
+	bool markDownloadedItemAsUnused(uint64_t published_file_id);
 	bool releaseQueryUGCRequest(uint64_t query_handle);
 	bool removeAllItemKeyValueTags(uint64_t update_handle);
 	void removeAppDependency(uint64_t published_file_id, uint32_t app_id);
@@ -911,7 +919,7 @@ private:
 	void start_initialization_verbose(uint32_t app_id = 0, bool embed_callbacks = false);
 
 	// Main
-	String godotsteam_version = "4.17.1";
+	String godotsteam_version = "4.18";
 	Dictionary init_result;
 	bool is_init_success;
 	bool were_callbacks_embedded;
@@ -1071,6 +1079,7 @@ private:
 
 	// Remote Play
 	STEAM_CALLBACK(Steam, remote_play_guest_invite, SteamRemotePlayTogetherGuestInvite_t, callbackRemotePlayGuestInvite);
+	STEAM_CALLBACK(Steam, remote_play_session_avatar_loaded, SteamRemotePlaySessionAvatarLoaded_t, callbackRemotePlaySessionAvatarLoaded);
 	STEAM_CALLBACK(Steam, remote_play_session_connected, SteamRemotePlaySessionConnected_t, callbackRemotePlaySessionConnected);
 	STEAM_CALLBACK(Steam, remote_play_session_disconnected, SteamRemotePlaySessionDisconnected_t, callbackRemotePlaySessionDisconnected);
 

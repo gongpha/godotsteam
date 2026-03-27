@@ -153,6 +153,7 @@ Steam::Steam() :
 
 	// Remote Play
 	callbackRemotePlayGuestInvite(this, &Steam::remote_play_guest_invite),
+	callbackRemotePlaySessionAvatarLoaded(this, &Steam::remote_play_session_avatar_loaded),
 	callbackRemotePlaySessionConnected(this, &Steam::remote_play_session_connected),
 	callbackRemotePlaySessionDisconnected(this, &Steam::remote_play_session_disconnected),
 
@@ -585,12 +586,14 @@ Dictionary Steam::getBetaInfo() {
 	uint32_t beta_build_id = 0;
 	char beta_name[STEAM_LARGE_BUFFER_SIZE];
 	char beta_description[STEAM_LARGE_BUFFER_SIZE];
-	if (SteamAPI_ISteamApps_GetBetaInfo(SteamAPI_SteamApps(), beta_index, &beta_flags, &beta_build_id, beta_name, STEAM_LARGE_BUFFER_SIZE, beta_description, STEAM_LARGE_BUFFER_SIZE)){
+	uint32_t last_updated = 0;
+	if (SteamAPI_ISteamApps_GetBetaInfo(SteamAPI_SteamApps(), beta_index, &beta_flags, &beta_build_id, beta_name, STEAM_LARGE_BUFFER_SIZE, beta_description, STEAM_LARGE_BUFFER_SIZE, &last_updated)){
 		beta_info["index"] = beta_index;
 		beta_info["flags"] = beta_flags;
 		beta_info["build_id"] = beta_build_id;
 		beta_info["name"] = String(beta_name);
 		beta_info["description"] = String(beta_description);
+		beta_info["last_updated"] = last_updated;
 	}
 	return beta_info;
 }
@@ -2709,16 +2712,12 @@ PackedByteArray Steam::serializeResult(int32 this_inventory_handle) {
 		this_inventory_handle = inventory_handle;
 	}
 
-	uint32_t buffer_size = 0;
+	uint32_t buffer_size = STEAM_BUFFER_SIZE;
 	PackedByteArray buffer;
-	
-	SteamAPI_ISteamInventory_SerializeResult(SteamAPI_SteamInventory(), (SteamInventoryResult_t)this_inventory_handle, nullptr, &buffer_size); // Query API for buffer size
-
-	buffer.resize(buffer_size); // Resize buffer
-
+	buffer.resize(buffer_size);
 	if (SteamAPI_ISteamInventory_SerializeResult(SteamAPI_SteamInventory(), (SteamInventoryResult_t)this_inventory_handle, buffer.ptrw(), &buffer_size)) {
-		buffer.resize(buffer_size); // Resize buffer again, incase it shrinks
-		result_serialized = buffer; // Put serialized results into buffer
+		buffer.resize(buffer_size);
+		result_serialized = buffer;
 	}
 	return result_serialized;
 }
@@ -3478,8 +3477,7 @@ Array Steam::receiveMessagesOnChannel(int channel, int max_messages) {
 		message["channel"] = channel_messages[i]->m_nChannel;
 		message["flags"] = channel_messages[i]->m_nFlags;
 		messages.append(message);
-		// Release the message
-		channel_messages[i]->Release();
+		SteamAPI_SteamNetworkingMessage_t_Release(channel_messages[i]);
 	}
 	delete[] channel_messages;
 	return messages;
@@ -3677,7 +3675,7 @@ Array Steam::receiveMessagesOnPollGroup(uint32_t poll_group, int max_messages) {
 	ERR_FAIL_COND_V_MSG(SteamAPI_SteamNetworkingSockets_SteamAPI() == nullptr, messages, "Networking Sockets class not found, Steam may not be initialized: receiveMessagesOnPollGroup");
 	SteamNetworkingMessage_t** poll_messages = new SteamNetworkingMessage_t *[max_messages];
 	int available_messages = SteamAPI_ISteamNetworkingSockets_ReceiveMessagesOnPollGroup(SteamAPI_SteamNetworkingSockets_SteamAPI(), (HSteamNetPollGroup)poll_group, poll_messages, max_messages);
-	for(int i = 0; i < available_messages; i++) {
+	for (int i = 0; i < available_messages; i++) {
 		Dictionary message;
 
 		int message_size = poll_messages[i]->m_cbSize;
@@ -3685,7 +3683,7 @@ Array Steam::receiveMessagesOnPollGroup(uint32_t poll_group, int max_messages) {
 		data.resize(message_size);
 		uint8_t* source_data = (uint8_t*)poll_messages[i]->m_pData;
 		uint8_t* output_data = data.ptrw();
-		for(int j = 0; j < message_size; j++) {
+		for (int j = 0; j < message_size; j++) {
 			output_data[j] = source_data[j];
 		}
 
@@ -3699,7 +3697,7 @@ Array Steam::receiveMessagesOnPollGroup(uint32_t poll_group, int max_messages) {
 		message["flags"] = poll_messages[i]->m_nFlags;
 		messages.append(message);
 
-		poll_messages[i]->Release();
+		SteamAPI_SteamNetworkingMessage_t_Release(poll_messages[i]);
 	}
 	delete [] poll_messages;
 	return messages;
@@ -4613,6 +4611,22 @@ Array Steam::getInput(uint32_t max_events) {
 	return remote_inputs;
 }
 
+// Gets the large (184x184) avatar of the connected user, which is a handle to be used in IClientUtils::GetImageRGBA(), or
+// 0 if the sessionID isn't valid returns -1 if this image has yet to be loaded, in this case wait for a
+// RemotePlaySessionAvatarLoaded_t callback and then call this again.
+int Steam::getLargeSessionAvatar(uint32_t session_id) {
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamRemotePlay() == nullptr, 0, "Remote Play class not found, Steam may not be initialized: getLargeSessionAvatar");
+	return SteamAPI_ISteamRemotePlay_GetLargeSessionAvatar(SteamAPI_SteamRemotePlay(), session_id);
+}
+
+// Gets the medium (64x64) avatar of the connected user, which is a handle to be used in IClientUtils::GetImageRGBA(), or
+// 0 if the sessionID isn't valid returns -1 if this image has yet to be loaded, in this case wait for a
+// RemotePlaySessionAvatarLoaded_t callback and then call this again.
+int Steam::getMediumSessionAvatar(uint32_t session_id) {
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamRemotePlay() == nullptr, 0, "Remote Play class not found, Steam may not be initialized: getMediumSessionAvatar");
+	return SteamAPI_ISteamRemotePlay_GetMediumSessionAvatar(SteamAPI_SteamRemotePlay(), session_id);
+}
+
 // Get the form factor of the session client device.
 Steam::DeviceFormFactor Steam::getSessionClientFormFactor(uint32_t session_id) {
 	ERR_FAIL_COND_V_MSG(SteamAPI_SteamRemotePlay() == nullptr, FORM_FACTOR_UNKNOWN, "Remote Play class not found, Steam may not be initialized: getSessionClientFormFactor");
@@ -4647,6 +4661,13 @@ uint32_t Steam::getSessionCount() {
 	return SteamAPI_ISteamRemotePlay_GetSessionCount(SteamAPI_SteamRemotePlay());
 }
 
+// Get the guest ID of the connected user if they are a Remote Play Together guest.  This returns 0 if the sessionID
+// isn't valid or the session isn't a Remote Play Together guest
+uint32_t Steam::getSessionGuestID(uint32_t session_id) {
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamRemotePlay() == nullptr, 0, "Remote Play class not found, Steam may not be initialized: getSessionGuestID");
+	return SteamAPI_ISteamRemotePlay_GetSessionGuestID(SteamAPI_SteamRemotePlay(), session_id);
+}
+
 // Get the currently connected Steam Remote Play session ID at the specified index.
 uint32_t Steam::getSessionID(uint32_t index) {
 	ERR_FAIL_COND_V_MSG(SteamAPI_SteamRemotePlay() == nullptr, 0, "Remote Play class not found, Steam may not be initialized: getSessionID");
@@ -4659,10 +4680,24 @@ uint64_t Steam::getSessionSteamID(uint32_t session_id) {
 	return SteamAPI_ISteamRemotePlay_GetSessionSteamID(SteamAPI_SteamRemotePlay(), session_id);
 }
 
+// Gets the small (32x32) avatar of the connected user, which is a handle to be used in IClientUtils::GetImageRGBA(), or
+// 0 if the sessionID isn't valid returns -1 if this image has yet to be loaded, in this case wait for a
+// RemotePlaySessionAvatarLoaded_t callback and then call this again.
+int Steam::getSmallSessionAvatar(uint32_t session_id) {
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamRemotePlay() == nullptr, 0, "Remote Play class not found, Steam may not be initialized: getSessionSteamID");
+	return SteamAPI_ISteamRemotePlay_GetSmallSessionAvatar(SteamAPI_SteamRemotePlay(), session_id);
+}
+
 // Invite a friend to join the game using Remote Play Together.
 bool Steam::sendRemotePlayTogetherInvite(uint64_t friend_id) {
 	ERR_FAIL_COND_V_MSG(SteamAPI_SteamRemotePlay() == nullptr, false, "Remote Play class not found, Steam may not be initialized: sendRemotePlayTogetherInvite");
 	return SteamAPI_ISteamRemotePlay_BSendRemotePlayTogetherInvite(SteamAPI_SteamRemotePlay(), friend_id);
+}
+
+// Return true if the session has joined using a Remote Play Together invitation
+bool Steam::sessionRemotePlayTogether(uint32_t session_id) {
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamRemotePlay() == nullptr, false, "Remote Play class not found, Steam may not be initialized: sessionRemotePlayTogether");
+	return SteamAPI_ISteamRemotePlay_BSessionRemotePlayTogether(SteamAPI_SteamRemotePlay(), session_id);
 }
 
 // Set the mouse cursor for a remote player. This is available after calling enableRemotePlayTogetherDirectInput(). The
@@ -5268,6 +5303,13 @@ bool Steam::initWorkshopForGameServer(uint32_t workshop_depot_id, String folder)
 	return initialized_workshop;
 }
 
+// Tells the client to no longer try to keep the item in its local cache, unless it was subscribed to by other users on this
+// machine.
+bool Steam::markDownloadedItemAsUnused(uint64_t published_file_id) {
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == nullptr, false, "UGC class not found, Steam may not be initialized: markDownloadedItemAsUnused");
+	return SteamAPI_ISteamUGC_MarkDownloadedItemAsUnused(SteamAPI_SteamUGC(), (PublishedFileId_t)published_file_id);
+}
+
 // Creates a new workshop item with no content attached yet.
 void Steam::createItem(uint32_t app_id, WorkshopFileType file_type) {
 	ERR_FAIL_COND_MSG(SteamAPI_SteamUGC() == nullptr, "UGC class not found, Steam may not be initialized: createItem");
@@ -5348,6 +5390,19 @@ void Steam::getAppDependencies(uint64_t published_file_id) {
 	callResultGetAppDependencies.Set(api_call, this, &Steam::get_app_dependencies_result);
 }
 
+// Returns the ids of the items downloaded.
+PackedInt64Array Steam::getDownloadedItems(uint32_t max_entries) {
+	PackedInt64Array downloaded_items;
+	PublishedFileId_t *items_downloaded = new PublishedFileId_t[max_entries];
+	uint32_t returned_entries = 0;
+	returned_entries = SteamAPI_ISteamUGC_GetDownloadedItems(SteamAPI_SteamUGC(), items_downloaded, max_entries);
+	for (uint32_t i = 0; i < returned_entries; i++) {
+		downloaded_items.append((uint64_t)items_downloaded[i]);
+	}
+	delete[] items_downloaded;
+	return downloaded_items;
+}
+
 // Get info about a pending download of a workshop item that has k_EItemStateNeedsUpdate set.
 Dictionary Steam::getItemDownloadInfo(uint64_t published_file_id) {
 	Dictionary info;
@@ -5399,6 +5454,12 @@ Dictionary Steam::getItemUpdateProgress(uint64_t update_handle) {
 	update_progress["processed"] = uint64_t(processed);
 	update_progress["total"] = uint64_t(total);
 	return update_progress;
+}
+
+// Returns the number of items actually downloaded locally.
+uint32_t Steam::getNumDownloadedItems() {
+	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUGC() == nullptr, 0, "UGC class not found, Steam may not be initialized: getNumDownloadedItems");
+	return SteamAPI_ISteamUGC_GetNumDownloadedItems(SteamAPI_SteamUGC());
 }
 
 // Gets the total number of items the current user is subscribed to for the game or application.
@@ -6405,7 +6466,7 @@ void Steam::findLeaderboard(const String &leaderboard_name) {
 }
 
 // Gets a leaderboard by name, it will create it if it's not yet created.
-void Steam::findOrCreateLeaderboard(const String &leaderboard_name, Steam::LeaderboardSortMethod sort_method, Steam::LeaderboardDisplayType display_type) {
+void Steam::findOrCreateLeaderboard(const String &leaderboard_name, LeaderboardSortMethod sort_method, LeaderboardDisplayType display_type) {
 	ERR_FAIL_COND_MSG(SteamAPI_SteamUserStats() == nullptr, "User Stats class not found, Steam may not be initialized: findOrCreateLeaderboard");
 	SteamAPICall_t api_call = SteamAPI_ISteamUserStats_FindOrCreateLeaderboard(SteamAPI_SteamUserStats(), leaderboard_name.utf8().get_data(), (ELeaderboardSortMethod)sort_method, (ELeaderboardDisplayType)display_type);
 	callResultFindLeaderboard.Set(api_call, this, &Steam::leaderboard_find_result);
@@ -6542,7 +6603,7 @@ Steam::LeaderboardDisplayType Steam::getLeaderboardDisplayType(uint64_t this_lea
 	if (this_leaderboard == 0) {
 		this_leaderboard = leaderboard_handle;
 	}
-	return (Steam::LeaderboardDisplayType)SteamAPI_ISteamUserStats_GetLeaderboardDisplayType(SteamAPI_SteamUserStats(), (SteamLeaderboard_t)this_leaderboard);
+	return (LeaderboardDisplayType)SteamAPI_ISteamUserStats_GetLeaderboardDisplayType(SteamAPI_SteamUserStats(), (SteamLeaderboard_t)this_leaderboard);
 }
 
 // Get the total number of entries in a leaderboard, as of the last request.
@@ -6570,7 +6631,7 @@ Steam::LeaderboardSortMethod Steam::getLeaderboardSortMethod(uint64_t this_leade
 		this_leaderboard = leaderboard_handle;
 	}
 
-	return (Steam::LeaderboardSortMethod)SteamAPI_ISteamUserStats_GetLeaderboardSortMethod(SteamAPI_SteamUserStats(), (SteamLeaderboard_t)this_leaderboard);
+	return (LeaderboardSortMethod)SteamAPI_ISteamUserStats_GetLeaderboardSortMethod(SteamAPI_SteamUserStats(), (SteamLeaderboard_t)this_leaderboard);
 }
 
 // Gets the info on the most achieved achievement for the game.
@@ -7665,10 +7726,10 @@ void Steam::lobby_message(LobbyChatMsg_t *call_data) {
 // A lobby chat room state has changed, this is usually sent when a user has joined or left the lobby.
 void Steam::lobby_chat_update(LobbyChatUpdate_t *call_data) {
 	uint64_t lobby_id = call_data->m_ulSteamIDLobby;
-	uint64_t changed_id = call_data->m_ulSteamIDUserChanged;
+	uint64_t user_changed_id = call_data->m_ulSteamIDUserChanged;
 	uint64_t making_change_id = call_data->m_ulSteamIDMakingChange;
 	uint32_t chat_state = call_data->m_rgfChatMemberStateChange;
-	emit_signal("lobby_chat_update", lobby_id, changed_id, making_change_id, chat_state);
+	emit_signal("lobby_chat_update", lobby_id, user_changed_id, making_change_id, (ChatMemberStateChange)chat_state);
 }
 
 // The lobby metadata has changed.
@@ -7929,11 +7990,20 @@ void Steam::active_beacons_updated(ActiveBeaconsUpdated_t *call_data) {
 
 ///// REMOTE PLAY
 
-//
+// Sent when a guest invitation is created, and includes the guest invite URL.
 void Steam::remote_play_guest_invite(SteamRemotePlayTogetherGuestInvite_t *call_data) {
 	char invite_url[1024 + 1]{};
 	snprintf(invite_url, 1024, "%s", call_data->m_szConnectURL);
 	emit_signal("remote_play_guest_invite", (String)invite_url);
+}
+
+// Sent when an avatar has been loaded for a streaming session.
+void Steam::remote_play_session_avatar_loaded(SteamRemotePlaySessionAvatarLoaded_t *call_data) {
+	uint32_t session_id = call_data->m_unSessionID;
+	int image_index = call_data->m_iImage;
+	int width = call_data->m_iWide;
+	int height = call_data->m_iTall;
+	emit_signal("remote_play_session_avatar_loaded", session_id);
 }
 
 // The session ID of the session that just connected.
@@ -8358,10 +8428,10 @@ void Steam::inventory_request_prices_result(SteamInventoryRequestPricesResult_t 
 // Signal the lobby has been created.
 void Steam::lobby_created(LobbyCreated_t *lobby_data, bool io_failure) {
 	ERR_FAIL_COND_MSG(io_failure, "lobby_created signal failed internally");
-	int result = lobby_data->m_eResult;
+	int connect = lobby_data->m_eResult;
 	CSteamID lobby_id = lobby_data->m_ulSteamIDLobby;
 	uint64_t lobby = lobby_id.ConvertToUint64();
-	emit_signal("lobby_created", result, lobby);
+	emit_signal("lobby_created", connect, lobby);
 }
 
 // Result when requesting the lobby list. You should iterate over the returned lobbies with getLobbyByIndex, from 0 to
@@ -9365,13 +9435,18 @@ void Steam::_bind_methods() {
 	ClassDB::bind_method("enableRemotePlayTogetherDirectInput", &Steam::enableRemotePlayTogetherDirectInput);
 	ClassDB::bind_method("disableRemotePlayTogetherDirectInput", &Steam::disableRemotePlayTogetherDirectInput);
 	ClassDB::bind_method(D_METHOD("getInput", "max_events"), &Steam::getInput);
+	ClassDB::bind_method(D_METHOD("getLargeSessionAvatar", "session_id"), &Steam::getLargeSessionAvatar);
+	ClassDB::bind_method(D_METHOD("getMediumSessionAvatar", "session_id"), &Steam::getMediumSessionAvatar);
 	ClassDB::bind_method("getSessionCount", &Steam::getSessionCount);
+	ClassDB::bind_method(D_METHOD("getSessionGuestID", "session_id"), &Steam::getSessionGuestID);
 	ClassDB::bind_method(D_METHOD("getSessionID", "index"), &Steam::getSessionID);
 	ClassDB::bind_method(D_METHOD("getSessionSteamID", "session_id"), &Steam::getSessionSteamID);
+	ClassDB::bind_method(D_METHOD("getSmallSessionAvatar", "session_id"), &Steam::getSmallSessionAvatar);
 	ClassDB::bind_method(D_METHOD("getSessionClientName", "session_id"), &Steam::getSessionClientName);
 	ClassDB::bind_method(D_METHOD("getSessionClientFormFactor", "session_id"), &Steam::getSessionClientFormFactor);
 	ClassDB::bind_method(D_METHOD("getSessionClientResolution", "session_id"), &Steam::getSessionClientResolution);
 	ClassDB::bind_method(D_METHOD("sendRemotePlayTogetherInvite", "friend_id"), &Steam::sendRemotePlayTogetherInvite);
+	ClassDB::bind_method(D_METHOD("sessionRemotePlayTogether", "session_id"), &Steam::sessionRemotePlayTogether);
 	ClassDB::bind_method(D_METHOD("setMouseCursor", "session_id", "cursor_id"), &Steam::setMouseCursor);
 	ClassDB::bind_method(D_METHOD("setMousePosition", "session_id", "normalized_x", "normalized_y"), &Steam::setMousePosition);
 	ClassDB::bind_method(D_METHOD("setMouseVisibility", "session_id", "visible"), &Steam::setMouseVisibility);
@@ -9457,6 +9532,7 @@ void Steam::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("addRequiredTag", "query_handle", "tag_name"), &Steam::addRequiredTag);
 	ClassDB::bind_method(D_METHOD("addRequiredTagGroup", "query_handle", "tag_array"), &Steam::addRequiredTagGroup);
 	ClassDB::bind_method(D_METHOD("initWorkshopForGameServer", "workshop_depot_id", "folder"), &Steam::initWorkshopForGameServer);
+	ClassDB::bind_method(D_METHOD("markDownloadedItemAsUnused", "published_file_id"), &Steam::markDownloadedItemAsUnused);
 	ClassDB::bind_method(D_METHOD("createItem", "app_id", "file_type"), &Steam::createItem);
 	ClassDB::bind_method(D_METHOD("createQueryAllUGCRequestPage", "query_type", "matching_type", "creator_id", "consumer_id", "page"), &Steam::createQueryAllUGCRequestPage);
 	ClassDB::bind_method(D_METHOD("createQueryAllUGCRequestCursor", "query_type", "matching_type", "creator_id", "consumer_id", "cursor"), &Steam::createQueryAllUGCRequestCursor);
@@ -9464,10 +9540,13 @@ void Steam::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("createQueryUserUGCRequest", "account_id", "list_type", "matching_ugc_type", "sort_order", "creator_id", "consumer_id", "page"), &Steam::createQueryUserUGCRequest);
 	ClassDB::bind_method(D_METHOD("deleteItem", "published_file_id"), &Steam::deleteItem);
 	ClassDB::bind_method(D_METHOD("downloadItem", "published_file_id", "high_priority"), &Steam::downloadItem);
+	ClassDB::bind_method(D_METHOD("getAppDependencies", "published_file_id"), &Steam::getAppDependencies);
+	ClassDB::bind_method(D_METHOD("getDownloadedItems", "max_entries"), &Steam::getDownloadedItems);
 	ClassDB::bind_method(D_METHOD("getItemDownloadInfo", "published_file_id"), &Steam::getItemDownloadInfo);
 	ClassDB::bind_method(D_METHOD("getItemInstallInfo", "published_file_id"), &Steam::getItemInstallInfo);
 	ClassDB::bind_method(D_METHOD("getItemState", "published_file_id"), &Steam::getItemState);
 	ClassDB::bind_method(D_METHOD("getItemUpdateProgress", "update_handle"), &Steam::getItemUpdateProgress);
+	ClassDB::bind_method("getNumDownloadedItems", &Steam::getNumDownloadedItems);
 	ClassDB::bind_method(D_METHOD("getNumSubscribedItems", "include_locally_disabled"), &Steam::getNumSubscribedItems, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("getNumSupportedGameVersions", "query_handle", "index"), &Steam::getNumSupportedGameVersions);
 	ClassDB::bind_method(D_METHOD("getQueryUGCAdditionalPreview", "query_handle", "index", "preview_index"), &Steam::getQueryUGCAdditionalPreview);
@@ -9528,7 +9607,6 @@ void Steam::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("startPlaytimeTracking", "published_file_ids"), &Steam::startPlaytimeTracking);
 	ClassDB::bind_method(D_METHOD("stopPlaytimeTracking", "published_file_ids"), &Steam::stopPlaytimeTracking);
 	ClassDB::bind_method("stopPlaytimeTrackingForAllItems", &Steam::stopPlaytimeTrackingForAllItems);
-	ClassDB::bind_method(D_METHOD("getAppDependencies", "published_file_id"), &Steam::getAppDependencies);
 	ClassDB::bind_method(D_METHOD("submitItemUpdate", "update_handle", "change_note"), &Steam::submitItemUpdate, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("subscribeItem", "published_file_id"), &Steam::subscribeItem);
 	ClassDB::bind_method(D_METHOD("suspendDownloads", "suspend"), &Steam::suspendDownloads);
@@ -9748,7 +9826,7 @@ void Steam::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("favorites_list_changed", PropertyInfo(Variant::DICTIONARY, "favorite")));
 	ADD_SIGNAL(MethodInfo("lobby_message", PropertyInfo(Variant::INT, "lobby_id"), PropertyInfo(Variant::INT, "user"), PropertyInfo(Variant::STRING, "message"), PropertyInfo(Variant::INT, "chat_type")));
 	ADD_SIGNAL(MethodInfo("lobby_chat_update", PropertyInfo(Variant::INT, "lobby_id"), PropertyInfo(Variant::INT, "changed_id"), PropertyInfo(Variant::INT, "making_change_id"), PropertyInfo(Variant::INT, "chat_state")));
-	ADD_SIGNAL(MethodInfo("lobby_created", PropertyInfo(Variant::INT, "result"), PropertyInfo(Variant::INT, "lobby_id")));
+	ADD_SIGNAL(MethodInfo("lobby_created", PropertyInfo(Variant::INT, "connect"), PropertyInfo(Variant::INT, "lobby_id")));
 	ADD_SIGNAL(MethodInfo("lobby_data_update", PropertyInfo(Variant::INT, "success"), PropertyInfo(Variant::INT, "lobby_id"), PropertyInfo(Variant::INT, "member_id")));
 	ADD_SIGNAL(MethodInfo("lobby_joined", PropertyInfo(Variant::INT, "lobby"), PropertyInfo(Variant::INT, "permissions"), PropertyInfo(Variant::BOOL, "locked"), PropertyInfo(Variant::INT, "response")));
 	ADD_SIGNAL(MethodInfo("lobby_game_created", PropertyInfo(Variant::INT, "lobby_id"), PropertyInfo(Variant::INT, "server_id"), PropertyInfo(Variant::STRING, "server_ip"), PropertyInfo(Variant::INT, "port")));
@@ -9802,6 +9880,7 @@ void Steam::_bind_methods() {
 
 	// REMOTE PLAY
 	ADD_SIGNAL(MethodInfo("remote_play_guest_invite", PropertyInfo(Variant::STRING, "invite_url")));
+	ADD_SIGNAL(MethodInfo("remote_play_session_avatar_loaded", PropertyInfo(Variant::INT, "session_id"), PropertyInfo(Variant::INT, "avatar_index"), PropertyInfo(Variant::INT, "width"), PropertyInfo(Variant::INT, "height")));
 	ADD_SIGNAL(MethodInfo("remote_play_session_connected", PropertyInfo(Variant::INT, "session_id")));
 	ADD_SIGNAL(MethodInfo("remote_play_session_disconnected", PropertyInfo(Variant::INT, "session_id")));
 
@@ -11390,6 +11469,7 @@ void Steam::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_SITE_LICENSE);
 	BIND_ENUM_CONSTANT(FEATURE_KIOSK_MODE);
 	BIND_ENUM_CONSTANT(FEATURE_BLOCK_ALWAYS);
+	BIND_ENUM_CONSTANT(FEATURE_DESKTOP);
 	BIND_ENUM_CONSTANT(FEATURE_MAX);
 
 	// PartyBeaconLocationData Enums

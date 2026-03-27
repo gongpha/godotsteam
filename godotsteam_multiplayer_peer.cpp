@@ -60,7 +60,7 @@ int SteamMultiplayerPeer::get_packet_peer() const {
 
 MultiplayerPeer::TransferMode SteamMultiplayerPeer::get_packet_mode() const {
 	ERR_FAIL_COND_V(incoming_packets.is_empty(), TRANSFER_MODE_RELIABLE);
-	if (incoming_packets.front()->get()->m_nFlags && k_nSteamNetworkingSend_Reliable) {
+	if (incoming_packets.front()->get()->m_nFlags & k_nSteamNetworkingSend_Reliable) {
 		return TRANSFER_MODE_RELIABLE;
 	} else {
 		return TRANSFER_MODE_UNRELIABLE;
