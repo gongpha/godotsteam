@@ -31,6 +31,7 @@
 
 #include "core/io/packet_peer.h"
 #include "core/templates/list.h"
+#include "core/object/class_db.h"
 #include "scene/main/multiplayer_peer.h"
 
 // Include Steamworks API headers
