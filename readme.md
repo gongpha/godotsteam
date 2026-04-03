@@ -28,16 +28,9 @@ Current Build
 ---
 You can [download pre-compiled versions of this repo here](https://codeberg.org/godotsteam/godotsteam/releases).
 
-**Version 4.18 Changes**
+**Version 4.18.1 Changes**
 
-- Added: new functions and enums from Steamworks SDK 1.64
-- Added: GodotSteam icon to Windows builds for precompiled editors
-- Changed: part one of in-editor doc updates, adding text for constants and enums
-- Changed: `getBetaInfo` now returns **last_updated** timestamp
-- Changed: **changed_id** to **user_changed_id** in `lobby_chat_update` callback
-- Changed: updated in-editor docs for SDK 1.64
-- Changed: `receiveMessageOnPollGroup` and `receiveMessagesOnChannel` message releasing to Flat API version
-- Fixed: enum namespace qualification for proper extension_api.json generation, thanks to ***leetleaf***
+- Changed: version bump for Godot 4.6.2 and to match GDExtension update
 
 [You can read more change-logs here](https://godotsteam.com/changelog/godot4/).
 

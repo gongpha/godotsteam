@@ -2530,6 +2530,7 @@ Dictionary Steam::getItemDefinitionProperty(uint32_t definition, const String& n
 	uint32_t buffer_size = std::size(buffer);
 	bool steam_success = false;
 
+	// Gets a comma-separated list of properties
 	if (name.is_empty()) {
 		steam_success = SteamAPI_ISteamInventory_GetItemDefinitionProperty(SteamAPI_SteamInventory(), definition, NULL, buffer, &buffer_size);
 	}

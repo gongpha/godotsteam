@@ -919,7 +919,7 @@ private:
 	void start_initialization_verbose(uint32_t app_id = 0, bool embed_callbacks = false);
 
 	// Main
-	String godotsteam_version = "4.18";
+	String godotsteam_version = "4.18.1";
 	Dictionary init_result;
 	bool is_init_success;
 	bool were_callbacks_embedded;
@@ -946,9 +946,6 @@ private:
 
 	// Networking Sockets
 	uint64_t networking_microseconds = 0;
-//	SteamDatagramHostedAddress hosted_address;
-//	PackedByteArray routing_blob;
-//	SteamDatagramRelayAuthTicket relay_auth_ticket;
 
 	// Utils
 	uint64_t api_handle = 0;
