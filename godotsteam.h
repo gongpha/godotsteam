@@ -48,7 +48,7 @@
 
 // Include Godot headers
 #include "core/config/project_settings.h"
-#include "core/object/callable_mp.h"
+#include "core/object/callable_method_pointer.h"
 #include "core/object/class_db.h"
 #include "core/object/object.h"
 #include "core/os/os.h"
