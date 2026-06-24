@@ -48,7 +48,7 @@
 
 // Include Godot headers
 #include "core/config/project_settings.h"
-#include "core/object/callable_method_pointer.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/object/object.h"
 #include "core/os/os.h"
@@ -862,7 +862,7 @@ public:
 	int getSecondsSinceComputerActive();
 	int getServerRealTime();
 	String getSteamUILanguage();
-	bool initFilterText(uint32_t filter_options);
+	bool initFilterText();
 	Dictionary isAPICallCompleted();
 	bool isOverlayEnabled();
 	bool isSteamChinaLauncher();
@@ -921,7 +921,7 @@ private:
 	void start_initialization_verbose(uint32_t app_id = 0, bool embed_callbacks = false);
 
 	// Main
-	String godotsteam_version = "4.19";
+	String godotsteam_version = "4.20";
 	Dictionary init_result;
 	bool is_init_success;
 	bool were_callbacks_embedded;
