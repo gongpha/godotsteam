@@ -783,4 +783,3 @@ void SteamMultiplayerPeer::_bind_methods() {
 	BIND_ENUM_CONSTANT(DEBUG_LEVEL_PEER);
 	BIND_ENUM_CONSTANT(DEBUG_LEVEL_STEAM);
 }
-

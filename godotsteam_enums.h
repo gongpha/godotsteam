@@ -484,7 +484,7 @@ enum PersonaChange {
 	PERSONA_CHANGE_LEFT_SOURCE = k_EPersonaChangeLeftSource,
 	PERSONA_CHANGE_RELATIONSHIP_CHANGED = k_EPersonaChangeRelationshipChanged,
 	PERSONA_CHANGE_NAME_FIRST_SET = k_EPersonaChangeNameFirstSet,
-	PERSONA_CHANGE_FACEBOOK_INFO = k_EPersonaChangeBroadcast,
+	PERSONA_CHANGE_BROADCAST = k_EPersonaChangeBroadcast,
 	PERSONA_CHANGE_NICKNAME = k_EPersonaChangeNickname,
 	PERSONA_CHANGE_STEAM_LEVEL = k_EPersonaChangeSteamLevel,
 	PERSONA_CHANGE_RICH_PRESENCE = k_EPersonaChangeRichPresence

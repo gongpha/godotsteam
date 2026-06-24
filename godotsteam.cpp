@@ -456,7 +456,7 @@ void Steam::run_internal_callbacks() {
 }
 
 void Steam::run_internal_initialization() {
-	start_initialization_verbose(SteamProjectSettings::get_app_id(), false);
+	start_initialization_verbose(SteamProjectSettings::get_id_in_use(), false);
 }
 
 void Steam::set_internal_callbacks(bool embed_callbacks) {
@@ -474,7 +474,7 @@ void Steam::set_internal_callbacks(bool embed_callbacks) {
 // Initialize the SDK, without worrying about the cause of failure.
 bool Steam::steamInit(uint32_t app_id, bool embed_callbacks) {
 	if (app_id == 0) {
-		app_id = SteamProjectSettings::get_app_id();
+		app_id = SteamProjectSettings::get_id_in_use();
 	}
 
 	if (app_id != 0) {
@@ -506,7 +506,7 @@ Dictionary Steam::steamInitEx(uint32_t app_id, bool embed_callbacks) {
 
 void Steam::start_initialization_verbose(uint32_t app_id, bool embed_callbacks) {
 	if (app_id == 0) {
-		app_id = SteamProjectSettings::get_app_id();
+		app_id = SteamProjectSettings::get_id_in_use();
 	}
 
 	if (app_id != 0) {
@@ -6831,7 +6831,7 @@ String Steam::filterText(TextFilteringContext context, uint64_t steam_id, const 
 	auto utf8_input = message.utf8();
 	char *filtered = new char[utf8_input.length() + 1]{};
 	SteamAPI_ISteamUtils_FilterText(SteamAPI_SteamUtils(), (ETextFilteringContext)context, steam_id, utf8_input.get_data(), filtered, utf8_input.length() + 1);
-	new_message = filtered;
+	new_message = String::utf8(filtered);
 	delete[] filtered;
 	return new_message;
 }
@@ -6938,9 +6938,9 @@ String Steam::getSteamUILanguage() {
 
 // Initializes text filtering. Returns false if filtering is unavailable for the language the user is currently running
 // in. If the language is unsupported, the FilterText API will act as a passthrough.
-bool Steam::initFilterText(uint32_t filter_options) {
+bool Steam::initFilterText() {
 	ERR_FAIL_COND_V_MSG(SteamAPI_SteamUtils() == nullptr, false, "Utils class not found, Steam may not be initialized: initFilterText");
-	return SteamAPI_ISteamUtils_InitFilterText(SteamAPI_SteamUtils(), filter_options);
+	return SteamAPI_ISteamUtils_InitFilterText(SteamAPI_SteamUtils(), 0);
 }
 
 // Checks if an API Call is completed. Provides the backend of the CallResult wrapper.
@@ -7709,7 +7709,7 @@ void Steam::lobby_chat_update(LobbyChatUpdate_t *call_data) {
 void Steam::lobby_data_update(LobbyDataUpdate_t *call_data) {
 	uint64_t member_id = call_data->m_ulSteamIDMember;
 	uint64_t lobby_id = call_data->m_ulSteamIDLobby;
-	uint8_t success = call_data->m_bSuccess;
+	bool success = (call_data->m_bSuccess == 1) ? true : false;
 	emit_signal("lobby_data_update", success, lobby_id, member_id);
 }
 
@@ -9685,7 +9685,7 @@ void Steam::_bind_methods() {
 	ClassDB::bind_method("getSecondsSinceComputerActive", &Steam::getSecondsSinceComputerActive);
 	ClassDB::bind_method("getServerRealTime", &Steam::getServerRealTime);
 	ClassDB::bind_method("getSteamUILanguage", &Steam::getSteamUILanguage);
-	ClassDB::bind_method(D_METHOD("initFilterText", "filter_options"), &Steam::initFilterText);
+	ClassDB::bind_method("initFilterText", &Steam::initFilterText);
 	ClassDB::bind_method("isAPICallCompleted", &Steam::isAPICallCompleted);
 	ClassDB::bind_method("isOverlayEnabled", &Steam::isOverlayEnabled);
 	ClassDB::bind_method("isSteamChinaLauncher", &Steam::isSteamChinaLauncher);
@@ -10530,10 +10530,10 @@ void Steam::_bind_methods() {
 	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_STEAMCONTROLLER_LEFT_PAD_TOUCH);
 	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_STEAMCONTROLLER_LEFT_PAD_SWIPE);
 	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_STEAMCONTROLLER_LEFT_PAD_CLICK);
-	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_STEAMCONTROLLER_LEFT_PAD_DPADNORTH);
-	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_STEAMCONTROLLER_LEFT_PAD_DPADSOUTH);
-	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_STEAMCONTROLLER_LEFT_PAD_DPADWEST);
-	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_STEAMCONTROLLER_LEFT_PAD_DPADEAST);
+	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_STEAMCONTROLLER_LEFT_PAD_DPAD_NORTH);
+	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_STEAMCONTROLLER_LEFT_PAD_DPAD_SOUTH);
+	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_STEAMCONTROLLER_LEFT_PAD_DPAD_WEST);
+	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_STEAMCONTROLLER_LEFT_PAD_DPAD_EAST);
 	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_STEAMCONTROLLER_RIGHT_PAD_TOUCH);
 	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_STEAMCONTROLLER_RIGHT_PAD_SWIPE);
 	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_STEAMCONTROLLER_RIGHT_PAD_CLICK);
@@ -10577,10 +10577,10 @@ void Steam::_bind_methods() {
 	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_PS4_LEFT_PAD_TOUCH);
 	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_PS4_LEFT_PAD_SWIPE);
 	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_PS4_LEFT_PAD_CLICK);
-	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_PS4_LEFT_PAD_DPADNORTH);
-	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_PS4_LEFT_PAD_DPADSOUTH);
-	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_PS4_LEFT_PAD_DPADWEST);
-	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_PS4_LEFT_PAD_DPADEAST);
+	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_PS4_LEFT_PAD_DPAD_NORTH);
+	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_PS4_LEFT_PAD_DPAD_SOUTH);
+	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_PS4_LEFT_PAD_DPAD_WEST);
+	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_PS4_LEFT_PAD_DPAD_EAST);
 	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_PS4_RIGHT_PAD_TOUCH);
 	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_PS4_RIGHT_PAD_SWIPE);
 	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_PS4_RIGHT_PAD_CLICK);
@@ -10737,10 +10737,10 @@ void Steam::_bind_methods() {
 	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_SWITCH_DPAD_SOUTH);
 	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_SWITCH_DPAD_WEST);
 	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_SWITCH_DPAD_EAST);
-	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_SWITCH_PROGYRO_MOVE);
-	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_SWITCH_PROGYRO_PITCH);
-	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_SWITCH_PROGYRO_YAW);
-	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_SWITCH_PROGYRO_ROLL);
+	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_SWITCH_PRO_GYRO_MOVE);
+	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_SWITCH_PRO_GYRO_PITCH);
+	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_SWITCH_PRO_GYRO_YAW);
+	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_SWITCH_PRO_GYRO_ROLL);
 	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_SWITCH_DPAD_MOVE);
 	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_SWITCH_RESERVED1);
 	BIND_ENUM_CONSTANT(INPUT_ACTION_ORIGIN_SWITCH_RESERVED2);
@@ -11243,6 +11243,12 @@ void Steam::_bind_methods() {
 	BIND_ENUM_CONSTANT(NETWORKING_CONFIG_FAKE_PACKET_LOSS_RECV);
 	BIND_ENUM_CONSTANT(NETWORKING_CONFIG_FAKE_PACKET_LAG_SEND);
 	BIND_ENUM_CONSTANT(NETWORKING_CONFIG_FAKE_PACKET_LAG_RECV);
+	BIND_ENUM_CONSTANT(NETWORKING_CONFIG_FAKE_PACKET_JITTER_SEND_AVG);
+	BIND_ENUM_CONSTANT(NETWORKING_CONFIG_FAKE_PACKET_JITTER_SEND_MAX);
+	BIND_ENUM_CONSTANT(NETWORKING_CONFIG_FAKE_PACKET_JITTER_SEND_PCT);
+	BIND_ENUM_CONSTANT(NETWORKING_CONFIG_FAKE_PACKET_JITTER_RECV_AVG);
+	BIND_ENUM_CONSTANT(NETWORKING_CONFIG_FAKE_PACKET_JITTER_RECV_MAX);
+	BIND_ENUM_CONSTANT(NETWORKING_CONFIG_FAKE_PACKET_JITTER_RECV_PCT);
 	BIND_ENUM_CONSTANT(NETWORKING_CONFIG_FAKE_PACKET_REORDER_SEND);
 	BIND_ENUM_CONSTANT(NETWORKING_CONFIG_FAKE_PACKET_REORDER_RECV);
 	BIND_ENUM_CONSTANT(NETWORKING_CONFIG_FAKE_PACKET_REORDER_TIME);
@@ -11469,7 +11475,7 @@ void Steam::_bind_methods() {
 	BIND_BITFIELD_FLAG(PERSONA_CHANGE_LEFT_SOURCE);
 	BIND_BITFIELD_FLAG(PERSONA_CHANGE_RELATIONSHIP_CHANGED);
 	BIND_BITFIELD_FLAG(PERSONA_CHANGE_NAME_FIRST_SET);
-	BIND_BITFIELD_FLAG(PERSONA_CHANGE_FACEBOOK_INFO);
+	BIND_BITFIELD_FLAG(PERSONA_CHANGE_BROADCAST);
 	BIND_BITFIELD_FLAG(PERSONA_CHANGE_NICKNAME);
 	BIND_BITFIELD_FLAG(PERSONA_CHANGE_STEAM_LEVEL);
 	BIND_BITFIELD_FLAG(PERSONA_CHANGE_RICH_PRESENCE);
