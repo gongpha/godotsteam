@@ -28,14 +28,18 @@ Current Build
 ---
 You can [download pre-compiled versions of this repo here](https://codeberg.org/godotsteam/godotsteam/releases).
 
-**Version 4.20.1 Changes**
+**Version 4.21 Changes**
 
-- Changed: updated in-editor docs with examples for Matchmaking Server's request server list functions
-- Fixed: `getPersonaState()` always sending back online regardless of real status, replaced with hack
-- Fixed: regression for `serializeResult()`
-- Fixed: crash when calling Matchmaking Server's request server list functions without a proper filters array, print error for invalid filter arrays
-- Fixed: incorrect array types for some signals
-- Fixed: signal names for: `connected_chat_joined`, `connect_chat_left`, `connected_clan_chat_message`
+- Added: new enums for Apps, Inputs, UGC, Utils
+- Added: new functions for Apps, Matchmaking Servers, Utils
+- Added: new callbacks for Matchmaking Servers
+- Changed: `sendMessages()` now has `delete_failed_messages` parameter
+- Changed: updated for Steamworks SDK 1.65
+- Changed: ControllerPad enum changed to SteamControllerPad
+- Changed: updated in-editor docs
+- Changed: k_cchDeveloperMetadataMax now set to 10000 instead of 5000
+- Removed: `isSteamRunningOnSteamDeck()` as new functionality was introduced in SDK 1.65
+- Removed: GameIDType enum GAME_TYPE_P2P
 
 [You can read more change-logs here](https://godotsteam.com/changelog/godot4/).
 
