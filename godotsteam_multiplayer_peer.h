@@ -33,6 +33,7 @@
 
 // Include Godot headers
 #include "core/os/os.h"
+#include "core/object/class_db.h"
 #include "core/templates/hash_map.h"
 #include "core/variant/variant.h"
 #include "scene/main/multiplayer_peer.h"

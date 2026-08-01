@@ -121,9 +121,9 @@ Error SteamPacketPeer::send(int p_channel, const uint8_t *p_data, int p_size, in
 	data[0] = (uint8)p_channel; // Store the channel in the first byte of the message data for retrieval on the receiving end
 	memcpy(data + sizeof(uint8), p_data, p_size);
 
-	SteamNetworkingMessage_t *const messages[1] = {packet};
+	SteamNetworkingMessage_t *messages[1] = {packet};
 	SteamAPI_ISteamNetworkingSockets_SendMessages(
-			SteamAPI_SteamNetworkingSockets_SteamAPI(), 1, messages, nullptr
+			SteamAPI_SteamNetworkingSockets_SteamAPI(), 1, messages, nullptr, false
 			);
 
 	return OK;
@@ -144,9 +144,9 @@ Error SteamPacketPeer::ping(uint32_t p_peer_id) {
 	packet->m_nFlags = k_nSteamNetworkingSend_ReliableNoNagle;
 	memcpy(packet->m_pData, (void *)&data, sizeof(PeerIDPacket));
 
-	SteamNetworkingMessage_t *const messages[1] = {packet};
+	SteamNetworkingMessage_t *messages[1] = {packet};
 	SteamAPI_ISteamNetworkingSockets_SendMessages(
-			SteamAPI_SteamNetworkingSockets_SteamAPI(), 1, messages, nullptr
+			SteamAPI_SteamNetworkingSockets_SteamAPI(), 1, messages, nullptr, false
 			);
 
 	return OK;
@@ -240,10 +240,14 @@ int SteamPacketPeer::get_ping() const {
 void SteamPacketPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_steam_id"),
 			&SteamPacketPeer::get_steam_id);
+	ClassDB::bind_method(D_METHOD("get_connection_handle"),
+			&SteamPacketPeer::get_connection_handle);
 	ClassDB::bind_method(D_METHOD("get_peer_id"),
 			&SteamPacketPeer::get_peer_id);
 	ClassDB::bind_method(D_METHOD("get_ping"),
 			&SteamPacketPeer::get_ping);
+	ClassDB::bind_method(D_METHOD("get_state"),
+			&SteamPacketPeer::get_state);
 	ClassDB::bind_method(D_METHOD("disconnect_peer", "force"),
 			&SteamPacketPeer::disconnect_peer, DEFVAL(false));
 

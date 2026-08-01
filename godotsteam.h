@@ -48,6 +48,8 @@
 
 // Include Godot headers
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/object/object.h"
 #include "core/os/os.h"
 #include "core/variant/dictionary.h"
@@ -57,17 +59,17 @@
 // Include GodotSteam headers
 #include "godotsteam_project_settings.h"
 #include "godotsteam_constants.h"
-#include "godotsteam_enums.h"
 
 // Include some system headers
 #include "map"
 
 
 class Steam : public Object,
-	ISteamMatchmakingServerListResponse,
 	ISteamMatchmakingPingResponse,
 	ISteamMatchmakingPlayersResponse,
-	ISteamMatchmakingRulesResponse {
+	ISteamMatchmakingRulesResponse,
+	ISteamMatchmakingServerFriendsResponse,
+	ISteamMatchmakingServerListResponse {
 
 	GDCLASS(Steam, Object);
 
@@ -77,6 +79,7 @@ public:
 	Steam();
 	~Steam();
 
+	#include "godotsteam_enums.h"
 
 	// STEAMWORKS FUNCTIONS
 	// Main
@@ -160,6 +163,8 @@ public:
 	bool markContentCorrupt(bool missing_files_only);
 	bool setActiveBeta(String beta_name);
 	bool setDLCContext(uint32_t app_id);
+	void setGamePerformanceSettings(GamePerformanceSetting setting);
+	void setGameRenderResolution(uint32_t width, uint32_t height);
 	void uninstallDLC(uint32_t dlc_id);
 
 	// Friends
@@ -353,8 +358,8 @@ public:
 	bool showBindingPanel(uint64_t input_handle);
 	void stopAnalogActionMomentum(uint64_t input_handle, uint64_t action);
 	InputActionOrigin translateActionOrigin(InputType destination_input, InputActionOrigin source_origin);
-	void triggerHapticPulse(uint64_t input_handle, ControllerPad target_pad, int duration);
-	void triggerRepeatedHapticPulse(uint64_t input_handle, ControllerPad target_pad, int duration, int offset, int repeat, int flags);
+	void triggerHapticPulse(uint64_t input_handle, SteamControllerPad target_pad, int duration);
+	void triggerRepeatedHapticPulse(uint64_t input_handle, SteamControllerPad target_pad, int duration, int offset, int repeat, int flags);
 	void triggerSimpleHapticEvent(uint64_t input_handle, ControllerHapticLocation haptic_location, uint8_t intensity, const String &gain_db, uint8_t other_intensity, const String &other_gain_db);
 	void triggerVibration(uint64_t input_handle, uint16_t left_speed, uint16_t right_speed);
 	void triggerVibrationExtended(uint64_t input_handle, uint16_t left_speed, uint16_t right_speed, uint16_t left_trigger_speed, uint16_t right_trigger_speed);
@@ -445,6 +450,7 @@ public:
 	uint64_t requestInternetServerList(uint32_t app_id, Array filters);
 	uint64_t requestLANServerList(uint32_t app_id);
 	uint64_t requestSpectatorServerList(uint32_t app_id, Array filters);
+	int serverFriends(const String &ip, uint16_t port);
 	int serverRules(const String &ip, uint16_t port);
 
 	// Music
@@ -514,7 +520,7 @@ public:
 //	Dictionary receivedRelayAuthTicket();	<------ Uses datagram relay structs which were removed from base SDK
 	void resetIdentity(uint64_t remote_steam_id);
 	void runNetworkingCallbacks();
-	PackedInt64Array sendMessages(uint32_t connection_handle, Array messages, int flags);
+	PackedInt64Array sendMessages(uint32_t connection_handle, Array messages, int flags, bool delete_failed_messages);
 	Dictionary sendMessageToConnection(uint32_t connection_handle, const PackedByteArray message, int flags);
 	Dictionary setCertificate(const PackedByteArray &certificate);
 	bool setConnectionPollGroup(uint32_t connection_handle, uint32_t poll_group);
@@ -582,13 +588,18 @@ public:
 	bool enableRemotePlayTogetherDirectInput();
 	void disableRemotePlayTogetherDirectInput();
 	Array getInput(uint32_t max_events);
+	int getLargeSessionAvatar(uint32_t session_id);
+	int getMediumSessionAvatar(uint32_t session_id);
 	DeviceFormFactor getSessionClientFormFactor(uint32_t session_id);
 	String getSessionClientName(uint32_t session_id);
 	Dictionary getSessionClientResolution(uint32_t session_id);
 	uint32_t getSessionCount();
+	uint32_t getSessionGuestID(uint32_t session_id);
 	uint32_t getSessionID(uint32_t index);
 	uint64_t getSessionSteamID(uint32_t session_id);
+	int getSmallSessionAvatar(uint32_t session_id);
 	bool sendRemotePlayTogetherInvite(uint64_t friend_id);
+	bool sessionRemotePlayTogether(uint32_t session_id);
 	void setMouseCursor(uint32_t session_id, uint32_t cursor_id);
 	void setMousePosition(uint32_t session_id, float normalized_x, float normalized_y);
 	void setMouseVisibility(uint32_t session_id, bool visible);
@@ -681,10 +692,12 @@ public:
 	void deleteItem(uint64_t published_file_id);
 	bool downloadItem(uint64_t published_file_id, bool high_priority);
 	void getAppDependencies(uint64_t published_file_id);
+	PackedInt64Array getDownloadedItems(uint32_t max_entries);
 	Dictionary getItemDownloadInfo(uint64_t published_file_id);
 	Dictionary getItemInstallInfo(uint64_t published_file_id);
 	uint32_t getItemState(uint64_t published_file_id);
 	Dictionary getItemUpdateProgress(uint64_t update_handle);
+	uint32_t getNumDownloadedItems();
 	uint32_t getNumSubscribedItems(bool include_locally_disabled = false);
 	uint32_t getNumSupportedGameVersions(uint64_t query_handle, uint32_t index);
 	Dictionary getQueryUGCAdditionalPreview(uint64_t query_handle, uint32_t index, uint32_t preview_index);
@@ -706,6 +719,7 @@ public:
 	void getUserItemVote(uint64_t published_file_id);
 	void getWorkshopEULAStatus();
 	bool initWorkshopForGameServer(uint32_t workshop_depot_id, String folder);
+	bool markDownloadedItemAsUnused(uint64_t published_file_id);
 	bool releaseQueryUGCRequest(uint64_t query_handle);
 	bool removeAllItemKeyValueTags(uint64_t update_handle);
 	void removeAppDependency(uint64_t published_file_id, uint32_t app_id);
@@ -761,18 +775,18 @@ public:
 	void advertiseGame(const String &server_ip = "", int port = 0);
 	BeginAuthSessionResult beginAuthSession(PackedByteArray ticket, int ticket_size, uint64_t steam_id);
 	void cancelAuthTicket(uint32_t auth_ticket);
-	Dictionary decompressVoice(const PackedByteArray &voice_data, uint32_t sample_rate, uint32_t buffer_size_override = 20480);
+	Dictionary decompressVoice(const PackedByteArray &voice_data, uint32_t sample_rate = 11025, uint32_t buffer_size = 20480);
 	void endAuthSession(uint64_t steam_id);
 	Dictionary getAuthSessionTicket(uint64_t remote_steam_id = 0);
 	uint32_t getAuthTicketForWebApi(const String &service_identity = "");
-	Dictionary getDecompressedVoice(uint32_t buffer_in_size_override = 0, uint32_t buffer_out_size_override = 20480, uint32_t sample_rate_override = 0);
+	Dictionary getAvailableVoice();
 	void getDurationControl();
 	Dictionary getEncryptedAppTicket();
 	int getGameBadgeLevel(int series, bool foil);
 	void getMarketEligibility();
 	int getPlayerSteamLevel();
 	uint64_t getSteamID();
-	Dictionary getVoice(uint32_t buffer_size_override = 0);
+	Dictionary getVoice(uint32_t buffer_size = 1024);
 	uint32_t getVoiceOptimalSampleRate();
 	Dictionary initiateGameConnection(uint64_t server_id, String server_ip, uint16_t server_port, bool secure);
 	bool isBehindNAT();
@@ -851,14 +865,16 @@ public:
 	int getSecondsSinceAppActive();
 	int getSecondsSinceComputerActive();
 	int getServerRealTime();
+	SteamHardwareDefaultConfig getSteamHardwareDefaultConfig();
 	String getSteamUILanguage();
-	bool initFilterText(uint32_t filter_options);
+	bool initFilterText();
 	Dictionary isAPICallCompleted();
 	bool isOverlayEnabled();
+	SteamHardwareType isRunningOnSteamHardware();
+	bool isRunningUnderProton();
 	bool isSteamChinaLauncher();
 	bool isSteamInBigPictureMode();
 	bool isSteamRunningInVR();
-	bool isSteamRunningOnSteamDeck();
 	bool isVRHeadsetStreamingEnabled();
 	bool overlayNeedsPresent();
 	void setGameLauncherMode(bool mode);
@@ -911,7 +927,7 @@ private:
 	void start_initialization_verbose(uint32_t app_id = 0, bool embed_callbacks = false);
 
 	// Main
-	String godotsteam_version = "4.17.1";
+	String godotsteam_version = "4.21";
 	Dictionary init_result;
 	bool is_init_success;
 	bool were_callbacks_embedded;
@@ -929,18 +945,16 @@ private:
 
 	// Matchmaking Servers
 	HServerListRequest server_list_request = 0;
-	ISteamMatchmakingServerListResponse *server_list_response = this;
 	ISteamMatchmakingPingResponse *ping_response = this;
 	ISteamMatchmakingPlayersResponse *players_response = this;
 	ISteamMatchmakingRulesResponse *rules_response = this;
+	ISteamMatchmakingServerFriendsResponse *server_friends_response = this;
+	ISteamMatchmakingServerListResponse *server_list_response = this;
 
 	Dictionary gameServerItemToDictionary(gameserveritem_t *server_item);
 
 	// Networking Sockets
 	uint64_t networking_microseconds = 0;
-//	SteamDatagramHostedAddress hosted_address;
-//	PackedByteArray routing_blob;
-//	SteamDatagramRelayAuthTicket relay_auth_ticket;
 
 	// Utils
 	uint64_t api_handle = 0;
@@ -1025,10 +1039,6 @@ private:
 	STEAM_CALLBACK(Steam, lobby_kicked, LobbyKicked_t, callbackLobbyKicked);
 
 	// Matchmaking Server
-	// ISteamMatchmakingServerListResponse
-	void ServerResponded(HServerListRequest list_request_handle, int server) override;
-	void ServerFailedToRespond(HServerListRequest list_request_handle, int server) override;
-	void RefreshComplete (HServerListRequest list_request_handle, EMatchMakingServerResponse response) override;
 	// ISteamMatchmakingPingResponse
 	void ServerResponded(gameserveritem_t &server) override;
 	void ServerFailedToRespond() override;
@@ -1040,7 +1050,15 @@ private:
 	void RulesResponded(const char *rule, const char *value) override;
 	void RulesFailedToRespond() override;
 	void RulesRefreshComplete() override;
-
+	// ISteamMatchmakingServerListResponse
+	void ServerResponded(HServerListRequest list_request_handle, int server) override;
+	void ServerFailedToRespond(HServerListRequest list_request_handle, int server) override;
+	void RefreshComplete (HServerListRequest list_request_handle, EMatchMakingServerResponse response) override;
+	// ISteamMatchmakingServerFriendsReponse
+	void AddFriendToList(CSteamID steam_id, const char *friend_name, bool currently_connected) override;
+	void FriendsFailedToRespond() override;
+	void FriendsRefreshComplete() override;
+	
 	// Music
 	STEAM_CALLBACK(Steam, music_playback_status_has_changed, PlaybackStatusHasChanged_t, callbackMusicPlaybackStatusHasChanged);
 	STEAM_CALLBACK(Steam, music_volume_has_changed, VolumeHasChanged_t, callbackMusicVolumeHasChanged);
@@ -1071,6 +1089,7 @@ private:
 
 	// Remote Play
 	STEAM_CALLBACK(Steam, remote_play_guest_invite, SteamRemotePlayTogetherGuestInvite_t, callbackRemotePlayGuestInvite);
+	STEAM_CALLBACK(Steam, remote_play_session_avatar_loaded, SteamRemotePlaySessionAvatarLoaded_t, callbackRemotePlaySessionAvatarLoaded);
 	STEAM_CALLBACK(Steam, remote_play_session_connected, SteamRemotePlaySessionConnected_t, callbackRemotePlaySessionConnected);
 	STEAM_CALLBACK(Steam, remote_play_session_disconnected, SteamRemotePlaySessionDisconnected_t, callbackRemotePlaySessionDisconnected);
 
@@ -1252,138 +1271,141 @@ private:
 };
 
 
-VARIANT_ENUM_CAST(AccountType);
-VARIANT_ENUM_CAST(APICallFailure);
-VARIANT_ENUM_CAST(AudioPlaybackStatus);
-VARIANT_ENUM_CAST(AuthSessionResponse);
-VARIANT_ENUM_CAST(AvatarSizes);
+VARIANT_ENUM_CAST(Steam::AccountType);
+VARIANT_ENUM_CAST(Steam::APICallFailure);
+VARIANT_ENUM_CAST(Steam::AudioPlaybackStatus);
+VARIANT_ENUM_CAST(Steam::AuthSessionResponse);
+VARIANT_ENUM_CAST(Steam::AvatarSizes);
 
-VARIANT_ENUM_CAST(BeginAuthSessionResult);
-VARIANT_BITFIELD_CAST(BetaBranchFlags);
-VARIANT_ENUM_CAST(BroadcastUploadResult);
+VARIANT_ENUM_CAST(Steam::BeginAuthSessionResult);
+VARIANT_BITFIELD_CAST(Steam::BetaBranchFlags);
+VARIANT_ENUM_CAST(Steam::BroadcastUploadResult);
 
-VARIANT_ENUM_CAST(ChatEntryType);
-VARIANT_BITFIELD_CAST(ChatMemberStateChange);
-VARIANT_ENUM_CAST(ChatRoomEnterResponse);
-VARIANT_BITFIELD_CAST(ChatSteamIDInstanceFlags);
-VARIANT_ENUM_CAST(CheckFileSignature);
-VARIANT_ENUM_CAST(CommunityProfileItemType);
-VARIANT_ENUM_CAST(CommunityProfileItemProperty);
-VARIANT_ENUM_CAST(ControllerHapticLocation);
-VARIANT_ENUM_CAST(ControllerHapticType);
-VARIANT_ENUM_CAST(ControllerPad);
+VARIANT_ENUM_CAST(Steam::ChatEntryType);
+VARIANT_BITFIELD_CAST(Steam::ChatMemberStateChange);
+VARIANT_ENUM_CAST(Steam::ChatRoomEnterResponse);
+VARIANT_BITFIELD_CAST(Steam::ChatSteamIDInstanceFlags);
+VARIANT_ENUM_CAST(Steam::CheckFileSignature);
+VARIANT_ENUM_CAST(Steam::CommunityProfileItemType);
+VARIANT_ENUM_CAST(Steam::CommunityProfileItemProperty);
+VARIANT_ENUM_CAST(Steam::ControllerHapticLocation);
+VARIANT_ENUM_CAST(Steam::ControllerHapticType);
 
-VARIANT_ENUM_CAST(DenyReason);
-VARIANT_ENUM_CAST(DeviceFormFactor);
-VARIANT_ENUM_CAST(DurationControlNotification);
-VARIANT_ENUM_CAST(DurationControlOnlineState);
-VARIANT_ENUM_CAST(DurationControlProgress);
+VARIANT_ENUM_CAST(Steam::DenyReason);
+VARIANT_ENUM_CAST(Steam::DeviceFormFactor);
+VARIANT_ENUM_CAST(Steam::DurationControlNotification);
+VARIANT_ENUM_CAST(Steam::DurationControlOnlineState);
+VARIANT_ENUM_CAST(Steam::DurationControlProgress);
 
-VARIANT_ENUM_CAST(FailureType);
-VARIANT_ENUM_CAST(FilePathType);
-VARIANT_ENUM_CAST(FloatingGamepadTextInputMode);
-VARIANT_BITFIELD_CAST(FriendFlags);
-VARIANT_ENUM_CAST(FriendRelationship);
+VARIANT_ENUM_CAST(Steam::FailureType);
+VARIANT_ENUM_CAST(Steam::FilePathType);
+VARIANT_ENUM_CAST(Steam::FloatingGamepadTextInputMode);
+VARIANT_BITFIELD_CAST(Steam::FriendFlags);
+VARIANT_ENUM_CAST(Steam::FriendRelationship);
 
-VARIANT_ENUM_CAST(GameIDType);
-VARIANT_ENUM_CAST(GamepadTextInputLineMode);
-VARIANT_ENUM_CAST(GamepadTextInputMode);
+VARIANT_ENUM_CAST(Steam::GameIDType);
+VARIANT_ENUM_CAST(Steam::GamepadTextInputLineMode);
+VARIANT_ENUM_CAST(Steam::GamepadTextInputMode);
+VARIANT_ENUM_CAST(Steam::GamePerformanceSetting);
 
-VARIANT_BITFIELD_CAST(HTMLKeyModifiers);
-VARIANT_ENUM_CAST(HTMLMouseButton);
-VARIANT_ENUM_CAST(HTMLMouseCursor);
-VARIANT_ENUM_CAST(HTTPMethod);
-VARIANT_ENUM_CAST(HTTPStatusCode);
+VARIANT_BITFIELD_CAST(Steam::HTMLKeyModifiers);
+VARIANT_ENUM_CAST(Steam::HTMLMouseButton);
+VARIANT_ENUM_CAST(Steam::HTMLMouseCursor);
+VARIANT_ENUM_CAST(Steam::HTTPMethod);
+VARIANT_ENUM_CAST(Steam::HTTPStatusCode);
 
-VARIANT_ENUM_CAST(InputActionEventType);
-VARIANT_ENUM_CAST(InputActionOrigin);
-VARIANT_BITFIELD_CAST(InputConfigurationEnableType);
-VARIANT_ENUM_CAST(InputGlyphSize);
-VARIANT_BITFIELD_CAST(InputGlyphStyle);
-VARIANT_ENUM_CAST(InputLEDFlag);
-VARIANT_ENUM_CAST(InputSourceMode);
-VARIANT_ENUM_CAST(InputType);
-VARIANT_ENUM_CAST(IPType);
-VARIANT_ENUM_CAST(IPv6ConnectivityProtocol);
-VARIANT_ENUM_CAST(IPv6ConnectivityState);
-VARIANT_BITFIELD_CAST(ItemFlags);
-VARIANT_ENUM_CAST(ItemPreviewType);
-VARIANT_BITFIELD_CAST(ItemState);
-VARIANT_ENUM_CAST(ItemStatistic);
-VARIANT_ENUM_CAST(ItemUpdateStatus);
+VARIANT_ENUM_CAST(Steam::InputActionEventType);
+VARIANT_ENUM_CAST(Steam::InputActionOrigin);
+VARIANT_BITFIELD_CAST(Steam::InputConfigurationEnableType);
+VARIANT_ENUM_CAST(Steam::InputGlyphSize);
+VARIANT_BITFIELD_CAST(Steam::InputGlyphStyle);
+VARIANT_ENUM_CAST(Steam::InputLEDFlag);
+VARIANT_ENUM_CAST(Steam::InputSourceMode);
+VARIANT_ENUM_CAST(Steam::InputType);
+VARIANT_ENUM_CAST(Steam::IPType);
+VARIANT_ENUM_CAST(Steam::IPv6ConnectivityProtocol);
+VARIANT_ENUM_CAST(Steam::IPv6ConnectivityState);
+VARIANT_BITFIELD_CAST(Steam::ItemFlags);
+VARIANT_ENUM_CAST(Steam::ItemPreviewType);
+VARIANT_BITFIELD_CAST(Steam::ItemState);
+VARIANT_ENUM_CAST(Steam::ItemStatistic);
+VARIANT_ENUM_CAST(Steam::ItemUpdateStatus);
 
-VARIANT_ENUM_CAST(LeaderboardDataRequest);
-VARIANT_ENUM_CAST(LeaderboardDisplayType);
-VARIANT_ENUM_CAST(LeaderboardSortMethod);
-VARIANT_ENUM_CAST(LeaderboardUploadScoreMethod);
-VARIANT_ENUM_CAST(LobbyComparison);
-VARIANT_ENUM_CAST(LobbyDistanceFilter);
-VARIANT_ENUM_CAST(LobbyType);
-VARIANT_ENUM_CAST(LocalFileChange);
+VARIANT_ENUM_CAST(Steam::LeaderboardDataRequest);
+VARIANT_ENUM_CAST(Steam::LeaderboardDisplayType);
+VARIANT_ENUM_CAST(Steam::LeaderboardSortMethod);
+VARIANT_ENUM_CAST(Steam::LeaderboardUploadScoreMethod);
+VARIANT_ENUM_CAST(Steam::LobbyComparison);
+VARIANT_ENUM_CAST(Steam::LobbyDistanceFilter);
+VARIANT_ENUM_CAST(Steam::LobbyType);
+VARIANT_ENUM_CAST(Steam::LocalFileChange);
 
-VARIANT_BITFIELD_CAST(MarketNotAllowedReasonFlags);
-VARIANT_ENUM_CAST(MatchMakingServerResponse);
+VARIANT_BITFIELD_CAST(Steam::MarketNotAllowedReasonFlags);
+VARIANT_ENUM_CAST(Steam::MatchMakingServerResponse);
 
-VARIANT_ENUM_CAST(NetworkingAvailability);
-VARIANT_ENUM_CAST(NetworkingConfigDataType);
-VARIANT_ENUM_CAST(NetworkingConfigScope);
-VARIANT_ENUM_CAST(NetworkingConfigValue);
-VARIANT_ENUM_CAST(NetworkingConnectionEnd);
-VARIANT_ENUM_CAST(NetworkingConnectionState);
-VARIANT_ENUM_CAST(NetworkingFakeIPType);
-VARIANT_ENUM_CAST(NetworkingGetConfigValueResult);
-VARIANT_ENUM_CAST(NetworkingIdentityType);
-VARIANT_ENUM_CAST(NetworkingSocketsDebugOutputType);
-VARIANT_ENUM_CAST(NotificationPosition);
+VARIANT_ENUM_CAST(Steam::NetworkingAvailability);
+VARIANT_ENUM_CAST(Steam::NetworkingConfigDataType);
+VARIANT_ENUM_CAST(Steam::NetworkingConfigScope);
+VARIANT_ENUM_CAST(Steam::NetworkingConfigValue);
+VARIANT_ENUM_CAST(Steam::NetworkingConnectionEnd);
+VARIANT_ENUM_CAST(Steam::NetworkingConnectionState);
+VARIANT_ENUM_CAST(Steam::NetworkingFakeIPType);
+VARIANT_ENUM_CAST(Steam::NetworkingGetConfigValueResult);
+VARIANT_ENUM_CAST(Steam::NetworkingIdentityType);
+VARIANT_ENUM_CAST(Steam::NetworkingSocketsDebugOutputType);
+VARIANT_ENUM_CAST(Steam::NotificationPosition);
 
-VARIANT_ENUM_CAST(OverlayToStoreFlag);
-VARIANT_ENUM_CAST(OverlayToWebPageMode);
+VARIANT_ENUM_CAST(Steam::OverlayToStoreFlag);
+VARIANT_ENUM_CAST(Steam::OverlayToWebPageMode);
 
-VARIANT_ENUM_CAST(P2PSend);
-VARIANT_ENUM_CAST(P2PSessionError);
-VARIANT_ENUM_CAST(ParentalFeature);
-VARIANT_ENUM_CAST(PartyBeaconLocationData);
-VARIANT_ENUM_CAST(PartyBeaconLocationType);
-VARIANT_BITFIELD_CAST(PersonaChange);
-VARIANT_ENUM_CAST(PersonaState);
+VARIANT_ENUM_CAST(Steam::P2PSend);
+VARIANT_ENUM_CAST(Steam::P2PSessionError);
+VARIANT_ENUM_CAST(Steam::ParentalFeature);
+VARIANT_ENUM_CAST(Steam::PartyBeaconLocationData);
+VARIANT_ENUM_CAST(Steam::PartyBeaconLocationType);
+VARIANT_BITFIELD_CAST(Steam::PersonaChange);
+VARIANT_ENUM_CAST(Steam::PersonaState);
 
-VARIANT_ENUM_CAST(RemotePlayInputType);
-VARIANT_BITFIELD_CAST(RemotePlayKeyModifier);
-VARIANT_BITFIELD_CAST(RemotePlayMouseButton);
-VARIANT_ENUM_CAST(RemotePlayMouseWheelDirection);
-VARIANT_ENUM_CAST(RemotePlayScancode);
-VARIANT_BITFIELD_CAST(RemoteStoragePlatform);
-VARIANT_ENUM_CAST(RemoteStoragePublishedFileVisibility);
-VARIANT_ENUM_CAST(Result);
+VARIANT_ENUM_CAST(Steam::RemotePlayInputType);
+VARIANT_BITFIELD_CAST(Steam::RemotePlayKeyModifier);
+VARIANT_BITFIELD_CAST(Steam::RemotePlayMouseButton);
+VARIANT_ENUM_CAST(Steam::RemotePlayMouseWheelDirection);
+VARIANT_ENUM_CAST(Steam::RemotePlayScancode);
+VARIANT_BITFIELD_CAST(Steam::RemoteStoragePlatform);
+VARIANT_ENUM_CAST(Steam::RemoteStoragePublishedFileVisibility);
+VARIANT_ENUM_CAST(Steam::Result);
 
-VARIANT_ENUM_CAST(SCEPadTriggerEffectMode);
-VARIANT_ENUM_CAST(SocketConnectionType);
-VARIANT_ENUM_CAST(SocketState);
-VARIANT_ENUM_CAST(SteamAPIInitResult);
+VARIANT_ENUM_CAST(Steam::SCEPadTriggerEffectMode);
+VARIANT_ENUM_CAST(Steam::SocketConnectionType);
+VARIANT_ENUM_CAST(Steam::SocketState);
+VARIANT_ENUM_CAST(Steam::SteamAPIInitResult);
+VARIANT_ENUM_CAST(Steam::SteamControllerPad);
+VARIANT_ENUM_CAST(Steam::SteamHardwareType);
+VARIANT_ENUM_CAST(Steam::SteamHardwareDefaultConfig);
 
-VARIANT_ENUM_CAST(TextFilteringContext);
-VARIANT_ENUM_CAST(TimelineGameMode);
-VARIANT_ENUM_CAST(TimelineEventClipPriority);
+VARIANT_ENUM_CAST(Steam::TextFilteringContext);
+VARIANT_ENUM_CAST(Steam::TimelineGameMode);
+VARIANT_ENUM_CAST(Steam::TimelineEventClipPriority);
 
-VARIANT_ENUM_CAST(Universe);
-VARIANT_ENUM_CAST(UGCContentDescriptorID);
-VARIANT_ENUM_CAST(UGCMatchingUGCType);
-VARIANT_ENUM_CAST(UGCQuery);
-VARIANT_ENUM_CAST(UGCReadAction);
-VARIANT_ENUM_CAST(UserHasLicenseForAppResult);
-VARIANT_ENUM_CAST(UserUGCList);
-VARIANT_ENUM_CAST(UserUGCListSortOrder);
+VARIANT_ENUM_CAST(Steam::Universe);
+VARIANT_ENUM_CAST(Steam::UGCContentDescriptorID);
+VARIANT_ENUM_CAST(Steam::UGCMatchingUGCType);
+VARIANT_ENUM_CAST(Steam::UGCQuery);
+VARIANT_ENUM_CAST(Steam::UGCReadAction);
+VARIANT_ENUM_CAST(Steam::UserHasLicenseForAppResult);
+VARIANT_ENUM_CAST(Steam::UserUGCList);
+VARIANT_ENUM_CAST(Steam::UserUGCListSortOrder);
 
-VARIANT_ENUM_CAST(VoiceResult);
-VARIANT_ENUM_CAST(VRScreenshotType);
+VARIANT_ENUM_CAST(Steam::VoiceResult);
+VARIANT_ENUM_CAST(Steam::VRScreenshotType);
 
-VARIANT_ENUM_CAST(WorkshopEnumerationType);
-VARIANT_ENUM_CAST(WorkshopFileAction);
-VARIANT_ENUM_CAST(WorkshopFileType);
-VARIANT_ENUM_CAST(WorkshopVideoProvider);
-VARIANT_ENUM_CAST(WorkshopVote);
+VARIANT_ENUM_CAST(Steam::WorkshopEnumerationType);
+VARIANT_ENUM_CAST(Steam::WorkshopFileAction);
+VARIANT_ENUM_CAST(Steam::WorkshopFileType);
+VARIANT_ENUM_CAST(Steam::WorkshopVideoProvider);
+VARIANT_ENUM_CAST(Steam::WorkshopVote);
 
-VARIANT_ENUM_CAST(XboxOrigin);
+VARIANT_ENUM_CAST(Steam::XboxOrigin);
 
 
 #endif // GODOTSTEAM_H
