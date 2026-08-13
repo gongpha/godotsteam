@@ -105,10 +105,7 @@ int SteamProjectSettings::get_id_in_use() {
 /*
 int SteamProjectSettings::get_max_channels() {
 	return GLOBAL_GET("steam/multiplayer_peer/max_channels");
-<<<<<<< HEAD
 }*/
-=======
-}
 
 
 int SteamProjectSettings::get_playtest_id() {
@@ -119,4 +116,3 @@ int SteamProjectSettings::get_playtest_id() {
 int SteamProjectSettings::get_tool_id() {
 	return GLOBAL_GET("steam/initialization/app_data/tool_id");
 }
->>>>>>> upstream-cb/godot4
