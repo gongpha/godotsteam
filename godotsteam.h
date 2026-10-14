@@ -136,7 +136,6 @@ public:
 	uint64_t get_leaderboard_ugc_handle() const { return leaderboard_ugc_handle; }
 	uint64_t get_server_list_request() const { return (uint64)server_list_request; }
 	Dictionary get_steam_init_result() { return init_result; }
-	void run_internal_initialization();
 	void set_browser_handle(uint32_t new_browser_handle) { current_browser_handle = new_browser_handle; }
 	void set_current_app_id(uint32_t new_current_app_id) { current_app_id = new_current_app_id; }
 	void set_current_clan_id(uint64_t new_current_clan_id) { current_clan_id = new_current_clan_id; }
@@ -915,8 +914,6 @@ public:
 	Dictionary isBroadcasting();
 
 	// PROPERTIES
-	bool were_callbacks_embedded = false;
-
 	// Friends
 	uint64_t current_clan_id = 0;
 
@@ -950,6 +947,7 @@ private:
 	String godotsteam_version = "4.23";
 	Dictionary init_result;
 	bool is_init_success;
+	bool were_callbacks_embedded = false;
 
 	const SteamNetworkingConfigValue_t *convert_config_options(Dictionary config_options);
 	CSteamID createSteamID(uint64_t steam_id, AccountType account_type = AccountType(-1));
