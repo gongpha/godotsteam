@@ -30,9 +30,9 @@ You can [download pre-compiled versions of this repo here](https://codeberg.org/
 
 **Version 4.23.2 Changes**
 
-- Added: VSCode to .gitignore
+- Added: VSCode to .gitignore; thanks to ***docfail***
 - Added: fix for "poisoned client" bug; thanks to ***docfail***
-- Fixed: minor regressions
+- Fixed: minor regressions; thanks to ***Saalvage***
 - Fixed: incorrect name of MacOS file in .gdextension file
 - Removed: `set_auto_init()` and `set_embed_callbacks()` as they are useless
 
