@@ -460,7 +460,7 @@ void Steam::set_callbacks_connected(bool embed_callbacks) {
 	if (were_callbacks_embedded) {
 		return;
 	}
-	if (embed_callbacks || SteamProjectSettings::get_singleton()->get_embed_callbacks()) {
+	if (embed_callbacks || SteamProjectSettings::get_singleton()->get_embed_callbacks() && !SteamProjectSettings::get_singleton()->get_auto_init()) {
 		SceneTree *scene_tree = SceneTree::get_singleton();
 		ERR_FAIL_COND_MSG(scene_tree == nullptr, "SceneTree is not present, cannot connect Steam callbacks internally.");
 		scene_tree->connect("process_frame", callable_mp(this, &Steam::run_embedded_callbacks));
@@ -480,7 +480,7 @@ void Steam::set_callbacks_disconnected() {
 }
 
 void Steam::static_embed_callbacks() {
-	Steam::get_singleton()->set_callbacks_connected();
+	Steam::get_singleton()->set_callbacks_connected(true);
 }
 
 // Initialize the SDK, without worrying about the cause of failure.
@@ -504,10 +504,8 @@ bool Steam::steamInit(uint32_t app_id, bool embed_callbacks) {
 		if (SteamProjectSettings::get_singleton()->get_enable_debug()) {
 			SteamAPI_ISteamClient_SetWarningMessageHook(SteamClient(), steam_api_warning_message_hook);
 		}
-		if (!SteamProjectSettings::get_singleton()->get_auto_init()) {
-			set_callbacks_connected(embed_callbacks);
-		}
-
+		
+		set_callbacks_connected(embed_callbacks);
 		return true;
 	}
 	return false;
