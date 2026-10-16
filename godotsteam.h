@@ -944,7 +944,7 @@ protected:
 
 private:
 	// Main
-	String godotsteam_version = "4.23";
+	String godotsteam_version = "4.23.2";
 	Dictionary init_result;
 	bool is_init_success;
 	bool were_callbacks_embedded = false;

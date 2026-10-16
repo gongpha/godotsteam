@@ -66,9 +66,7 @@ public:
 	int get_tool_id();
 	void set_app_id(int new_app_id);
 	void set_app_type(int new_app_type);
-	void set_auto_init(bool is_auto_init);
 	void set_demo_id(int new_demo_id);
-	void set_embed_callbacks(bool is_embed_callbacks);
 	void set_enable_debug(bool is_debug_enabled);
 	void set_max_channels(int new_max_channels);
 	void set_playtest_id(int new_playtest_id);

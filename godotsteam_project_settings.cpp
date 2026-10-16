@@ -75,9 +75,7 @@ void SteamProjectSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tool_id"), &SteamProjectSettings::get_tool_id);
 	ClassDB::bind_method(D_METHOD("set_app_id", "new_app_id"), &SteamProjectSettings::set_app_id);
 	ClassDB::bind_method(D_METHOD("set_app_type", "new_app_type"), &SteamProjectSettings::set_app_type);
-	ClassDB::bind_method(D_METHOD("set_auto_init", "is_auto_init"), &SteamProjectSettings::set_auto_init);
 	ClassDB::bind_method(D_METHOD("set_demo_id", "new_demo_id"), &SteamProjectSettings::set_demo_id);
-	ClassDB::bind_method(D_METHOD("set_embed_callbacks", "is_embed_callbacks"), &SteamProjectSettings::set_embed_callbacks);
 	ClassDB::bind_method(D_METHOD("set_enable_debug", "is_debug_enabled"), &SteamProjectSettings::set_enable_debug);
 	ClassDB::bind_method(D_METHOD("set_max_channels", "new_max_channels"), &SteamProjectSettings::set_max_channels);
 	ClassDB::bind_method(D_METHOD("set_playtest_id", "new_playtest_id"), &SteamProjectSettings::set_playtest_id);
@@ -85,9 +83,9 @@ void SteamProjectSettings::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "app_id"), "set_app_id", "get_app_id");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "app_type"), "set_app_type", "get_app_type");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_init"), "set_auto_init", "get_auto_init");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_init"), "", "get_auto_init");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "demo_id"), "set_demo_id", "get_demo_id");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "embed_callbacks"), "set_embed_callbacks", "get_embed_callbacks");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "embed_callbacks"), "", "get_embed_callbacks");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enable_debug"), "set_enable_debug", "get_enable_debug");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_channels"), "set_max_channels", "get_max_channels");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "playtest_id"), "set_playtest_id", "get_playtest_id");
@@ -239,16 +237,8 @@ void SteamProjectSettings::set_app_type(int new_app_type) {
 	ProjectSettings::get_singleton()->set_setting(APP_TYPE_SETTING, new_app_type);
 }
 
-void SteamProjectSettings::set_auto_init(bool is_auto_init) {
-	ProjectSettings::get_singleton()->set_setting(STARTUP_INIT_SETTING, is_auto_init);
-}
-
 void SteamProjectSettings::set_demo_id(int new_demo_id) {
 	ProjectSettings::get_singleton()->set_setting(DEMO_ID_SETTING, new_demo_id);
-}
-
-void SteamProjectSettings::set_embed_callbacks(bool is_embed_callbacks) {
-	ProjectSettings::get_singleton()->set_setting(EMBED_CALLBACKS_SETTING, is_embed_callbacks);
 }
 
 void SteamProjectSettings::set_enable_debug(bool is_debug_enabled) {
