@@ -1,35 +1,36 @@
-//================================================================================================//
-// GodotSteam - godotsteam_enums.h
-//================================================================================================//
-//
-// Copyright (c) 2015-Current | GP Garcia and Contributors
-//
-// View all contributors at https://godotsteam.com/contribute/contributors/
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
-//
-//================================================================================================//
+/***************************************************************************/
+/*  godotsteam_enums.h                                                     */
+/***************************************************************************/
+/*                         This file is part of:                           */
+/*                              GODOTSTEAM                                 */
+/*                         https://godotsteam.com                          */
+/***************************************************************************/
+/* Copyright (c) 2015-Current | GP Garcia, Chris Ridenour,                 */
+/*                              and Contributors                           */
+/*                                                                         */
+/* View all contributors at https://godotsteam.com/contribute/contributors */
+/*                                                                         */
+/* Permission is hereby granted, free of charge, to any person obtaining   */
+/* a copy of this software and associated documentation files (the         */
+/* "Software"), to deal in the Software without restriction, including     */
+/* without limitation the rights to use, copy, modify, merge, publish,     */
+/* distribute, sublicense, and/or sell copies of the Software, and to      */
+/* permit persons to whom the Software is furnished to do so, subject to   */
+/* the following conditions:                                               */
+/*                                                                         */
+/* The above copyright notice and this permission notice shall be included */
+/* in all copies or substantial portions of the Software.                  */
+/*                                                                         */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,         */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF      */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY    */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,    */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE       */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                  */
+/***************************************************************************/
 
-
-#ifndef GODOTSTEAM_ENUMS_H
-#define GODOTSTEAM_ENUMS_H
-
+#pragma once
 
 enum AccountType {
 	// Found in steamclientpublic.h
@@ -572,7 +573,6 @@ enum HTMLMouseCursor {
 	HTML_MOUSE_CURSOR_LAST = ISteamHTMLSurface::k_EHTMLMouseCursor_last
 };
 
-
 // HTTP enums
 enum HTTPMethod {
 	HTTP_METHOD_INVALID = k_EHTTPMethodInvalid,
@@ -647,7 +647,6 @@ enum HTTPStatusCode {
 	HTTP_STATUS_CODE_511_NETWORK_AUTHENTICATION_REQUIRED = k_EHTTPStatusCode511NetworkAuthenticationRequired,
 	HTTP_STATUS_CODE_5XX_UNKNOWN = k_EHTTPStatusCode5xxUnknown
 };
-
 
 // Input enums
 enum ControllerHapticLocation {
@@ -1169,8 +1168,8 @@ enum InputActionOrigin {
 	INPUT_ACTION_ORIGIN_SWITCH2_Y = k_EInputActionOrigin_Switch2_Y,
 	INPUT_ACTION_ORIGIN_SWITCH2_LEFT_BUMPER = k_EInputActionOrigin_Switch2_LeftBumper,
 	INPUT_ACTION_ORIGIN_SWITCH2_RIGHT_BUMPER = k_EInputActionOrigin_Switch2_RightBumper,
-	INPUT_ACTION_ORIGIN_SWITCH2_PLUS = k_EInputActionOrigin_Switch2_Plus,	//Start
-	INPUT_ACTION_ORIGIN_SWITCH2_MINUS = k_EInputActionOrigin_Switch2_Minus,	//Back
+	INPUT_ACTION_ORIGIN_SWITCH2_PLUS = k_EInputActionOrigin_Switch2_Plus, //Start
+	INPUT_ACTION_ORIGIN_SWITCH2_MINUS = k_EInputActionOrigin_Switch2_Minus, //Back
 	INPUT_ACTION_ORIGIN_SWITCH2_CAPTURE = k_EInputActionOrigin_Switch2_Capture,
 	INPUT_ACTION_ORIGIN_SWITCH2_LEFT_TRIGGER_PULL = k_EInputActionOrigin_Switch2_LeftTrigger_Pull,
 	INPUT_ACTION_ORIGIN_SWITCH2_LEFT_TRIGGER_CLICK = k_EInputActionOrigin_Switch2_LeftTrigger_Click,
@@ -1491,14 +1490,12 @@ enum XboxOrigin {
 	XBOX_ORIGIN_COUNT = k_EXboxOrigin_Count
 };
 
-
 // Inventory enums
 enum ItemFlags {
 	STEAM_ITEM_NO_TRADE = k_ESteamItemNoTrade,
 	STEAM_ITEM_REMOVED = k_ESteamItemRemoved,
 	STEAM_ITEM_CONSUMED = k_ESteamItemConsumed
 };
-
 
 // Matchmaking enums
 enum ChatMemberStateChange {
@@ -1534,7 +1531,6 @@ enum LobbyType {
 
 };
 
-
 // Matchmaking Servers enums
 enum MatchMakingServerResponse {
 	// Found in matchmakingtypes.h
@@ -1543,7 +1539,6 @@ enum MatchMakingServerResponse {
 	NO_SERVERS_LISTED_ON_MASTER_SERVER = eNoServersListedOnMasterServer
 };
 
-
 // Music enums
 enum AudioPlaybackStatus {
 	AUDIO_PLAYBACK_UNDEFINED = AudioPlayback_Undefined,
@@ -1551,7 +1546,6 @@ enum AudioPlaybackStatus {
 	AUDIO_PLAYBACK_PAUSED = AudioPlayback_Paused,
 	AUDIO_PLAYBACK_IDLE = AudioPlayback_Idle
 };
-
 
 // Networking enums
 enum P2PSend {
@@ -1589,7 +1583,6 @@ enum SocketState {
 	NET_SOCKET_STATE_REMOTE_END_DISCONNECTED = k_ESNetSocketStateRemoteEndDisconnected,
 	NET_SOCKET_STATE_BROKEN = k_ESNetSocketStateConnectionBroken
 };
-
 
 // Networking Utils enums
 enum NetworkingAvailability {
@@ -1802,7 +1795,6 @@ enum NetworkingSocketsDebugOutputType {
 	NETWORKING_SOCKET_DEBUG_OUTPUT_TYPE_FORCE_32BIT = k_ESteamNetworkingSocketsDebugOutputType__Force32Bit
 };
 
-
 // Parental Settings enums
 enum ParentalFeature {
 	// Found in isteamparentalsettings.h
@@ -1826,7 +1818,6 @@ enum ParentalFeature {
 	FEATURE_MAX = k_EFeatureMax
 };
 
-
 // Steam Parties enums
 enum PartyBeaconLocationData {
 	// Found in isteammatchmaking.h
@@ -1842,7 +1833,6 @@ enum PartyBeaconLocationType {
 	STEAM_PARTY_BEACON_LOCATION_TYPE_CHAT_GROUP = k_ESteamPartyBeaconLocationType_ChatGroup,
 	STEAM_PARTY_BEACON_LOCATION_TYPE_MAX = k_ESteamPartyBeaconLocationType_Max
 };
-
 
 // Remote Play enums
 enum DeviceFormFactor {
@@ -2003,7 +1993,6 @@ enum RemotePlayScancode {
 	REMOTE_PLAYER_SCANCODE_RIGHT_GUI = k_ERemotePlayScancodeRightGUI
 };
 
-
 // Remote Storage enums
 enum FilePathType {
 	// Found in isteamremotestorage.h
@@ -2101,7 +2090,6 @@ enum WorkshopVote {
 	WORKSHOP_VOTE_LATER = k_EWorkshopVoteLater
 };
 
-
 // Screenshot enums
 enum VRScreenshotType {
 	// Found in isteamscreenshots.h
@@ -2112,7 +2100,6 @@ enum VRScreenshotType {
 	VR_SCREENSHOT_TYPE_MONO_PANORAMA = k_EVRScreenshotType_MonoPanorama,
 	VR_SCREENSHOT_TYPE_STEREO_PANORAMA = k_EVRScreenshotType_StereoPanorama
 };
-
 
 // Timeline enums
 enum TimelineGameMode {
@@ -2132,7 +2119,6 @@ enum TimelineEventClipPriority {
 	TIMELINE_EVENT_CLIP_PRIORITY_STANDARD = k_ETimelineEventClipPriority_Standard,
 	TIMELINE_EVENT_CLIP_PRIORITY_FEATURED = k_ETimelineEventClipPriority_Featured
 };
-
 
 // UGC enums
 enum ItemPreviewType {
@@ -2235,7 +2221,7 @@ enum UGCQuery {
 	UGC_QUERY_RANKED_BY_LIFETIME_PLAYTIME_SESSIONS = k_EUGCQuery_RankedByLifetimePlaytimeSessions,
 	UGC_QUERY_RANKED_BY_LAST_UPDATED_DATE = k_EUGCQuery_RankedByLastUpdatedDate,
 	UGC_QUERY_RANKED_BY_NUM_PARENT_ITEMS = k_EUGCQuery_RankedByNumParentItems,
-	UGC_QUERY_RANKED_BY_NUM_PARENT_COLLECTIONS = k_EUGCQuery_RankedByNumParentCollections	
+	UGC_QUERY_RANKED_BY_NUM_PARENT_COLLECTIONS = k_EUGCQuery_RankedByNumParentCollections
 };
 
 enum UserUGCList {
@@ -2261,7 +2247,6 @@ enum UserUGCListSortOrder {
 	USER_UGC_LIST_SORT_ORDER_VOTE_SCORE_DESC = k_EUserUGCListSortOrder_VoteScoreDesc,
 	USER_UGC_LIST_SORT_ORDER_FOR_MODERATION = k_EUserUGCListSortOrder_ForModeration
 };
-
 
 // User enums
 enum FailureType {
@@ -2300,7 +2285,6 @@ enum DurationControlProgress {
 	DURATION_CONTROL_EXIT_SOON_NIGHT = k_EDurationControl_ExitSoon_Night
 };
 
-
 // User Stats enums
 enum LeaderboardDataRequest {
 	// Found in isteamuserstats.h
@@ -2331,7 +2315,6 @@ enum LeaderboardUploadScoreMethod {
 	LEADERBOARD_UPLOAD_SCORE_METHOD_KEEP_BEST = k_ELeaderboardUploadScoreMethodKeepBest,
 	LEADERBOARD_UPLOAD_SCORE_METHOD_FORCE_UPDATE = k_ELeaderboardUploadScoreMethodForceUpdate
 };
-
 
 // Utils enums
 enum APICallFailure {
@@ -2397,6 +2380,3 @@ enum TextFilteringContext {
 	TEXT_FILTERING_CONTEXT_CHAT = k_ETextFilteringContextChat,
 	TEXT_FILTERING_CONTEXT_NAME = k_ETextFilteringContextName
 };
-
-
-#endif // GODOTSTEAM_ENUMS_H

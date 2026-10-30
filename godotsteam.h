@@ -1,34 +1,36 @@
-//================================================================================================//
-// GodotSteam - godotsteam.h
-//================================================================================================//
-//
-// Copyright (c) 2015-Current | GP Garcia and Contributors
-//
-// View all contributors at https://godotsteam.com/contribute/contributors/
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
-//
-//================================================================================================//
+/***************************************************************************/
+/*  godotsteam.h                                                           */
+/***************************************************************************/
+/*                         This file is part of:                           */
+/*                              GODOTSTEAM                                 */
+/*                         https://godotsteam.com                          */
+/***************************************************************************/
+/* Copyright (c) 2015-Current | GP Garcia, Chris Ridenour,                 */
+/*                              and Contributors                           */
+/*                                                                         */
+/* View all contributors at https://godotsteam.com/contribute/contributors */
+/*                                                                         */
+/* Permission is hereby granted, free of charge, to any person obtaining   */
+/* a copy of this software and associated documentation files (the         */
+/* "Software"), to deal in the Software without restriction, including     */
+/* without limitation the rights to use, copy, modify, merge, publish,     */
+/* distribute, sublicense, and/or sell copies of the Software, and to      */
+/* permit persons to whom the Software is furnished to do so, subject to   */
+/* the following conditions:                                               */
+/*                                                                         */
+/* The above copyright notice and this permission notice shall be included */
+/* in all copies or substantial portions of the Software.                  */
+/*                                                                         */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,         */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF      */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY    */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,    */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE       */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                  */
+/***************************************************************************/
 
-#ifndef GODOTSTEAM_H
-#define GODOTSTEAM_H
-
+#pragma once
 
 // Turn off MSVC-only warning about strcpy
 #ifdef _MSC_VER
@@ -37,49 +39,70 @@
 #pragma warning(disable : 4828)
 #endif
 
-
 // Include INT types header
 #include <inttypes.h>
 
 // Include Steamworks API headers
+#include "steam/isteamdualsense.h"
 #include "steam/steam_api_flat.h"
 #include "steam/steamnetworkingfakeip.h"
-#include "steam/isteamdualsense.h"
 
+#ifdef GDEXTENSION
+// Include Godot-CPP headers
+#include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/object.hpp>
+#include <godot_cpp/classes/os.hpp>
+#include <godot_cpp/classes/project_settings.hpp>
+#include <godot_cpp/classes/rendering_server.hpp>
+#include <godot_cpp/classes/scene_tree.hpp>
+#include <godot_cpp/core/class_db.hpp>
+#include <godot_cpp/variant/callable_method_pointer.hpp>
+#include <godot_cpp/variant/dictionary.hpp>
+#include <godot_cpp/variant/string.hpp>
+
+using namespace godot;
+#else
 // Include Godot headers
 #include "core/config/project_settings.h"
+#include "core/version.h"
+#if VERSION_MAJOR == 4 && VERSION_MINOR < 7
+#include "core/object/callable_method_pointer.h"
+#else
 #include "core/object/callable_mp.h"
+#endif
 #include "core/object/class_db.h"
 #include "core/object/object.h"
 #include "core/os/os.h"
 #include "core/variant/dictionary.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/texture.h"
+#endif
 
 // Include GodotSteam headers
-#include "godotsteam_project_settings.h"
 #include "godotsteam_constants.h"
+#include "godotsteam_project_settings.h"
 
 // Include some system headers
-#include "map"
+#include <map>
 
 
 class Steam : public Object,
-	ISteamMatchmakingPingResponse,
-	ISteamMatchmakingPlayersResponse,
-	ISteamMatchmakingRulesResponse,
-	ISteamMatchmakingServerFriendsResponse,
-	ISteamMatchmakingServerListResponse {
-
+			  ISteamMatchmakingPingResponse,
+			  ISteamMatchmakingPlayersResponse,
+			  ISteamMatchmakingRulesResponse,
+			  ISteamMatchmakingServerFriendsResponse,
+			  ISteamMatchmakingServerListResponse {
 	GDCLASS(Steam, Object);
 
 
 public:
-	static Steam *get_singleton();
+	static Steam *get_singleton() { return singleton; };
 	Steam();
 	~Steam();
 
-	#include "godotsteam_enums.h"
+	static void static_embed_callbacks();
+
+#include "godotsteam_enums.h"
 
 	// STEAMWORKS FUNCTIONS
 	// Main
@@ -95,6 +118,7 @@ public:
 	bool isSteamRunning();
 	void releaseCurrentThreadMemory();
 	bool restartAppIfNecessary(uint32_t app_id);
+	void run_callbacks();
 	bool steamInit(uint32_t app_id = 0, bool embed_callbacks = false);
 	Dictionary steamInitEx(uint32_t app_id = 0, bool embed_callbacks = false);
 	void steamShutdown();
@@ -112,14 +136,12 @@ public:
 	uint64_t get_leaderboard_ugc_handle() const { return leaderboard_ugc_handle; }
 	uint64_t get_server_list_request() const { return (uint64)server_list_request; }
 	Dictionary get_steam_init_result() { return init_result; }
-	void run_internal_initialization();
-	void set_browser_handle(uint32_t new_browser_handle){ current_browser_handle = new_browser_handle; }
-	void set_current_app_id(uint32_t new_current_app_id){ current_app_id = new_current_app_id; }
-	void set_current_clan_id(uint64_t new_current_clan_id){ current_clan_id = new_current_clan_id; }
-	void set_current_steam_id(uint64_t new_current_steam_id){ current_steam_id = new_current_steam_id; }
-	void set_internal_callbacks(bool embed_callbacks);
-	void set_inventory_handle(int32 new_inventory_handle){ inventory_handle = new_inventory_handle; }
-	void set_inventory_update_handle(uint64_t new_inventory_update_handle){ inventory_update_handle = new_inventory_update_handle; }
+	void set_browser_handle(uint32_t new_browser_handle) { current_browser_handle = new_browser_handle; }
+	void set_current_app_id(uint32_t new_current_app_id) { current_app_id = new_current_app_id; }
+	void set_current_clan_id(uint64_t new_current_clan_id) { current_clan_id = new_current_clan_id; }
+	void set_current_steam_id(uint64_t new_current_steam_id) { current_steam_id = new_current_steam_id; }
+	void set_inventory_handle(int32 new_inventory_handle) { inventory_handle = new_inventory_handle; }
+	void set_inventory_update_handle(uint64_t new_inventory_update_handle) { inventory_update_handle = new_inventory_update_handle; }
 	void set_leaderboard_details_max(int new_leaderboard_details_max) {
 		if (new_leaderboard_details_max > k_cLeaderboardDetailsMax || new_leaderboard_details_max < 0) {
 			new_leaderboard_details_max = k_cLeaderboardDetailsMax;
@@ -127,9 +149,9 @@ public:
 		leaderboard_details_max = new_leaderboard_details_max;
 	}
 	void set_leaderboard_entries(Array new_leaderboard_entries) { leaderboard_entries_array = new_leaderboard_entries; }
-	void set_leaderboard_handle(uint64_t new_leaderboard_handle){ leaderboard_handle = new_leaderboard_handle; }
-	void set_leaderboard_ugc_handle(uint64_t new_leaderboard_ugc_handle){ leaderboard_ugc_handle = new_leaderboard_ugc_handle; }
-	void set_server_list_request(uint64_t new_server_list_request){ server_list_request = (HServerListRequest)new_server_list_request; }
+	void set_leaderboard_handle(uint64_t new_leaderboard_handle) { leaderboard_handle = new_leaderboard_handle; }
+	void set_leaderboard_ugc_handle(uint64_t new_leaderboard_ugc_handle) { leaderboard_ugc_handle = new_leaderboard_ugc_handle; }
+	void set_server_list_request(uint64_t new_server_list_request) { server_list_request = (HServerListRequest)new_server_list_request; }
 
 	// Apps
 	int getAppBuildId();
@@ -352,7 +374,7 @@ public:
 	bool inputShutdown();
 	bool newDataAvailable();
 	void runFrame(bool reserved_value = true);
-//	void setDualSenseTriggerEffect(uint64_t input_handle, int parameter_index, int trigger_mask, SCEPadTriggerEffectMode effect_mode, int position, int amplitude, int frequency); - Need massive overhaul.
+	//	void setDualSenseTriggerEffect(uint64_t input_handle, int parameter_index, int trigger_mask, SCEPadTriggerEffectMode effect_mode, int position, int amplitude, int frequency); - Need massive overhaul.
 	bool setInputActionManifestFilePath(const String &manifest_path);
 	void setLEDColor(uint64_t input_handle, uint8_t color_r, uint8_t color_g, uint8_t color_b, InputLEDFlag flags);
 	bool showBindingPanel(uint64_t input_handle);
@@ -498,7 +520,7 @@ public:
 	uint32_t createPollGroup();
 	Dictionary createSocketPair(bool loopback, uint64_t remote_steam_id1, uint64_t remote_steam_id2);
 	bool destroyPollGroup(uint32_t poll_group);
-//	int findRelayAuthTicketForServer(int port);	<------ Uses datagram relay structs which were removed from base SDK
+	//	int findRelayAuthTicketForServer(int port);	<------ Uses datagram relay structs which were removed from base SDK
 	int flushMessagesOnConnection(uint32_t connection_handle);
 	NetworkingAvailability getAuthenticationStatus();
 	Dictionary getCertificateRequest();
@@ -508,8 +530,8 @@ public:
 	uint64_t getConnectionUserData(uint32_t connection_handle);
 	Dictionary getDetailedConnectionStatus(uint32_t connection_handle);
 	Dictionary getFakeIP(int first_port = 0);
-//	int getGameCoordinatorServerLogin(const String& app_data);	<------ Uses datagram relay structs which were removed from base SDK
-//	int getHostedDedicatedServerAddress();	<------ Uses datagram relay structs which were removed from base SDK
+	//	int getGameCoordinatorServerLogin(const String& app_data);	<------ Uses datagram relay structs which were removed from base SDK
+	//	int getHostedDedicatedServerAddress();	<------ Uses datagram relay structs which were removed from base SDK
 	uint32_t getHostedDedicatedServerPOPId();
 	uint16_t getHostedDedicatedServerPort();
 	String getListenSocketAddress(uint32_t socket, bool with_port = true);
@@ -517,7 +539,7 @@ public:
 	NetworkingAvailability initAuthentication();
 	Array receiveMessagesOnConnection(uint32_t connection_handle, int max_messages);
 	Array receiveMessagesOnPollGroup(uint32_t poll_group, int max_messages);
-//	Dictionary receivedRelayAuthTicket();	<------ Uses datagram relay structs which were removed from base SDK
+	//	Dictionary receivedRelayAuthTicket();	<------ Uses datagram relay structs which were removed from base SDK
 	void resetIdentity(uint64_t remote_steam_id);
 	void runNetworkingCallbacks();
 	PackedInt64Array sendMessages(uint32_t connection_handle, Array messages, int flags, bool delete_failed_messages);
@@ -550,7 +572,7 @@ public:
 	bool setConnectionConfigValueFloat(uint32_t connection_handle, NetworkingConfigValue config, float value);
 	bool setConnectionConfigValueInt32(uint32_t connection_handle, NetworkingConfigValue config, int32_t value);
 	bool setConnectionConfigValueString(uint32_t connection_handle, NetworkingConfigValue config, const String &value);
-//	void setDebugOutputFunction(NetworkingSocketsDebugOutputType detail_level);
+	//	void setDebugOutputFunction(NetworkingSocketsDebugOutputType detail_level);
 	bool setGlobalCallbackFakeIPResult();
 	bool setGlobalCallbackMessagesSessionFailed();
 	bool setGlobalCallbackMessagesSessionRequest();
@@ -653,7 +675,7 @@ public:
 	uint32_t writeScreenshot(const PackedByteArray &rgb, int width, int height);
 
 	// Timeline
-	void addGamePhaseTag(const String &tag_name, const String &tag_icon, const String &tag_group, uint32_t priority );
+	void addGamePhaseTag(const String &tag_name, const String &tag_icon, const String &tag_group, uint32_t priority);
 	uint64_t addInstantaneousTimelineEvent(const String &title, const String &description, const String &icon, uint32_t icon_priority, float start_offset_seconds, TimelineEventClipPriority possible_clip = TIMELINE_EVENT_CLIP_PRIORITY_NONE);
 	uint64_t addRangeTimelineEvent(const String &title, const String &description, const String &icon, uint32_t icon_priority, float start_offset_seconds, float duration, TimelineEventClipPriority possible_clip = TIMELINE_EVENT_CLIP_PRIORITY_NONE);
 	void clearTimelineTooltip(float time_delta);
@@ -663,7 +685,7 @@ public:
 	void endRangeTimelineEvent(uint64_t timeline_event_handle, float end_offset_seconds);
 	void openOverlayToGamePhase(const String &phase_id);
 	void openOverlayToTimelineEvent(const uint64_t timeline_event_handle);
-	void removeTimelineEvent(uint64_t this_event );
+	void removeTimelineEvent(uint64_t this_event);
 	void setGamePhaseAttribute(const String &attribute_group, const String &attribute_value, uint32_t priority);
 	void setGamePhaseID(const String &phase_id);
 	void setTimelineGameMode(TimelineGameMode mode);
@@ -891,7 +913,6 @@ public:
 	void getVideoURL(uint32_t app_id);
 	Dictionary isBroadcasting();
 
-
 	// PROPERTIES
 	// Friends
 	uint64_t current_clan_id = 0;
@@ -922,15 +943,11 @@ protected:
 
 
 private:
-	void run_callbacks();
-	void run_internal_callbacks();
-	void start_initialization_verbose(uint32_t app_id = 0, bool embed_callbacks = false);
-
 	// Main
-	String godotsteam_version = "4.21";
+	String godotsteam_version = "4.23.2";
 	Dictionary init_result;
 	bool is_init_success;
-	bool were_callbacks_embedded;
+	bool were_callbacks_embedded = false;
 
 	const SteamNetworkingConfigValue_t *convert_config_options(Dictionary config_options);
 	CSteamID createSteamID(uint64_t steam_id, AccountType account_type = AccountType(-1));
@@ -942,6 +959,9 @@ private:
 	SteamNetworkingIPAddr getSteamIPFromString(String ip_string);
 	String getStringFromIP(uint32_t ip_address);
 	String getStringFromSteamIP(SteamNetworkingIPAddr this_address);
+	void run_embedded_callbacks();
+	void set_callbacks_connected(bool embed_callbacks = false);
+	void set_callbacks_disconnected();
 
 	// Matchmaking Servers
 	HServerListRequest server_list_request = 0;
@@ -958,7 +978,6 @@ private:
 
 	// Utils
 	uint64_t api_handle = 0;
-
 
 	// STEAM CALLBACKS
 	// Apps
@@ -1053,12 +1072,12 @@ private:
 	// ISteamMatchmakingServerListResponse
 	void ServerResponded(HServerListRequest list_request_handle, int server) override;
 	void ServerFailedToRespond(HServerListRequest list_request_handle, int server) override;
-	void RefreshComplete (HServerListRequest list_request_handle, EMatchMakingServerResponse response) override;
+	void RefreshComplete(HServerListRequest list_request_handle, EMatchMakingServerResponse response) override;
 	// ISteamMatchmakingServerFriendsReponse
 	void AddFriendToList(CSteamID steam_id, const char *friend_name, bool currently_connected) override;
 	void FriendsFailedToRespond() override;
 	void FriendsRefreshComplete() override;
-	
+
 	// Music
 	STEAM_CALLBACK(Steam, music_playback_status_has_changed, PlaybackStatusHasChanged_t, callbackMusicPlaybackStatusHasChanged);
 	STEAM_CALLBACK(Steam, music_volume_has_changed, VolumeHasChanged_t, callbackMusicVolumeHasChanged);
@@ -1138,7 +1157,6 @@ private:
 	STEAM_CALLBACK(Steam, broadcast_upload_stop, BroadcastUploadStop_t, callbackBroadcastUploadStop);
 	STEAM_CALLBACK(Steam, get_opf_settings_result, GetOPFSettingsResult_t, callbackGetOPFSettingsResult);
 	STEAM_CALLBACK(Steam, get_video_result, GetVideoURLResult_t, callbackGetVideoResult);
-
 
 	// STEAM CALL RESULTS
 	// Friends
@@ -1269,7 +1287,6 @@ private:
 	CCallResult<Steam, CheckFileSignature_t> callResultCheckFileSignature;
 	void check_file_signature(CheckFileSignature_t *call_data, bool io_failure);
 };
-
 
 VARIANT_ENUM_CAST(Steam::AccountType);
 VARIANT_ENUM_CAST(Steam::APICallFailure);
@@ -1406,6 +1423,3 @@ VARIANT_ENUM_CAST(Steam::WorkshopVideoProvider);
 VARIANT_ENUM_CAST(Steam::WorkshopVote);
 
 VARIANT_ENUM_CAST(Steam::XboxOrigin);
-
-
-#endif // GODOTSTEAM_H

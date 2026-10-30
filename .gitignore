@@ -14,6 +14,8 @@
 # Python generated
 __pycache__/
 *.pyc
+.mypy_cache/
+.ruff_cache/
 
 # Steam SDK
 sdk/*
@@ -22,6 +24,14 @@ sdk/*
 # Doxygen
 doxygen/
 
+# Misc
+/bin/
+/gen/
+/custom.py
+.sconsign.dblite
+/tags
+/TAGS
+*.swp
 
 # Files built by Visual Studio
 *_i.c
@@ -53,3 +63,5 @@ doxygen/
 *.svclog
 *.scc
 
+# VSCode Files
+.vscode/

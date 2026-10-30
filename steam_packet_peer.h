@@ -1,38 +1,53 @@
-//================================================================================================//
-// GodotSteam - steam_packet_peer.h
-//================================================================================================//
-//
-// Copyright (c) 2017-Current | Chris Ridenour, Ryan Leverenz, GP Garcia, and Contributors
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
-//
-//================================================================================================//
+/***************************************************************************/
+/*  steam_packet_peer.h                                                    */
+/***************************************************************************/
+/*                         This file is part of:                           */
+/*                              GODOTSTEAM                                 */
+/*                         https://godotsteam.com                          */
+/***************************************************************************/
+/* Copyright (c) 2015-Current | GP Garcia, Chris Ridenour,                 */
+/*                              and Contributors                           */
+/*                                                                         */
+/* View all contributors at https://godotsteam.com/contribute/contributors */
+/*                                                                         */
+/* Permission is hereby granted, free of charge, to any person obtaining   */
+/* a copy of this software and associated documentation files (the         */
+/* "Software"), to deal in the Software without restriction, including     */
+/* without limitation the rights to use, copy, modify, merge, publish,     */
+/* distribute, sublicense, and/or sell copies of the Software, and to      */
+/* permit persons to whom the Software is furnished to do so, subject to   */
+/* the following conditions:                                               */
+/*                                                                         */
+/* The above copyright notice and this permission notice shall be included */
+/* in all copies or substantial portions of the Software.                  */
+/*                                                                         */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,         */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF      */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY    */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,    */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE       */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                  */
+/***************************************************************************/
 
+#pragma once
 
-#ifndef STEAM_PACKET_PEER_H
-#define STEAM_PACKET_PEER_H
+// Include Godot headers
+#ifdef GDEXTENSION
+#include <godot_cpp/classes/packet_peer_extension.hpp>
+#include <godot_cpp/templates/list.hpp>
 
-
+#include <godot_cpp/core/ext_wrappers.gen.inc>
+using namespace godot;
+#else
+#include "core/version.h"
+#if VERSION_MAJOR == 4 && VERSION_MINOR > 6
+#include "core/extension/ext_wrappers.gen.h"
+#endif
 #include "core/io/packet_peer.h"
-#include "core/templates/list.h"
 #include "core/object/class_db.h"
-#include "scene/main/multiplayer_peer.h"
+#include "core/templates/list.h"
+#endif
 
 // Include Steamworks API headers
 #include "steam/steam_api_flat.h"
@@ -41,8 +56,13 @@
 #include "godotsteam_project_settings.h"
 
 
+#ifdef GDEXTENSION
+class SteamPacketPeer : public PacketPeerExtension {
+	GDCLASS(SteamPacketPeer, PacketPeerExtension);
+#else
 class SteamPacketPeer : public PacketPeer {
 	GDCLASS(SteamPacketPeer, PacketPeer);
+#endif
 
 
 public:
@@ -97,10 +117,25 @@ public:
 
 	void set_lanes(Lanes *p_lanes) { lanes = p_lanes; }
 
-	virtual int get_available_packet_count() const override;
+	MODBIND0RC(int, get_available_packet_count);
+	MODBIND0RC(int, get_max_packet_size);
+
+#ifdef GDEXTENSION
+	Error get_packet(const uint8_t **r_buffer, int &r_buffer_size);
+	Error put_packet(const uint8_t *p_buffer, int p_buffer_size);
+	virtual Error _get_packet(const uint8_t **r_buffer, int *r_buffer_size) override {
+		int ret_size = 0;
+		Error err = get_packet(r_buffer, ret_size);
+		*r_buffer_size = ret_size;
+		return err;
+	}
+	virtual Error _put_packet(const uint8_t *p_buffer, int p_buffer_size) override {
+		return put_packet(p_buffer, p_buffer_size);
+	}
+#else
 	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) override;
 	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;
-	virtual int get_max_packet_size() const override;
+#endif
 
 	Error send(int p_channel, const uint8_t *p_data, int p_size, int p_flags);
 	int get_ping() const;
@@ -119,6 +154,3 @@ protected:
 
 
 VARIANT_ENUM_CAST(SteamPacketPeer::PeerState);
-
-
-#endif // STEAM_PACKET_PEER_H

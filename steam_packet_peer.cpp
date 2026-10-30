@@ -1,33 +1,36 @@
-//================================================================================================//
-// GodotSteam - steam_packet_peer.cpp
-//================================================================================================//
-//
-// Copyright (c) 2017-Current | Chris Ridenour, Ryan Leverenz, GP Garcia, and Contributors
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
-//
-//================================================================================================//
-
+/***************************************************************************/
+/*  steam_packet_peer.cpp                                                  */
+/***************************************************************************/
+/*                         This file is part of:                           */
+/*                              GODOTSTEAM                                 */
+/*                         https://godotsteam.com                          */
+/***************************************************************************/
+/* Copyright (c) 2015-Current | GP Garcia, Chris Ridenour,                 */
+/*                              and Contributors                           */
+/*                                                                         */
+/* View all contributors at https://godotsteam.com/contribute/contributors */
+/*                                                                         */
+/* Permission is hereby granted, free of charge, to any person obtaining   */
+/* a copy of this software and associated documentation files (the         */
+/* "Software"), to deal in the Software without restriction, including     */
+/* without limitation the rights to use, copy, modify, merge, publish,     */
+/* distribute, sublicense, and/or sell copies of the Software, and to      */
+/* permit persons to whom the Software is furnished to do so, subject to   */
+/* the following conditions:                                               */
+/*                                                                         */
+/* The above copyright notice and this permission notice shall be included */
+/* in all copies or substantial portions of the Software.                  */
+/*                                                                         */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,         */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF      */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY    */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,    */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE       */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                  */
+/***************************************************************************/
 
 #include "steam_packet_peer.h"
-
-#include "core/object/class_db.h"
 
 
 SteamPacketPeer::SteamPacketPeer() {
@@ -53,7 +56,9 @@ void SteamPacketPeer::set_steam_id(uint64_t p_steam_id) {
 	steam_id = p_steam_id;
 }
 
-uint64_t SteamPacketPeer::get_steam_id() const { return steam_id; }
+uint64_t SteamPacketPeer::get_steam_id() const {
+	return steam_id;
+}
 
 void SteamPacketPeer::set_connection_handle(HSteamNetConnection p_handle) {
 	connection_handle = p_handle;
@@ -63,9 +68,8 @@ void SteamPacketPeer::set_connection_handle(HSteamNetConnection p_handle) {
 	int num_lanes = lanes ? lanes->lane_priority_list.size() : 1;
 
 	SteamAPI_ISteamNetworkingSockets_ConfigureConnectionLanes(
-			SteamAPI_SteamNetworkingSockets_SteamAPI(), 
-			connection_handle, num_lanes, lane_priorities, lane_bandwidths
-			);
+			SteamAPI_SteamNetworkingSockets_SteamAPI(),
+			connection_handle, num_lanes, lane_priorities, lane_bandwidths);
 }
 
 HSteamNetConnection SteamPacketPeer::get_connection_handle() const {
@@ -76,15 +80,20 @@ void SteamPacketPeer::set_peer_id(uint32_t p_peer_id) {
 	peer_id = p_peer_id;
 	SteamAPI_ISteamNetworkingSockets_SetConnectionUserData(
 			SteamAPI_SteamNetworkingSockets_SteamAPI(),
-			connection_handle, p_peer_id
-			);
+			connection_handle, p_peer_id);
 }
 
-uint32_t SteamPacketPeer::get_peer_id() const { return peer_id; }
+uint32_t SteamPacketPeer::get_peer_id() const {
+	return peer_id;
+}
 
-void SteamPacketPeer::set_state(PeerState p_state) { state = p_state; }
+void SteamPacketPeer::set_state(PeerState p_state) {
+	state = p_state;
+}
 
-SteamPacketPeer::PeerState SteamPacketPeer::get_state() const { return state; }
+SteamPacketPeer::PeerState SteamPacketPeer::get_state() const {
+	return state;
+}
 
 Error SteamPacketPeer::send(int p_channel, const uint8_t *p_data, int p_size, int p_flags) {
 	ERR_FAIL_COND_V(state != STATE_CONNECTED, ERR_UNAVAILABLE);
@@ -109,8 +118,7 @@ Error SteamPacketPeer::send(int p_channel, const uint8_t *p_data, int p_size, in
 	}
 
 	SteamNetworkingMessage_t *packet = SteamAPI_ISteamNetworkingUtils_AllocateMessage(
-			SteamAPI_SteamNetworkingUtils_SteamAPI(), sizeof(uint8) + p_size
-			);
+			SteamAPI_SteamNetworkingUtils_SteamAPI(), sizeof(uint8) + p_size);
 	ERR_FAIL_COND_V(!packet, ERR_CANT_CREATE);
 
 	packet->m_conn = connection_handle;
@@ -121,10 +129,9 @@ Error SteamPacketPeer::send(int p_channel, const uint8_t *p_data, int p_size, in
 	data[0] = (uint8)p_channel; // Store the channel in the first byte of the message data for retrieval on the receiving end
 	memcpy(data + sizeof(uint8), p_data, p_size);
 
-	SteamNetworkingMessage_t *messages[1] = {packet};
+	SteamNetworkingMessage_t *messages[1] = { packet };
 	SteamAPI_ISteamNetworkingSockets_SendMessages(
-			SteamAPI_SteamNetworkingSockets_SteamAPI(), 1, messages, nullptr, false
-			);
+			SteamAPI_SteamNetworkingSockets_SteamAPI(), 1, messages, nullptr, false);
 
 	return OK;
 }
@@ -136,26 +143,24 @@ Error SteamPacketPeer::ping(uint32_t p_peer_id) {
 	data.peer_id = p_peer_id;
 
 	SteamNetworkingMessage_t *packet = SteamAPI_ISteamNetworkingUtils_AllocateMessage(
-			SteamAPI_SteamNetworkingUtils_SteamAPI(), sizeof(PeerIDPacket)
-			);
+			SteamAPI_SteamNetworkingUtils_SteamAPI(), sizeof(PeerIDPacket));
 	ERR_FAIL_COND_V(!packet, ERR_CANT_CREATE);
 
 	packet->m_conn = connection_handle;
 	packet->m_nFlags = k_nSteamNetworkingSend_ReliableNoNagle;
 	memcpy(packet->m_pData, (void *)&data, sizeof(PeerIDPacket));
 
-	SteamNetworkingMessage_t *messages[1] = {packet};
+	SteamNetworkingMessage_t *messages[1] = { packet };
 	SteamAPI_ISteamNetworkingSockets_SendMessages(
-			SteamAPI_SteamNetworkingSockets_SteamAPI(), 1, messages, nullptr, false
-			);
+			SteamAPI_SteamNetworkingSockets_SteamAPI(), 1, messages, nullptr, false);
 
 	return OK;
 }
 
 Error SteamPacketPeer::process_ping(SteamNetworkingMessage_t *p_packet) {
 	ERR_FAIL_COND_V(state != STATE_CONNECTED && state != STATE_CONNECTING &&
-			state != STATE_FINDING_ROUTE, ERR_UNAVAILABLE
-			);
+					state != STATE_FINDING_ROUTE,
+			ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(p_packet->m_cbSize != sizeof(PeerIDPacket), ERR_INVALID_DATA);
 
 	PeerIDPacket *data = (PeerIDPacket *)p_packet->m_pData;
@@ -194,12 +199,12 @@ Error SteamPacketPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
 	return send(0, p_buffer, p_buffer_size, k_nSteamNetworkingSend_Reliable);
 }
 
-int SteamPacketPeer::get_max_packet_size() const {
+int SteamPacketPeer::_get_max_packet_size() const {
 	// Steam networking sockets max message size
 	return k_cbMaxSteamNetworkingSocketsMessageSizeSend; // 512 KB
 }
 
-int SteamPacketPeer::get_available_packet_count() const {
+int SteamPacketPeer::_get_available_packet_count() const {
 	return packet_queue.size();
 }
 
@@ -214,8 +219,7 @@ void SteamPacketPeer::disconnect_peer(bool p_force) {
 
 	SteamAPI_ISteamNetworkingSockets_CloseConnection(
 			SteamAPI_SteamNetworkingSockets_SteamAPI(), connection_handle, 0,
-			"Disconnect requested by application.", !p_force
-			);
+			"Disconnect requested by application.", !p_force);
 
 	if (p_force) {
 		state = STATE_NONE;
